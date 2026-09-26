@@ -20,3 +20,6 @@ dist/
 Thumbs.db
 .idea/
 .vscode/
+
+# Temporary notebook sources (only executed .ipynb files are committed)
+ml/notebooks/*.py
