@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
 import pandas as pd
 
@@ -26,6 +28,44 @@ DERIVED_FEATURES = ["cadence_days", "overdue_ratio", "expected_purchases_h", "sp
 # They let supervised models learn the seasonal churn base rate, which calibration needs.
 CONTEXT_FEATURES = ["cutoff_month_sin", "cutoff_month_cos"]
 SPEND_TREND_EPS = 1.0
+
+
+@dataclass(frozen=True)
+class FeatureInfo:
+    group: str  # "base" | "derived" | "context"
+    unit: str
+    description: str
+    editable: bool  # editable in the browser what-if (base features only)
+
+
+# Single source for documentation, the notebooks and (Plan 2) the web feature spec.
+FEATURE_CATALOGUE: dict[str, FeatureInfo] = {
+    "recency_days": FeatureInfo("base", "days", "days since the last purchase day", True),
+    "n_purchase_days": FeatureInfo("base", "days", "distinct days with a purchase", True),
+    "tenure_days": FeatureInfo("base", "days", "days since the first purchase day", True),
+    "total_spend": FeatureInfo("base", "£", "gross spend on purchase days", True),
+    "avg_order_value": FeatureInfo("base", "£", "gross spend per purchase day", True),
+    "n_distinct_products": FeatureInfo("base", "count", "distinct stock codes bought", True),
+    "return_rate": FeatureInfo("base", "share", "returned value / gross spend, in [0, 1]", True),
+    "spend_90d": FeatureInfo("base", "£", "spend in the 90 days before the cutoff", True),
+    "spend_prev_90d": FeatureInfo("base", "£", "spend in the 90 days before those", True),
+    "purchases_90d": FeatureInfo("base", "days", "purchase days in the last 90 days", True),
+    "cadence_cv": FeatureInfo("base", "ratio", "std / mean of gaps between purchase days", True),
+    "bought_same_window_last_year": FeatureInfo(
+        "base", "0/1", "bought in the same horizon window one year earlier", True
+    ),
+    "is_uk": FeatureInfo("base", "0/1", "most frequent country is the United Kingdom", True),
+    "cadence_days": FeatureInfo(
+        "derived", "days", "max((tenure - recency) / (purchase days - 1), floor)", False
+    ),
+    "overdue_ratio": FeatureInfo("derived", "ratio", "recency / cadence: cycles late", False),
+    "expected_purchases_h": FeatureInfo(
+        "derived", "count", "horizon / cadence: purchases expected in H", False
+    ),
+    "spend_trend": FeatureInfo("derived", "ratio", "spend_90d / (spend_prev_90d + £1)", False),
+    "cutoff_month_sin": FeatureInfo("context", "-", "sin(2π · cutoff month / 12)", False),
+    "cutoff_month_cos": FeatureInfo("context", "-", "cos(2π · cutoff month / 12)", False),
+}
 UK = "United Kingdom"
 
 

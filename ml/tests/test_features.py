@@ -5,6 +5,9 @@ from conftest import tx_frame
 
 from churnvalue.features import (
     BASE_FEATURES,
+    CONTEXT_FEATURES,
+    DERIVED_FEATURES,
+    FEATURE_CATALOGUE,
     add_context_features,
     add_derived_features,
     compute_base_features,
@@ -108,3 +111,14 @@ def test_customer_with_only_returns_has_no_feature_row():
         ]
     )
     assert compute_base_features(tx, CUTOFF, horizon_days=90).index.tolist() == [1]
+
+
+def test_feature_catalogue_covers_every_feature_in_order_and_group():
+    groups = {"base": BASE_FEATURES, "derived": DERIVED_FEATURES, "context": CONTEXT_FEATURES}
+    assert list(FEATURE_CATALOGUE) == BASE_FEATURES + DERIVED_FEATURES + CONTEXT_FEATURES
+    for group, names in groups.items():
+        for name in names:
+            info = FEATURE_CATALOGUE[name]
+            assert info.group == group
+            assert info.editable == (group == "base")
+            assert info.description
