@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Hashable
 from dataclasses import dataclass
 
-import numpy as np
 import pandas as pd
 import pandera.pandas as pa
 
@@ -92,11 +91,12 @@ CLEANING_RULES: tuple[CleaningRule, ...] = (
 
 
 def same_day_reversals(df: pd.DataFrame) -> pd.Series:
-    """Sale lines and cancellations that cancel each other the same day, matched one-to-one.
+    """Sale lines and the cancellations that reverse them the same day, matched one-to-one.
 
-    Lines are grouped by customer, day, stock code, price and absolute quantity; within a group
-    the first min(#sales, #cancellations) lines of each side are marked. Returns on a later
-    day are genuine returns and are never matched.
+    Lines are grouped by customer, day, stock code, price and absolute quantity. Within a group,
+    in time order, each cancellation reverses the earliest still-unmatched sale at or before it
+    (a sale and a cancellation in the same minute count as sale first). A cancellation with no
+    earlier sale that day returns an older order and is kept, as are returns on later days.
     """
     is_cancellation = df["Invoice"].str.startswith("C", na=False)
     key = pd.DataFrame(
@@ -110,10 +110,24 @@ def same_day_reversals(df: pd.DataFrame) -> pd.Series:
         index=df.index,
     )
     group = list(key.columns)
-    rank = key.assign(side=is_cancellation).groupby([*group, "side"]).cumcount()
-    sales = key.assign(n=~is_cancellation).groupby(group)["n"].transform("sum")
-    cancellations = key.assign(n=is_cancellation).groupby(group)["n"].transform("sum")
-    return rank < np.minimum(sales, cancellations)
+    has_sale = key.assign(n=~is_cancellation).groupby(group)["n"].transform("any")
+    has_cancellation = key.assign(n=is_cancellation).groupby(group)["n"].transform("any")
+    marked = pd.Series(False, index=df.index)
+    candidates = key.loc[has_sale & has_cancellation].assign(
+        when=df["InvoiceDate"], cancel=is_cancellation
+    )
+    if candidates.empty:
+        return marked
+    candidates = candidates.sort_values(["when", "cancel"], kind="stable")
+    matched: list[Hashable] = []
+    for _, lines in candidates.groupby(group, sort=False):
+        open_sales: list[Hashable] = []
+        for index, cancel in zip(lines.index, lines["cancel"], strict=True):
+            if not cancel:
+                open_sales.append(index)
+            elif open_sales:
+                matched += [open_sales.pop(0), index]
+    return pd.Series(df.index.isin(matched), index=df.index)
 
 
 def apply_rules(

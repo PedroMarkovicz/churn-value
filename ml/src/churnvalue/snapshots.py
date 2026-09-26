@@ -7,6 +7,7 @@ import pandas as pd
 
 from churnvalue.btyd import (
     DAYS_PER_WEEK,
+    FloatArray,
     bgnbd_p_alive,
     fit_bgnbd,
     fit_gamma_gamma,
@@ -55,13 +56,19 @@ def churn_labels(
     return pd.Series(np.where(active, 0, 1), index=customer_ids, name="churn", dtype="int64")
 
 
-def btyd_columns(features: pd.DataFrame) -> pd.DataFrame:
-    """Unsupervised BTYD quantities fitted on all customers known at the cutoff (no labels used)."""
+def bgnbd_inputs(features: pd.DataFrame) -> tuple[FloatArray, FloatArray, FloatArray]:
+    """BG/NBD inputs in weeks: repeat purchase days x, last purchase time t_x, and age T."""
     x = (features["n_purchase_days"] - 1).to_numpy(dtype=np.float64)
     t_x = (features["tenure_days"] - features["recency_days"]).to_numpy(
         dtype=np.float64
     ) / DAYS_PER_WEEK
     big_t = features["tenure_days"].to_numpy(dtype=np.float64) / DAYS_PER_WEEK
+    return x, t_x, big_t
+
+
+def btyd_columns(features: pd.DataFrame) -> pd.DataFrame:
+    """Unsupervised BTYD quantities fitted on all customers known at the cutoff (no labels used)."""
+    x, t_x, big_t = bgnbd_inputs(features)
     bgnbd = fit_bgnbd(x, t_x, big_t)
 
     repeaters = features["n_purchase_days"] >= 2

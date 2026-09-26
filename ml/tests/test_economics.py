@@ -3,6 +3,8 @@ import pytest
 
 from churnvalue.economics import (
     EconomicParams,
+    break_even_limit,
+    break_even_probability,
     customer_economics,
     expected_cost,
     expected_profit,
@@ -75,3 +77,16 @@ def test_customer_economics_subset_keeps_arrays_aligned():
     assert sub.value.tolist() == [300.0, 100.0, 300.0]
     assert sub.crc.tolist() == pytest.approx([30.0, 10.0, 30.0])
     assert sub.benefit.tolist() == pytest.approx([300.0, 100.0, 300.0])
+
+
+def test_break_even_probability_matches_the_closed_form():
+    econ = customer_economics([1000.0], PARAMS)
+    assert break_even_probability(econ, PARAMS)[0] == pytest.approx(101.0 / 370.0)
+
+
+def test_break_even_limit_for_large_customers_in_both_regimes():
+    # defaults: CAC = V -> B = V -> 0.10 / (0.3 * 0.9 + 0.10)
+    assert break_even_limit(PARAMS) == pytest.approx(0.10 / 0.37)
+    # lambda_a = 4 -> CAC = 0.4 V < V -> B = 0.4 V -> 0.10 / (0.3 * 0.3 + 0.10)
+    cheap = PARAMS.model_copy(update={"lambda_a": 4.0})
+    assert break_even_limit(cheap) == pytest.approx(0.10 / 0.19)

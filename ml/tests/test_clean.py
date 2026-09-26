@@ -121,3 +121,16 @@ def test_apply_rules_with_a_prefix_skips_later_rules():
     kept, steps = apply_rules(raw, CLEANING_RULES[:-1])
     assert len(kept) == 2
     assert [s["rule"] for s in steps][-1] == "inconsistent_return"
+
+
+def test_same_day_reversal_never_matches_a_cancellation_that_precedes_the_sale():
+    # The C-line at 09:00 returns an earlier order; the 10:00 sale is a new purchase.
+    raw = raw_rows(
+        [
+            ("C500010", "85048", -3, "2011-02-01 09:00", 2.0, 13000.0, "United Kingdom"),
+            ("500011", "85048", 3, "2011-02-01 10:00", 2.0, 13000.0, "United Kingdom"),
+        ]
+    )
+    tx = clean_transactions(raw)
+    assert sorted(tx["quantity"].tolist()) == [-3, 3]
+    assert cleaning_audit(raw).set_index("rule").loc["same_day_reversal", "rows_removed"] == 0

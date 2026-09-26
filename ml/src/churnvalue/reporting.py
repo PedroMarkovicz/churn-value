@@ -13,18 +13,36 @@ import numpy as np
 import pandas as pd
 
 
+def _key(key: Any) -> str:
+    """Mapping keys as strings; temporal keys in the same ISO format as temporal values."""
+    converted = to_jsonable(key)
+    return converted if isinstance(converted, str) else str(converted)
+
+
 def to_jsonable(value: Any) -> Any:
-    """Convert numpy/pandas scalars, arrays and timestamps to plain JSON; NaN/inf -> None."""
+    """Convert numpy/pandas scalars, arrays and temporal values to plain JSON.
+
+    Missing values (NaN, inf, NaT, pd.NA) become None; timestamps and datetime64 become ISO
+    strings; timedeltas become ISO-8601 durations; periods become their string form.
+    """
     if isinstance(value, Mapping):
-        return {str(k): to_jsonable(v) for k, v in value.items()}
+        return {_key(k): to_jsonable(v) for k, v in value.items()}
+    if isinstance(value, pd.Series):
+        return {_key(k): to_jsonable(v) for k, v in value.items()}
     if isinstance(value, list | tuple | set):
         return [to_jsonable(v) for v in value]
     if isinstance(value, np.ndarray):
         return [to_jsonable(v) for v in value.tolist()]
-    if isinstance(value, pd.Series):
-        return {str(k): to_jsonable(v) for k, v in value.items()}
+    if value is None or (pd.api.types.is_scalar(value) and pd.isna(value)):
+        return None
+    if isinstance(value, np.datetime64):
+        return to_jsonable(pd.Timestamp(value))
     if isinstance(value, pd.Timestamp | datetime | date):
         return value.isoformat()
+    if isinstance(value, pd.Timedelta | np.timedelta64):
+        return pd.Timedelta(value).isoformat()
+    if isinstance(value, pd.Period):
+        return str(value)
     if isinstance(value, np.bool_ | bool):
         return bool(value)
     if isinstance(value, np.integer):
@@ -43,7 +61,9 @@ class StageSummary:
         self.values: dict[str, Any] = {}
 
     def __setitem__(self, key: str, value: Any) -> None:
-        self.values[key] = to_jsonable(value)
+        converted = to_jsonable(value)
+        json.dumps(converted, allow_nan=False)  # fail here, where the bad value is assigned
+        self.values[key] = converted
 
     def __getitem__(self, key: str) -> Any:
         return self.values[key]

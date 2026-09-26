@@ -44,9 +44,9 @@ Figures and summaries go to `reports/figures` and `reports/results`; styled HTML
 | Policy | Contacted | Realized profit | 95 % CI |
 |---|---|---|---|
 | Do nothing | 0 | £0 | — |
-| Contact all | 1,918 | −£128,042 | [−£161.4k, −£95.9k] |
-| Cadence rule | 1,918 | −£128,042 | [−£161.4k, −£95.9k] |
-| BG/NBD (calibrated) | 1,568 | −£23,667 | [−£38.2k, −£8.9k] |
-| Oracle | 590 | £88,622 | [£79.1k, £98.8k] |
+| Contact all | 1,920 | −£128,345 | [−£165.3k, −£93.3k] |
+| Cadence rule | 1,920 | −£128,345 | [−£165.3k, −£93.3k] |
+| BG/NBD (calibrated) | 1,565 | −£23,067 | [−£39.7k, −£7.8k] |
+| Oracle | 592 | £88,558 | [£78.0k, £98.8k] |
 
 BG/NBD ranks reasonably well (ROC-AUC 0.71), but its calibration does not transfer across seasons, so it loses money. The supervised models in Plan 2 have to fix exactly this.

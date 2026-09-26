@@ -61,6 +61,17 @@ def expected_profit(p: ArrayLike, econ: CustomerEconomics, params: EconomicParam
     )
 
 
+def break_even_probability(econ: CustomerEconomics, params: EconomicParams) -> FloatArray:
+    """Per-customer p* where expected profit is zero: (CRC + c) / (gamma*(B - CRC) + CRC)."""
+    return (econ.crc + params.contact_cost) / (params.gamma * (econ.benefit - econ.crc) + econ.crc)
+
+
+def break_even_limit(params: EconomicParams) -> float:
+    """p* for very large customers (contact cost negligible); B/V = min(1, lambda_a*lambda_c)."""
+    benefit_share = min(1.0, params.lambda_a * params.lambda_c)
+    return params.lambda_c / (params.gamma * (benefit_share - params.lambda_c) + params.lambda_c)
+
+
 def expected_cost(p: ArrayLike, econ: CustomerEconomics, params: EconomicParams) -> FloatArray:
     """Expected spend of one contact: incentive paid by accepting churners and all non-churners."""
     p_arr = np.asarray(p, dtype=np.float64)

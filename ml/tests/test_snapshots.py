@@ -4,6 +4,7 @@ from conftest import tx_frame
 
 from churnvalue.config import SnapshotConfig
 from churnvalue.snapshots import (
+    bgnbd_inputs,
     build_snapshot,
     build_snapshots,
     churn_labels,
@@ -94,5 +95,15 @@ def test_build_snapshots_has_both_classes_per_cutoff(tx_synthetic, snapshot_cfg:
 def test_real_dataset_snapshot_sizes():
     snaps = pd.read_parquet("data/interim/snapshots.parquet")
     sizes = snaps.groupby("cutoff").size()
-    assert sizes.loc[pd.Timestamp("2011-09-10")] == 1918
-    assert sizes.loc[pd.Timestamp("2011-06-10")] == 1852
+    assert sizes.loc[pd.Timestamp("2011-09-10")] == 1920
+    assert sizes.loc[pd.Timestamp("2011-06-10")] == 1853
+
+
+def test_bgnbd_inputs_are_weeks_from_features():
+    feats = pd.DataFrame(
+        {"n_purchase_days": [3, 1], "tenure_days": [21, 14], "recency_days": [7, 14]}
+    )
+    x, t_x, big_t = bgnbd_inputs(feats)
+    assert x.tolist() == [2.0, 0.0]
+    assert t_x.tolist() == [2.0, 0.0]
+    assert big_t.tolist() == [3.0, 2.0]

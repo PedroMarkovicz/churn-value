@@ -53,3 +53,29 @@ def test_export_html_keeps_inline_styles(tmp_path: Path):
     out = export_html(nb_path, tmp_path / "html")
     assert out.name == "01_style.html"
     assert "color:#4A3AA7" in out.read_text(encoding="utf-8")
+
+
+def test_editing_a_cell_after_execution_makes_the_notebook_stale(tmp_path: Path):
+    nb_path = write_notebook(tmp_path / "01_demo.ipynb", "x = 1", "print(x)")
+    execute_notebook(nb_path, working_dir=tmp_path)
+    assert executed_in_order(nb_path)
+    nb = nbformat.read(nb_path, as_version=4)
+    nb.cells[1].source = "raise RuntimeError('edited, never run')"
+    nbformat.write(nb, nb_path)
+    assert not executed_in_order(nb_path)
+
+
+def test_editing_markdown_after_execution_makes_the_notebook_stale(tmp_path: Path):
+    nb_path = write_notebook(tmp_path / "01_demo.ipynb", "x = 1")
+    execute_notebook(nb_path, working_dir=tmp_path)
+    nb = nbformat.read(nb_path, as_version=4)
+    nb.cells[0].source = "# A different claim"
+    nbformat.write(nb, nb_path)
+    assert not executed_in_order(nb_path)
+
+
+def test_execution_records_no_timing_metadata(tmp_path: Path):
+    nb_path = write_notebook(tmp_path / "01_demo.ipynb", "x = 1")
+    execute_notebook(nb_path, working_dir=tmp_path)
+    nb = nbformat.read(nb_path, as_version=4)
+    assert all("execution" not in cell.metadata for cell in nb.cells)
