@@ -1,0 +1,53 @@
+[project]
+name = "churnvalue"
+version = "0.1.0"
+description = "Profit-optimal churn retention decisions on UCI Online Retail II"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "numpy>=2.0",
+    "pandas>=2.2",
+    "pyarrow>=17",
+    "openpyxl>=3.1",
+    "scipy>=1.13",
+    "scikit-learn>=1.5",
+    "pydantic>=2.7",
+    "pyyaml>=6.0",
+    "typer>=0.12",
+    "pandera>=0.24",
+]
+
+[project.scripts]
+churnvalue = "churnvalue.cli:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "hypothesis>=6.100",
+    "ruff>=0.6",
+    "pyright>=1.1.380",
+    "pre-commit>=3.7",
+    "pandas-stubs>=3.0.5.260914",
+    "scipy-stubs>=1.18.1.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.9,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "NPY"]
+
+[tool.pyright]
+include = ["src"]  # tests are verified by running them; pandas stubs are noisy there
+typeCheckingMode = "basic"
+pythonVersion = "3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: requires the real dataset (run with -m slow)"]
+addopts = "-m 'not slow'"

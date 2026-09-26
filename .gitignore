@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+
+# Pipeline data and outputs (reproducible; never committed)
+ml/data/
+ml/reports/
+ml/mlruns/
+
+# Node (web/, later plans)
+node_modules/
+dist/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
