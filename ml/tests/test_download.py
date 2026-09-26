@@ -9,6 +9,8 @@ from churnvalue.data.download import (
     XLSX_NAME,
     ChecksumError,
     download_verified,
+    label_sheets,
+    raw_sheet_rows,
     sha256_of,
     xlsx_zip_to_parquet,
 )
@@ -72,3 +74,11 @@ def test_xlsx_zip_to_parquet_concatenates_sheets_and_stringifies_description(tmp
     assert len(raw) == 4
     assert raw["Description"].tolist()[0] == "12345"
     assert raw["Invoice"].tolist()[1] == "C489435"
+    assert raw_sheet_rows(out) == {"Year 2009-2010": 2, "Year 2010-2011": 2}
+
+
+def test_label_sheets_follows_row_order_and_checks_totals():
+    labels = label_sheets(3, {"a": 2, "b": 1})
+    assert labels.tolist() == ["a", "a", "b"]
+    with pytest.raises(ValueError, match="do not add up"):
+        label_sheets(4, {"a": 2, "b": 1})
