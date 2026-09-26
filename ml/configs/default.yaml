@@ -1,0 +1,30 @@
+data:
+  url: https://archive.ics.uci.edu/static/public/502/online+retail+ii.zip
+  sha256: 572e36277c2390fbfde10664750731e0a86f55e33470d91919085f0408e67bfb
+  raw_dir: data/raw
+  interim_dir: data/interim
+
+snapshots:
+  horizon_days: 90
+  eligibility_f: 0.5
+  min_history_months: 6
+  cadence_floor_days: 7.0
+
+splits:
+  calibration_offset_months: 3
+
+economics:
+  margin: 0.35
+  lambda_c: 0.10
+  lambda_a: 10.0
+  gamma: 0.30
+  contact_cost: 1.0
+  value_horizon_days: 365
+
+evaluation:
+  n_bootstrap: 1000
+  seed: 42
+  emp_gamma_alpha: 6.0
+  emp_gamma_beta: 14.0
+
+reports_dir: reports
