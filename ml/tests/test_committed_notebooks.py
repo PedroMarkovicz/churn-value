@@ -11,6 +11,10 @@ NOTEBOOKS = Path(__file__).parents[1] / "notebooks"
 COMMITTED = discover(NOTEBOOKS)
 
 
+def test_the_six_stage_notebooks_exist():
+    assert [p.name[:2] for p in COMMITTED][:6] == ["01", "02", "03", "04", "05", "06"]
+
+
 @pytest.mark.parametrize("path", COMMITTED, ids=lambda p: p.name)
 def test_notebook_was_executed_top_to_bottom_without_errors(path: Path):
     assert executed_in_order(path), "re-run with `churnvalue notebooks` before committing"
