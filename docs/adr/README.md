@@ -15,3 +15,4 @@ Short MADR-style records (Context · Decision · Alternatives · Consequences). 
 | [0009](0009-whatif-parity-golden-vectors.md) | What-if: derived features in TS guarded by golden vectors; SHAP precomputed |
 | [0010](0010-english-gbp.md) | Language: English; currency: £ |
 | [0011](0011-monorepo-no-origin-data.md) | Monorepo, typed artifact contract, no data or code from the origin project |
+| [0012](0012-notebooks-as-narrative.md) | Analysis notebooks as a narrative layer over the package |
