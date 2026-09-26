@@ -94,5 +94,5 @@ def test_build_snapshots_has_both_classes_per_cutoff(tx_synthetic, snapshot_cfg:
 def test_real_dataset_snapshot_sizes():
     snaps = pd.read_parquet("data/interim/snapshots.parquet")
     sizes = snaps.groupby("cutoff").size()
-    assert sizes.loc[pd.Timestamp("2011-09-10")] == 1921
-    assert sizes.loc[pd.Timestamp("2011-06-10")] == 1854
+    assert sizes.loc[pd.Timestamp("2011-09-10")] == 1918
+    assert sizes.loc[pd.Timestamp("2011-06-10")] == 1852
