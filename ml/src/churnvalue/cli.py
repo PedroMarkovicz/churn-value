@@ -1,4 +1,4 @@
-"""Pipeline stages: download -> build-snapshots -> evaluate-baselines."""
+"""Pipeline stages: download -> build-snapshots -> evaluate-baselines; notebooks."""
 
 from __future__ import annotations
 
@@ -8,14 +8,17 @@ from pathlib import Path
 import pandas as pd
 import typer
 
-from churnvalue.config import DEFAULT_CONFIG_PATH, Config, load_config
+from churnvalue.config import DEFAULT_CONFIG_PATH, Config, load_config, project_root
 from churnvalue.data.clean import clean_transactions
 from churnvalue.data.download import download_verified, xlsx_zip_to_parquet
 from churnvalue.evaluate import evaluate_baselines
+from churnvalue.notebooks import HTML_DIR, NOTEBOOKS_DIR, discover, execute_notebook, export_html
 from churnvalue.snapshots import build_snapshots
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 ConfigOption = typer.Option(DEFAULT_CONFIG_PATH, "--config", help="Path to the YAML config.")
+OnlyOption = typer.Option(None, "--only", help="Run only these NN prefixes (repeatable).")
+HtmlOption = typer.Option(True, "--html/--no-html", help="Export styled HTML.")
 
 
 def raw_zip_path(cfg: Config) -> Path:
@@ -68,3 +71,17 @@ def evaluate_baselines_cmd(config: Path = ConfigOption) -> None:
     for row in report["policies"]:
         profit = f"£{row['realized_profit']:>12,.0f}"
         typer.echo(f"{row['policy']:>14}  k={row['n_contacted']:>5}  realized={profit}")
+
+
+@app.command()
+def notebooks(only: list[str] | None = OnlyOption, html: bool = HtmlOption) -> None:
+    """Execute the analysis notebooks in place (fail on the first error) and export HTML."""
+    root = project_root()
+    paths = discover(root / NOTEBOOKS_DIR, only)
+    if not paths:
+        raise typer.BadParameter("no matching notebooks")
+    for path in paths:
+        typer.echo(f"running {path.name} ...")
+        execute_notebook(path, working_dir=root)
+        if html:
+            typer.echo(f"  html -> {export_html(path, root / HTML_DIR)}")

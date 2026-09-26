@@ -1,0 +1,28 @@
+name: notebooks
+
+on:
+  workflow_dispatch:
+
+jobs:
+  notebooks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ml
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run churnvalue download
+      - run: uv run churnvalue build-snapshots
+      - run: uv run churnvalue evaluate-baselines
+      - run: uv run churnvalue notebooks
+      - run: uv run pytest -m slow
+      - uses: actions/upload-artifact@v4
+        with:
+          name: notebooks-html
+          path: ml/reports/notebooks/
+      - name: Committed notebooks are up to date
+        run: git diff --stat --exit-code -- notebooks || echo "::warning::re-executed notebooks differ from the committed ones"
