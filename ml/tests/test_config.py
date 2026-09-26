@@ -4,7 +4,7 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from churnvalue.config import load_config
+from churnvalue.config import load_config, project_root
 
 DEFAULT = Path(__file__).parents[1] / "configs" / "default.yaml"
 
@@ -37,3 +37,16 @@ def test_out_of_range_parameter_is_rejected(tmp_path: Path):
     path = _write(tmp_path, lambda raw: raw["economics"].update({"gamma": 1.5}))
     with pytest.raises(ValidationError):
         load_config(path)
+
+
+def test_project_root_found_from_a_subdirectory(tmp_path: Path):
+    (tmp_path / "configs").mkdir()
+    (tmp_path / "configs" / "default.yaml").write_text("x: 1", encoding="utf-8")
+    nested = tmp_path / "notebooks" / "deep"
+    nested.mkdir(parents=True)
+    assert project_root(nested) == tmp_path.resolve()
+
+
+def test_project_root_raises_outside_a_project(tmp_path: Path):
+    with pytest.raises(FileNotFoundError):
+        project_root(tmp_path)

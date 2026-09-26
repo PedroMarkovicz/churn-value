@@ -51,6 +51,18 @@ class Config(_Frozen):
 DEFAULT_CONFIG_PATH = Path("configs/default.yaml")
 
 
+def project_root(start: Path | None = None) -> Path:
+    """Nearest directory (from ``start`` upwards) holding ``configs/default.yaml``.
+
+    Config paths are relative to it; notebooks call this so they run from any directory.
+    """
+    here = (start or Path.cwd()).resolve()
+    for candidate in (here, *here.parents):
+        if (candidate / DEFAULT_CONFIG_PATH).is_file():
+            return candidate
+    raise FileNotFoundError(f"no {DEFAULT_CONFIG_PATH} found in {here} or its parents")
+
+
 def load_config(path: Path = DEFAULT_CONFIG_PATH) -> Config:
     with path.open(encoding="utf-8") as fh:
         return Config.model_validate(yaml.safe_load(fh))
