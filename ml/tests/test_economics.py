@@ -67,3 +67,11 @@ def test_budget_selection_is_greedy_by_expected_profit():
     assert select_with_budget(profit, cost, budget=40.0).tolist() == [False, True, False, True]
     assert select_with_budget(profit, cost, max_contacts=1).tolist() == [False, True, False, False]
     assert select_with_budget(profit, cost, budget=0.0).tolist() == [False, False, False, False]
+
+
+def test_customer_economics_subset_keeps_arrays_aligned():
+    econ = customer_economics([100.0, 200.0, 300.0], PARAMS)
+    sub = econ.subset(np.array([2, 0, 2]))
+    assert sub.value.tolist() == [300.0, 100.0, 300.0]
+    assert sub.crc.tolist() == pytest.approx([30.0, 10.0, 30.0])
+    assert sub.benefit.tolist() == pytest.approx([300.0, 100.0, 300.0])

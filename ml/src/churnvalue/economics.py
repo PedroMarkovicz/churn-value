@@ -31,6 +31,12 @@ class CustomerEconomics:
     cac: FloatArray  # replacement cost = lambda_a * CRC
     benefit: FloatArray  # B = min(V, CAC): cheapest way to cover the loss of a churner
 
+    def subset(self, idx: NDArray[np.intp]) -> CustomerEconomics:
+        """Rows `idx` of every array, kept aligned (used by the bootstrap)."""
+        return CustomerEconomics(
+            value=self.value[idx], crc=self.crc[idx], cac=self.cac[idx], benefit=self.benefit[idx]
+        )
+
 
 def value_at_risk(aov: ArrayLike, cadence_days: ArrayLike, params: EconomicParams) -> FloatArray:
     aov_arr = np.asarray(aov, dtype=np.float64)

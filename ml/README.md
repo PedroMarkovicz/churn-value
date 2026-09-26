@@ -21,12 +21,12 @@ All parameters live in `configs/default.yaml`.
 
 ## Baseline results (test cutoff 2011-09-10, default economics)
 
-| Policy | Contacted | Realized profit |
-|---|---|---|
-| Do nothing | 0 | £0 |
-| Contact all | 1,921 | −£129,712 |
-| Cadence rule | 1,921 | −£129,712 |
-| BG/NBD (calibrated) | 1,565 | −£23,461 |
-| Oracle | 592 | £88,415 |
+| Policy | Contacted | Realized profit | 95 % CI |
+|---|---|---|---|
+| Do nothing | 0 | £0 | — |
+| Contact all | 1,921 | −£129,712 | [−£166.7k, −£96.6k] |
+| Cadence rule | 1,921 | −£129,712 | [−£166.7k, −£96.6k] |
+| BG/NBD (calibrated) | 1,565 | −£23,461 | [−£38.1k, −£8.5k] |
+| Oracle | 592 | £88,415 | [£79.0k, £98.6k] |
 
 BG/NBD ranks reasonably well (ROC-AUC 0.71), but its calibration does not transfer across seasons, so it loses money. The supervised models in Plan 2 have to fix exactly this.

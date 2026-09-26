@@ -7,7 +7,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 
 from churnvalue.calibration import select_calibrator
 from churnvalue.config import Config
@@ -20,7 +20,12 @@ from churnvalue.economics import (
     select_unconstrained,
     value_at_risk,
 )
-from churnvalue.metrics import METRICS, bootstrap_ci, expected_maximum_profit
+from churnvalue.metrics import (
+    METRICS,
+    bootstrap_ci,
+    bootstrap_statistic,
+    expected_maximum_profit,
+)
 from churnvalue.splits import make_temporal_split
 
 FloatArray = NDArray[np.float64]
@@ -37,26 +42,41 @@ def policy_table(
     probabilities: dict[str, FloatArray],
     econ: CustomerEconomics,
     params: EconomicParams,
-) -> list[dict[str, float | int | str]]:
-    """Realized backtest profit per policy; random = analytic expectation at equal k."""
+    groups: ArrayLike | None = None,
+    n_boot: int = 0,
+    seed: int = 0,
+) -> list[dict[str, Any]]:
+    """Realized backtest profit per policy; random = analytic expectation at equal k.
+
+    Undefined quantities are None (never NaN) so the report stays strict JSON. With
+    `n_boot > 0`, realized profit gets a customer-clustered bootstrap CI.
+    """
     contribution = realized_profit(y, econ, params)
     oracle_mask = (y == 1) & (contribution > 0)
     oracle_profit = float(contribution[oracle_mask].sum())
     mean_contribution = float(contribution.mean())
 
-    def row(
-        name: str, mask: NDArray[np.bool_], exp_profit: float | None
-    ) -> dict[str, float | int | str]:
+    def row(name: str, mask: NDArray[np.bool_], exp_profit: float | None) -> dict[str, Any]:
         realized = float(contribution[mask].sum())
         k = int(mask.sum())
-        return {
+        out: dict[str, Any] = {
             "policy": name,
             "n_contacted": k,
-            "expected_profit": exp_profit if exp_profit is not None else float("nan"),
+            "expected_profit": exp_profit,
             "realized_profit": realized,
-            "share_of_oracle": realized / oracle_profit if oracle_profit > 0 else float("nan"),
+            "share_of_oracle": realized / oracle_profit if oracle_profit > 0 else None,
             "random_same_k_profit": k * mean_contribution,
         }
+        if n_boot > 0:
+            ci = bootstrap_statistic(
+                lambda rows: float(contribution[rows][mask[rows]].sum()),
+                groups if groups is not None else np.arange(y.size),
+                n_boot,
+                seed,
+            )
+            out["realized_profit_ci_low"] = ci.ci_low
+            out["realized_profit_ci_high"] = ci.ci_high
+        return out
 
     n = y.size
     rows = [
@@ -101,8 +121,20 @@ def evaluate_baselines(snapshots: pd.DataFrame, cfg: Config) -> dict[str, Any]:
                 )
                 for metric_name, metric in METRICS.items()
             },
-            "emp_per_customer": expected_maximum_profit(
-                y_test, p_test, econ, params, ev.emp_gamma_alpha, ev.emp_gamma_beta
+            "emp_per_customer": asdict(
+                bootstrap_statistic(
+                    lambda rows, p=p_test: expected_maximum_profit(
+                        y_test[rows],
+                        p[rows],
+                        econ.subset(rows),
+                        params,
+                        ev.emp_gamma_alpha,
+                        ev.emp_gamma_beta,
+                    ),
+                    test["customer_id"],
+                    ev.n_bootstrap,
+                    ev.seed,
+                )
             ),
         }
 
@@ -119,5 +151,13 @@ def evaluate_baselines(snapshots: pd.DataFrame, cfg: Config) -> dict[str, Any]:
         },
         "economics": params.model_dump(),
         "models": models,
-        "policies": policy_table(y_test, probabilities, econ, params),
+        "policies": policy_table(
+            y_test,
+            probabilities,
+            econ,
+            params,
+            groups=test["customer_id"],
+            n_boot=ev.n_bootstrap,
+            seed=ev.seed,
+        ),
     }

@@ -62,7 +62,8 @@ def evaluate_baselines_cmd(config: Path = ConfigOption) -> None:
     report = evaluate_baselines(pd.read_parquet(snapshots_path(cfg)), cfg)
     cfg.reports_dir.mkdir(parents=True, exist_ok=True)
     out = cfg.reports_dir / "baseline_evaluation.json"
-    out.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    # allow_nan=False: the report must be strict JSON (the web app parses it).
+    out.write_text(json.dumps(report, indent=2, allow_nan=False), encoding="utf-8")
     typer.echo(f"report -> {out}")
     for row in report["policies"]:
         profit = f"£{row['realized_profit']:>12,.0f}"
