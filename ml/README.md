@@ -13,6 +13,26 @@ Requires [uv](https://docs.astral.sh/uv/) ≥ 0.12. From this directory:
 
 All parameters live in `configs/default.yaml`.
 
+## Analysis notebooks
+
+Numbered notebooks in `notebooks/` narrate every decision; the CLI remains the pipeline. After the
+three pipeline commands above:
+
+    uv run churnvalue notebooks            # execute 01–06 in place and export styled HTML
+    uv run churnvalue notebooks --only 03  # one stage
+
+| # | Notebook | Question |
+|---|---|---|
+| 01 | `data_ingestion` | Where does the data come from, and can we trust our copy? |
+| 02 | `data_cleaning` | Which rows do we drop, and why? |
+| 03 | `eda` | How do these customers buy? |
+| 04 | `problem_framing` | How does "stopped buying" become a label we can trust? |
+| 05 | `feature_engineering` | What do we know about a customer at the cutoff — and nothing more? |
+| 06 | `baselines` | How far do customer-base models get, and what does trusting them cost? |
+
+Figures and summaries go to `reports/figures` and `reports/results`; styled HTML to
+`reports/notebooks` (GitHub strips the notebooks' inline styles; the HTML keeps them).
+
 ## Test
 
     uv run pytest            # fast suite, synthetic data, no network
