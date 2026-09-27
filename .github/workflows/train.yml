@@ -1,0 +1,42 @@
+name: train
+
+# Manual: rebuild everything from the public dataset and publish the web artifacts as a release.
+on:
+  workflow_dispatch:
+    inputs:
+      trials:
+        description: Optuna trials per model
+        type: number
+        default: 40
+
+permissions:
+  contents: write # create the release
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ml
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run churnvalue download
+      - run: uv run churnvalue build-snapshots
+      - run: uv run churnvalue train --trials "$TRIALS"
+        env:
+          TRIALS: ${{ inputs.trials }}
+      - run: uv run churnvalue evaluate
+      - run: uv run churnvalue export
+      - run: uv run pytest -m slow
+      - name: Publish the artifacts as a GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="artifacts-$(date -u +%Y%m%d)-${GITHUB_SHA::7}"
+          tar -czf "$tag.tar.gz" -C artifacts .
+          gh release create "$tag" "$tag.tar.gz" artifacts/manifest.json \
+            --title "$tag" --notes-file ../docs/model-card.md
