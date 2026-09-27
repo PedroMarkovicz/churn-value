@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pandas as pd
 import pytest
 from conftest import tx_frame
@@ -93,7 +95,8 @@ def test_build_snapshots_has_both_classes_per_cutoff(tx_synthetic, snapshot_cfg:
 
 @pytest.mark.slow
 def test_real_dataset_snapshot_sizes():
-    snaps = pd.read_parquet("data/interim/snapshots.parquet")
+    # Anchored to the project, not the working directory, so it runs from the repository root.
+    snaps = pd.read_parquet(Path(__file__).parents[1] / "data/interim/snapshots.parquet")
     sizes = snaps.groupby("cutoff").size()
     assert sizes.loc[pd.Timestamp("2011-09-10")] == 1920
     assert sizes.loc[pd.Timestamp("2011-06-10")] == 1853

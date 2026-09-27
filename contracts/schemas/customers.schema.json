@@ -1,0 +1,133 @@
+{
+  "$defs": {
+    "Contribution": {
+      "additionalProperties": false,
+      "properties": {
+        "feature": {
+          "title": "Feature",
+          "type": "string"
+        },
+        "shap": {
+          "title": "Shap",
+          "type": "number"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "feature",
+        "value",
+        "shap"
+      ],
+      "title": "Contribution",
+      "type": "object"
+    },
+    "Customer": {
+      "additionalProperties": false,
+      "properties": {
+        "aov_gg": {
+          "exclusiveMinimum": 0,
+          "title": "Aov Gg",
+          "type": "number"
+        },
+        "cadence_days": {
+          "exclusiveMinimum": 0,
+          "title": "Cadence Days",
+          "type": "number"
+        },
+        "churn": {
+          "enum": [
+            0,
+            1
+          ],
+          "title": "Churn",
+          "type": "integer"
+        },
+        "customer_id": {
+          "title": "Customer Id",
+          "type": "integer"
+        },
+        "features": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Features",
+          "type": "object"
+        },
+        "p": {
+          "additionalProperties": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "type": "number"
+          },
+          "title": "P",
+          "type": "object"
+        },
+        "shap_baseline": {
+          "title": "Shap Baseline",
+          "type": "number"
+        },
+        "top_contributions": {
+          "items": {
+            "$ref": "#/$defs/Contribution"
+          },
+          "title": "Top Contributions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "customer_id",
+        "churn",
+        "p",
+        "features",
+        "aov_gg",
+        "cadence_days",
+        "shap_baseline",
+        "top_contributions"
+      ],
+      "title": "Customer",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "customers": {
+      "items": {
+        "$ref": "#/$defs/Customer"
+      },
+      "title": "Customers",
+      "type": "array"
+    },
+    "cutoff": {
+      "format": "date",
+      "title": "Cutoff",
+      "type": "string"
+    },
+    "deployed_model": {
+      "title": "Deployed Model",
+      "type": "string"
+    },
+    "horizon_days": {
+      "title": "Horizon Days",
+      "type": "integer"
+    },
+    "models": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Models",
+      "type": "array"
+    }
+  },
+  "required": [
+    "cutoff",
+    "horizon_days",
+    "models",
+    "deployed_model",
+    "customers"
+  ],
+  "title": "CustomersFile",
+  "type": "object"
+}

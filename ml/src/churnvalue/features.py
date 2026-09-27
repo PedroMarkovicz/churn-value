@@ -28,6 +28,10 @@ DERIVED_FEATURES = ["cadence_days", "overdue_ratio", "expected_purchases_h", "sp
 # They let supervised models learn the seasonal churn base rate, which calibration needs.
 CONTEXT_FEATURES = ["cutoff_month_sin", "cutoff_month_cos"]
 SPEND_TREND_EPS = 1.0
+# Month encodings are rounded to exact values (0, ±0.5, ±0.866025403784, ±1): float noise such
+# as sin(7π/6) = -0.4999999999999997 lands on the other side of a split at -0.5 once the ONNX
+# model casts inputs to float32, and JavaScript's Math.sin produces the same noise.
+CONTEXT_DECIMALS = 12
 
 
 @dataclass(frozen=True)
@@ -63,8 +67,12 @@ FEATURE_CATALOGUE: dict[str, FeatureInfo] = {
         "derived", "count", "horizon / cadence: purchases expected in H", False
     ),
     "spend_trend": FeatureInfo("derived", "ratio", "spend_90d / (spend_prev_90d + £1)", False),
-    "cutoff_month_sin": FeatureInfo("context", "-", "sin(2π · cutoff month / 12)", False),
-    "cutoff_month_cos": FeatureInfo("context", "-", "cos(2π · cutoff month / 12)", False),
+    "cutoff_month_sin": FeatureInfo(
+        "context", "-", "sin(2π · cutoff month / 12), rounded to 12 decimals", False
+    ),
+    "cutoff_month_cos": FeatureInfo(
+        "context", "-", "cos(2π · cutoff month / 12), rounded to 12 decimals", False
+    ),
 }
 UK = "United Kingdom"
 
@@ -149,6 +157,7 @@ def add_derived_features(
 def add_context_features(features: pd.DataFrame, cutoff: pd.Timestamp) -> pd.DataFrame:
     out = features.copy()
     angle = 2.0 * np.pi * cutoff.month / 12.0
-    out["cutoff_month_sin"] = float(np.sin(angle))
-    out["cutoff_month_cos"] = float(np.cos(angle))
+    # + 0.0 turns a rounded -0.0 into 0.0.
+    out["cutoff_month_sin"] = round(float(np.sin(angle)), CONTEXT_DECIMALS) + 0.0
+    out["cutoff_month_cos"] = round(float(np.cos(angle)), CONTEXT_DECIMALS) + 0.0
     return out

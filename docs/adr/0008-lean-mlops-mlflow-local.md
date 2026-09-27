@@ -17,3 +17,8 @@
 **Consequences.**
 - `mlruns/` stays local and is gitignored.
 - The site's experiment page is only as fresh as the latest `train` release.
+
+**Amendments after Plan 2.**
+- MLflow uses a local SQLite store (`mlflow.db`, git-ignored); the file store is deprecated in MLflow 3.
+- One run per trained model: tuned parameters, CV folds, the Optuna trial history as a stepped metric, and the test metrics added by `evaluate`. Runs are tagged with the git commit, the config hash and the data checksum.
+- `churnvalue export` writes `experiments.json` from the store and generates `docs/model-card.md`.

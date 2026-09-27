@@ -1,0 +1,54 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "config_sha256": {
+      "title": "Config Sha256",
+      "type": "string"
+    },
+    "contract_version": {
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "data_sha256": {
+      "title": "Data Sha256",
+      "type": "string"
+    },
+    "deployed_model": {
+      "title": "Deployed Model",
+      "type": "string"
+    },
+    "files": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Files",
+      "type": "object"
+    },
+    "git_sha": {
+      "title": "Git Sha",
+      "type": "string"
+    },
+    "test_cutoff": {
+      "format": "date",
+      "title": "Test Cutoff",
+      "type": "string"
+    }
+  },
+  "required": [
+    "contract_version",
+    "created_at",
+    "git_sha",
+    "data_sha256",
+    "config_sha256",
+    "deployed_model",
+    "test_cutoff",
+    "files"
+  ],
+  "title": "Manifest",
+  "type": "object"
+}

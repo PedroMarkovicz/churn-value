@@ -2,12 +2,19 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+from typing import Any
+
 import numpy as np
 import pandas as pd
 import pytest
 
-from churnvalue.config import SnapshotConfig
+from churnvalue.config import Config, SnapshotConfig, load_config
 from churnvalue.data.clean import clean_transactions
+from churnvalue.models import SUPERVISED
+from churnvalue.snapshots import build_snapshots
+from churnvalue.splits import make_temporal_split, rolling_origin_folds
+from churnvalue.training import save_models, train_model
 
 START = pd.Timestamp("2009-12-01")
 END = pd.Timestamp("2011-12-09")
@@ -86,3 +93,60 @@ def tx_frame(rows: list[tuple[int, str, str, float, bool]]) -> pd.DataFrame:
             "country": ["United Kingdom"] * len(rows),
         }
     )
+
+
+DEFAULT_CONFIG = Path(__file__).parents[1] / "configs" / "default.yaml"
+
+
+@pytest.fixture(scope="session")
+def snapshots_synthetic(tx_synthetic: pd.DataFrame) -> pd.DataFrame:
+    """16 labelled monthly snapshots of the synthetic customers (about 120-200 per cutoff)."""
+    return build_snapshots(
+        tx_synthetic,
+        SnapshotConfig(
+            horizon_days=90, eligibility_f=0.5, min_history_months=6, cadence_floor_days=7.0
+        ),
+    )
+
+
+def fast_config(root: Path) -> Config:
+    """The default config with every output under ``root`` and cheap settings for tests."""
+    cfg = load_config(DEFAULT_CONFIG)
+    db = (root / "mlflow.db").as_posix()
+    return cfg.model_copy(
+        update={
+            "data": cfg.data.model_copy(
+                update={"raw_dir": root / "raw", "interim_dir": root / "interim"}
+            ),
+            "evaluation": cfg.evaluation.model_copy(update={"n_bootstrap": 100}),
+            "training": cfg.training.model_copy(update={"n_trials": 2}),
+            "tracking": cfg.tracking.model_copy(update={"uri": f"sqlite:///{db}"}),
+            "reports_dir": root / "reports",
+            "models_dir": root / "models",
+            "artifacts_dir": root / "artifacts",
+            "contracts_dir": root / "contracts",
+            "model_card_path": root / "docs" / "model-card.md",
+        }
+    )
+
+
+@pytest.fixture(scope="session")
+def trained_synthetic(
+    snapshots_synthetic: pd.DataFrame, tmp_path_factory: pytest.TempPathFactory
+) -> tuple[Config, dict[str, Any]]:
+    """Every supervised model trained on the synthetic snapshots (2 Optuna trials each)."""
+    cfg = fast_config(tmp_path_factory.mktemp("trained"))
+    cutoffs = sorted(pd.to_datetime(snapshots_synthetic["cutoff"].unique()))
+    split = make_temporal_split(
+        cutoffs, cfg.snapshots.horizon_days, cfg.splits.calibration_offset_months
+    )
+    folds = rolling_origin_folds(
+        split.train, cfg.snapshots.horizon_days, cfg.training.min_train_cutoffs
+    )
+    estimators, results = {}, {}
+    for name, spec in SUPERVISED.items():
+        estimators[name], results[name] = train_model(
+            spec, snapshots_synthetic, split.train, folds, n_trials=2, seed=0
+        )
+    save_models(cfg.models_dir, estimators, results)
+    return cfg, estimators

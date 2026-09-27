@@ -1,0 +1,95 @@
+{
+  "$defs": {
+    "IsotonicSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "const": "isotonic",
+          "title": "Method",
+          "type": "string"
+        },
+        "x": {
+          "items": {
+            "type": "number"
+          },
+          "minItems": 1,
+          "title": "X",
+          "type": "array"
+        },
+        "y": {
+          "items": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "type": "number"
+          },
+          "minItems": 1,
+          "title": "Y",
+          "type": "array"
+        }
+      },
+      "required": [
+        "method",
+        "x",
+        "y"
+      ],
+      "title": "IsotonicSpec",
+      "type": "object"
+    },
+    "PlattSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "intercept": {
+          "title": "Intercept",
+          "type": "number"
+        },
+        "method": {
+          "const": "platt",
+          "title": "Method",
+          "type": "string"
+        },
+        "slope": {
+          "title": "Slope",
+          "type": "number"
+        }
+      },
+      "required": [
+        "method",
+        "slope",
+        "intercept"
+      ],
+      "title": "PlattSpec",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "calibrator": {
+      "discriminator": {
+        "mapping": {
+          "isotonic": "#/$defs/IsotonicSpec",
+          "platt": "#/$defs/PlattSpec"
+        },
+        "propertyName": "method"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/IsotonicSpec"
+        },
+        {
+          "$ref": "#/$defs/PlattSpec"
+        }
+      ],
+      "title": "Calibrator"
+    },
+    "model": {
+      "title": "Model",
+      "type": "string"
+    }
+  },
+  "required": [
+    "model",
+    "calibrator"
+  ],
+  "title": "CalibratorFile",
+  "type": "object"
+}
