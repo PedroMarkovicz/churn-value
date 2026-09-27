@@ -80,3 +80,43 @@ def select_calibrator(scores: ArrayLike, y: ArrayLike, seed: int, n_splits: int 
         cv_brier[method] = float(np.mean(errors))
     best: Method = min(cv_brier, key=lambda m: cv_brier[m])
     return fit_calibrator(s, y_arr, best)
+
+
+def calibrator_from_dict(data: dict[str, object]) -> Calibrator:
+    """Inverse of ``Calibrator.to_dict`` (reports and the web contract store this form)."""
+    method = data["method"]
+    if method == "isotonic":
+        xs = data["x"]
+        ys = data["y"]
+        assert isinstance(xs, list) and isinstance(ys, list)
+        return IsotonicCalibrator(
+            x_thresholds=tuple(float(v) for v in xs), y_thresholds=tuple(float(v) for v in ys)
+        )
+    if method == "platt":
+        slope, intercept = data["slope"], data["intercept"]
+        assert isinstance(slope, float | int) and isinstance(intercept, float | int)
+        return PlattCalibrator(slope=float(slope), intercept=float(intercept))
+    raise ValueError(f"unknown calibration method {method!r}")
+
+
+def saerens_prior_shift(
+    p: ArrayLike, source_prior: float, max_iter: int = 1_000, tol: float = 1e-8
+) -> tuple[FloatArray, float]:
+    """Saerens, Latinne & Decaestecker (2002) EM: re-weight posteriors to an estimated new prior.
+
+    Assumes only the class prior changed and p(x | y) did not. Returns the adjusted
+    probabilities and the estimated prior.
+    """
+    p_arr = np.clip(np.asarray(p, dtype=np.float64), 1e-12, 1 - 1e-12)
+    prior = source_prior
+    adjusted = p_arr
+    for _ in range(max_iter):
+        up = prior / source_prior * p_arr
+        down = (1.0 - prior) / (1.0 - source_prior) * (1.0 - p_arr)
+        adjusted = up / (up + down)
+        new_prior = float(adjusted.mean())
+        if abs(new_prior - prior) < tol:
+            prior = new_prior
+            break
+        prior = new_prior
+    return adjusted, prior
