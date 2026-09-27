@@ -11,6 +11,7 @@ from churnvalue.training import (
     cross_validate,
     load_estimator,
     load_training,
+    models_fingerprint,
     rows_at,
     save_models,
     train_model,
@@ -100,3 +101,16 @@ def test_save_models_writes_strict_json(tmp_path: Path, trained_synthetic):
     assert "NaN" not in text
     save_models(tmp_path, {}, {})
     assert (tmp_path / "training.json").read_text(encoding="utf-8") == "{}"
+
+
+def test_models_fingerprint_changes_with_any_model_file(tmp_path: Path, trained_synthetic):
+    cfg, _ = trained_synthetic
+    first = models_fingerprint(cfg.models_dir)
+    assert first == models_fingerprint(cfg.models_dir)
+    copy = tmp_path / "models"
+    copy.mkdir()
+    for path in cfg.models_dir.iterdir():
+        (copy / path.name).write_bytes(path.read_bytes())
+    assert models_fingerprint(copy) == first
+    (copy / "lightgbm.joblib").write_bytes(b"retrained")
+    assert models_fingerprint(copy) != first

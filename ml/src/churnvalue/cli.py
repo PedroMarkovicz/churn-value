@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import replace
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
 
 import pandas as pd
 import typer
@@ -33,6 +33,7 @@ from churnvalue.training import (
     TrainingResult,
     load_estimator,
     load_training,
+    models_fingerprint,
     save_models,
     train_model,
 )
@@ -95,6 +96,19 @@ def evaluate_baselines_cmd(config: Path = ConfigOption) -> None:
         typer.echo(f"{row['policy']:>14}  k={row['n_contacted']:>5}  realized={profit}")
 
 
+def fail(message: str) -> NoReturn:
+    """Stop with a one-line hint on stderr instead of a traceback."""
+    typer.echo(message, err=True)
+    raise typer.Exit(code=1)
+
+
+def require(path: Path, command: str) -> Path:
+    """``path`` if it exists; otherwise stop and name the command that creates it."""
+    if not path.is_file():
+        fail(f"{path} not found: run `churnvalue {command}` first")
+    return path
+
+
 def write_json(path: Path, payload: Any) -> Path:
     """Strict JSON (no NaN): the web app parses these files."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -108,7 +122,7 @@ def train(config: Path = ConfigOption, trials: int | None = TrialsOption) -> Non
     from churnvalue.tracking import log_training  # MLflow is slow to import; only load it here
 
     cfg = load_config(config)
-    snaps = pd.read_parquet(snapshots_path(cfg))
+    snaps = pd.read_parquet(require(snapshots_path(cfg), "build-snapshots"))
     split = temporal_split(snaps, cfg)
     folds = rolling_origin_folds(
         split.train, cfg.snapshots.horizon_days, cfg.training.min_train_cutoffs
@@ -144,8 +158,15 @@ def evaluate(config: Path = ConfigOption) -> None:
     from churnvalue.tracking import log_test_metrics
 
     cfg = load_config(config)
-    training = load_training(cfg.models_dir)
-    report = evaluate_models(pd.read_parquet(snapshots_path(cfg)), model_scorers(cfg), cfg)
+    snaps = pd.read_parquet(require(snapshots_path(cfg), "build-snapshots"))
+    try:
+        training = load_training(cfg.models_dir)
+        scorers = model_scorers(cfg)
+        fingerprint = models_fingerprint(cfg.models_dir)
+    except FileNotFoundError as missing:
+        fail(str(missing))
+    report = evaluate_models(snaps, scorers, cfg)
+    report["models_sha256"] = fingerprint
     out = write_json(cfg.reports_dir / EVALUATION_FILE, report)
     policies = {row["policy"]: row for row in report["policies"]}
     for name in SUPERVISED:
@@ -165,17 +186,24 @@ def export(config: Path = ConfigOption) -> None:
     from churnvalue.tracking import export_experiments
 
     cfg = load_config(config)
-    evaluation_path = cfg.reports_dir / EVALUATION_FILE
-    if not evaluation_path.is_file():
-        typer.echo(f"{evaluation_path} not found: run `churnvalue evaluate` first", err=True)
-        raise typer.Exit(code=1)
+    evaluation_path = require(cfg.reports_dir / EVALUATION_FILE, "evaluate")
+    snapshots = pd.read_parquet(require(snapshots_path(cfg), "build-snapshots"))
+    transactions = pd.read_parquet(require(transactions_path(cfg), "build-snapshots"))
     evaluation = json.loads(evaluation_path.read_text(encoding="utf-8"))
+    try:
+        scorers = model_scorers(cfg)
+        estimator = load_estimator(cfg.models_dir, cfg.training.deployed_model)
+        fingerprint = models_fingerprint(cfg.models_dir)
+    except FileNotFoundError as missing:
+        fail(str(missing))
+    if evaluation.get("models_sha256") != fingerprint:
+        fail(f"{evaluation_path} was made from other models: run `churnvalue evaluate` again")
     result = export_artifacts(
         cfg,
-        snapshots=pd.read_parquet(snapshots_path(cfg)),
-        transactions=pd.read_parquet(transactions_path(cfg)),
-        scorers=model_scorers(cfg),
-        estimator=load_estimator(cfg.models_dir, cfg.training.deployed_model),
+        snapshots=snapshots,
+        transactions=transactions,
+        scorers=scorers,
+        estimator=estimator,
         evaluation=evaluation,
         experiments=export_experiments(cfg.tracking),
     )

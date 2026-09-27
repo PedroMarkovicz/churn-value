@@ -214,6 +214,7 @@ class EvaluationFile(_Strict):
     policies: list[PolicyRow]
     stability: list[StabilityRow]
     drift: list[DriftRow]
+    models_sha256: str | None = None  # fingerprint of the evaluated models (None for baselines)
 
 
 # --- experiments.json ---------------------------------------------------------------------

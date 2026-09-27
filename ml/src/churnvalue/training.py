@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -146,6 +147,21 @@ def load_estimator(models_dir: Path, name: str) -> Any:
     if not path.is_file():
         raise FileNotFoundError(f"{path} not found: run `churnvalue train` first")
     return joblib.load(path)
+
+
+def models_fingerprint(models_dir: Path) -> str:
+    """SHA-256 over training.json and every fitted model file, in name order.
+
+    `evaluate` records it in its report; `export` refuses a report made from other models.
+    """
+    paths = sorted([models_dir / TRAINING_FILE, *models_dir.glob("*.joblib")])
+    digest = hashlib.sha256()
+    for path in paths:
+        if not path.is_file():
+            raise FileNotFoundError(f"{path} not found: run `churnvalue train` first")
+        digest.update(path.name.encode("utf-8"))
+        digest.update(path.read_bytes())
+    return digest.hexdigest()
 
 
 def load_training(models_dir: Path) -> dict[str, dict[str, Any]]:

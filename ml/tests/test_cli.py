@@ -60,6 +60,13 @@ def test_full_pipeline_from_raw_parquet_to_artifacts(tmp_path: Path, raw_synthet
     assert (tmp_path / "artifacts" / "model.onnx").exists()
     assert (tmp_path / "docs" / "model-card.md").read_text("utf-8").startswith("# Model card")
 
+    # Retraining after `evaluate` makes the report stale: export must refuse, not mix them.
+    training_json = tmp_path / "models" / "training.json"
+    training_json.write_text(training_json.read_text("utf-8") + " ", encoding="utf-8")
+    stale = runner.invoke(app, ["export", "--config", str(config_path)])
+    assert stale.exit_code == 1
+    assert "churnvalue evaluate" in stale.output
+
     run("contracts")
     assert len(list((tmp_path / "contracts" / "schemas").glob("*.schema.json"))) == 10
     assert (tmp_path / "contracts" / "golden" / "economics.json").exists()
@@ -69,3 +76,27 @@ def test_export_explains_the_missing_evaluation(tmp_path: Path):
     result = CliRunner().invoke(app, ["export", "--config", str(_config(tmp_path))])
     assert result.exit_code != 0
     assert "churnvalue evaluate" in result.output
+
+
+def test_stages_run_too_early_say_which_command_to_run(
+    tmp_path: Path, snapshots_synthetic: pd.DataFrame
+):
+    config_path = _config(tmp_path)
+    runner = CliRunner()
+
+    def run(command: str):
+        return runner.invoke(app, [command, "--config", str(config_path)])
+
+    # No snapshots yet: training cannot start.
+    too_early = run("train")
+    assert too_early.exit_code == 1
+    assert "churnvalue build-snapshots" in too_early.output
+    assert not isinstance(too_early.exception, FileNotFoundError)  # a message, not a traceback
+
+    # Snapshots but no models: evaluation cannot start.
+    (tmp_path / "interim").mkdir()
+    snapshots_synthetic.to_parquet(tmp_path / "interim" / "snapshots.parquet", index=False)
+    no_models = run("evaluate")
+    assert no_models.exit_code == 1
+    assert "churnvalue train" in no_models.output
+    assert not isinstance(no_models.exception, FileNotFoundError)
