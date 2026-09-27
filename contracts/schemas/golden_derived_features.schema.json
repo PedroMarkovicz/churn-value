@@ -1,0 +1,64 @@
+{
+  "$defs": {
+    "DerivedCase": {
+      "additionalProperties": false,
+      "properties": {
+        "base": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Base",
+          "type": "object"
+        },
+        "derived": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Derived",
+          "type": "object"
+        }
+      },
+      "required": [
+        "base",
+        "derived"
+      ],
+      "title": "DerivedCase",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "cadence_floor_days": {
+      "title": "Cadence Floor Days",
+      "type": "number"
+    },
+    "cases": {
+      "items": {
+        "$ref": "#/$defs/DerivedCase"
+      },
+      "title": "Cases",
+      "type": "array"
+    },
+    "horizon_days": {
+      "title": "Horizon Days",
+      "type": "integer"
+    },
+    "spend_trend_eps": {
+      "title": "Spend Trend Eps",
+      "type": "number"
+    },
+    "tolerance": {
+      "title": "Tolerance",
+      "type": "number"
+    }
+  },
+  "required": [
+    "tolerance",
+    "horizon_days",
+    "cadence_floor_days",
+    "spend_trend_eps",
+    "cases"
+  ],
+  "title": "DerivedGolden",
+  "type": "object"
+}

@@ -1,0 +1,222 @@
+{
+  "$defs": {
+    "BudgetCase": {
+      "additionalProperties": false,
+      "properties": {
+        "budget": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Budget"
+        },
+        "expected_cost": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Expected Cost",
+          "type": "array"
+        },
+        "expected_profit": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Expected Profit",
+          "type": "array"
+        },
+        "max_contacts": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Max Contacts"
+        },
+        "selected": {
+          "items": {
+            "type": "boolean"
+          },
+          "title": "Selected",
+          "type": "array"
+        }
+      },
+      "required": [
+        "expected_profit",
+        "expected_cost",
+        "budget",
+        "max_contacts",
+        "selected"
+      ],
+      "title": "BudgetCase",
+      "type": "object"
+    },
+    "EconomicParams": {
+      "additionalProperties": false,
+      "description": "User-configurable business assumptions. Defaults live in configs/default.yaml.",
+      "properties": {
+        "contact_cost": {
+          "minimum": 0,
+          "title": "Contact Cost",
+          "type": "number"
+        },
+        "gamma": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Gamma",
+          "type": "number"
+        },
+        "lambda_a": {
+          "minimum": 1,
+          "title": "Lambda A",
+          "type": "number"
+        },
+        "lambda_c": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Lambda C",
+          "type": "number"
+        },
+        "margin": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Margin",
+          "type": "number"
+        },
+        "value_horizon_days": {
+          "exclusiveMinimum": 0,
+          "title": "Value Horizon Days",
+          "type": "number"
+        }
+      },
+      "required": [
+        "margin",
+        "lambda_c",
+        "lambda_a",
+        "gamma",
+        "contact_cost",
+        "value_horizon_days"
+      ],
+      "title": "EconomicParams",
+      "type": "object"
+    },
+    "EconomicsCase": {
+      "additionalProperties": false,
+      "properties": {
+        "aov_gg": {
+          "title": "Aov Gg",
+          "type": "number"
+        },
+        "benefit": {
+          "title": "Benefit",
+          "type": "number"
+        },
+        "break_even_p": {
+          "title": "Break Even P",
+          "type": "number"
+        },
+        "cac": {
+          "title": "Cac",
+          "type": "number"
+        },
+        "cadence_days": {
+          "title": "Cadence Days",
+          "type": "number"
+        },
+        "churn": {
+          "enum": [
+            0,
+            1
+          ],
+          "title": "Churn",
+          "type": "integer"
+        },
+        "contact": {
+          "title": "Contact",
+          "type": "boolean"
+        },
+        "crc": {
+          "title": "Crc",
+          "type": "number"
+        },
+        "expected_cost": {
+          "title": "Expected Cost",
+          "type": "number"
+        },
+        "expected_profit": {
+          "title": "Expected Profit",
+          "type": "number"
+        },
+        "p": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "P",
+          "type": "number"
+        },
+        "params": {
+          "$ref": "#/$defs/EconomicParams"
+        },
+        "realized_profit": {
+          "title": "Realized Profit",
+          "type": "number"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "params",
+        "aov_gg",
+        "cadence_days",
+        "p",
+        "churn",
+        "value",
+        "crc",
+        "cac",
+        "benefit",
+        "expected_profit",
+        "break_even_p",
+        "contact",
+        "expected_cost",
+        "realized_profit"
+      ],
+      "title": "EconomicsCase",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "budget_cases": {
+      "items": {
+        "$ref": "#/$defs/BudgetCase"
+      },
+      "title": "Budget Cases",
+      "type": "array"
+    },
+    "cases": {
+      "items": {
+        "$ref": "#/$defs/EconomicsCase"
+      },
+      "title": "Cases",
+      "type": "array"
+    },
+    "tolerance": {
+      "title": "Tolerance",
+      "type": "number"
+    }
+  },
+  "required": [
+    "tolerance",
+    "cases",
+    "budget_cases"
+  ],
+  "title": "EconomicsGolden",
+  "type": "object"
+}

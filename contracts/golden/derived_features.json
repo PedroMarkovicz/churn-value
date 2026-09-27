@@ -1,0 +1,1457 @@
+{
+  "tolerance": 1e-9,
+  "horizon_days": 90,
+  "cadence_floor_days": 7.0,
+  "spend_trend_eps": 1.0,
+  "cases": [
+    {
+      "base": {
+        "recency_days": 56.0,
+        "n_purchase_days": 70.0,
+        "tenure_days": 588.0,
+        "total_spend": 532.43,
+        "avg_order_value": 129.9,
+        "n_distinct_products": 148.0,
+        "return_rate": 0.0027,
+        "spend_90d": 73.6,
+        "spend_prev_90d": 860.72,
+        "purchases_90d": 2.0,
+        "cadence_cv": 1.0115,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 7.7101449275362315,
+        "overdue_ratio": 7.2631578947368425,
+        "expected_purchases_h": 11.672932330827068,
+        "spend_trend": 0.08541057420043632
+      }
+    },
+    {
+      "base": {
+        "recency_days": 205.0,
+        "n_purchase_days": 18.0,
+        "tenure_days": 586.0,
+        "total_spend": 1652.59,
+        "avg_order_value": 66.55,
+        "n_distinct_products": 229.0,
+        "return_rate": 0.2161,
+        "spend_90d": 109.76,
+        "spend_prev_90d": 17.17,
+        "purchases_90d": 7.0,
+        "cadence_cv": 1.9805,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 22.41176470588235,
+        "overdue_ratio": 9.146981627296588,
+        "expected_purchases_h": 4.015748031496063,
+        "spend_trend": 6.040726472206934
+      }
+    },
+    {
+      "base": {
+        "recency_days": 245.0,
+        "n_purchase_days": 71.0,
+        "tenure_days": 673.0,
+        "total_spend": 2216.8,
+        "avg_order_value": 521.43,
+        "n_distinct_products": 315.0,
+        "return_rate": 0.1215,
+        "spend_90d": 70.63,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 0.0,
+        "cadence_cv": 0.3286,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 35.0,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 70.63
+      }
+    },
+    {
+      "base": {
+        "recency_days": 37.0,
+        "n_purchase_days": 63.0,
+        "tenure_days": 578.0,
+        "total_spend": 1104.75,
+        "avg_order_value": 47.44,
+        "n_distinct_products": 394.0,
+        "return_rate": 0.0366,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 1.0,
+        "cadence_cv": 0.1216,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 8.725806451612904,
+        "overdue_ratio": 4.240295748613678,
+        "expected_purchases_h": 10.314232902033272,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 323.0,
+        "n_purchase_days": 51.0,
+        "tenure_days": 611.0,
+        "total_spend": 598.0,
+        "avg_order_value": 379.67,
+        "n_distinct_products": 379.0,
+        "return_rate": 0.0155,
+        "spend_90d": 248.36,
+        "spend_prev_90d": 159.26,
+        "purchases_90d": 9.0,
+        "cadence_cv": 0.5598,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 46.142857142857146,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 1.5497316860102335
+      }
+    },
+    {
+      "base": {
+        "recency_days": 57.0,
+        "n_purchase_days": 39.0,
+        "tenure_days": 426.0,
+        "total_spend": 1475.16,
+        "avg_order_value": 146.21,
+        "n_distinct_products": 91.0,
+        "return_rate": 0.1756,
+        "spend_90d": 5.83,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 0.0,
+        "cadence_cv": 1.0212,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 9.710526315789474,
+        "overdue_ratio": 5.869918699186991,
+        "expected_purchases_h": 9.268292682926829,
+        "spend_trend": 5.83
+      }
+    },
+    {
+      "base": {
+        "recency_days": 54.0,
+        "n_purchase_days": 46.0,
+        "tenure_days": 54.0,
+        "total_spend": 1175.61,
+        "avg_order_value": 447.77,
+        "n_distinct_products": 477.0,
+        "return_rate": 0.1625,
+        "spend_90d": 704.83,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 2.0,
+        "cadence_cv": 0.282,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 7.714285714285714,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 704.83
+      }
+    },
+    {
+      "base": {
+        "recency_days": 33.0,
+        "n_purchase_days": 50.0,
+        "tenure_days": 554.0,
+        "total_spend": 128.35,
+        "avg_order_value": 124.6,
+        "n_distinct_products": 234.0,
+        "return_rate": 0.2517,
+        "spend_90d": 1900.63,
+        "spend_prev_90d": 64.44,
+        "purchases_90d": 8.0,
+        "cadence_cv": 1.7661,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 10.63265306122449,
+        "overdue_ratio": 3.1036468330134355,
+        "expected_purchases_h": 8.464491362763916,
+        "spend_trend": 29.043856968215163
+      }
+    },
+    {
+      "base": {
+        "recency_days": 35.0,
+        "n_purchase_days": 61.0,
+        "tenure_days": 356.0,
+        "total_spend": 171.58,
+        "avg_order_value": 238.84,
+        "n_distinct_products": 60.0,
+        "return_rate": 0.1333,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 0.0,
+        "cadence_cv": 1.4093,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 5.0,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 10.0,
+        "n_purchase_days": 51.0,
+        "tenure_days": 680.0,
+        "total_spend": 10058.64,
+        "avg_order_value": 139.74,
+        "n_distinct_products": 434.0,
+        "return_rate": 0.0835,
+        "spend_90d": 40.26,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 3.0,
+        "cadence_cv": 1.0127,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 13.4,
+        "overdue_ratio": 0.7462686567164178,
+        "expected_purchases_h": 6.716417910447761,
+        "spend_trend": 40.26
+      }
+    },
+    {
+      "base": {
+        "recency_days": 55.0,
+        "n_purchase_days": 41.0,
+        "tenure_days": 127.0,
+        "total_spend": 119.99,
+        "avg_order_value": 368.1,
+        "n_distinct_products": 56.0,
+        "return_rate": 0.2886,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 272.75,
+        "purchases_90d": 8.0,
+        "cadence_cv": 1.0792,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 7.857142857142857,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 206.0,
+        "n_purchase_days": 65.0,
+        "tenure_days": 206.0,
+        "total_spend": 4531.56,
+        "avg_order_value": 204.19,
+        "n_distinct_products": 427.0,
+        "return_rate": 0.1384,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 53.26,
+        "purchases_90d": 9.0,
+        "cadence_cv": 1.5295,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 29.428571428571427,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 63.0,
+        "n_purchase_days": 24.0,
+        "tenure_days": 63.0,
+        "total_spend": 1937.05,
+        "avg_order_value": 134.79,
+        "n_distinct_products": 257.0,
+        "return_rate": 0.1597,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 2.0,
+        "cadence_cv": 1.161,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 9.0,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 331.0,
+        "n_purchase_days": 41.0,
+        "tenure_days": 331.0,
+        "total_spend": 3298.51,
+        "avg_order_value": 224.37,
+        "n_distinct_products": 315.0,
+        "return_rate": 0.0291,
+        "spend_90d": 516.12,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 0.0,
+        "cadence_cv": 1.4321,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 47.285714285714285,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 516.12
+      }
+    },
+    {
+      "base": {
+        "recency_days": 76.0,
+        "n_purchase_days": 23.0,
+        "tenure_days": 400.0,
+        "total_spend": 1262.22,
+        "avg_order_value": 130.36,
+        "n_distinct_products": 107.0,
+        "return_rate": 0.1799,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 7.0,
+        "cadence_cv": 1.3951,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 14.727272727272727,
+        "overdue_ratio": 5.160493827160494,
+        "expected_purchases_h": 6.111111111111112,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 94.0,
+        "n_purchase_days": 75.0,
+        "tenure_days": 94.0,
+        "total_spend": 800.23,
+        "avg_order_value": 186.7,
+        "n_distinct_products": 108.0,
+        "return_rate": 0.0917,
+        "spend_90d": 62.16,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 5.0,
+        "cadence_cv": 0.1908,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 13.428571428571429,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 62.16
+      }
+    },
+    {
+      "base": {
+        "recency_days": 166.0,
+        "n_purchase_days": 18.0,
+        "tenure_days": 397.0,
+        "total_spend": 979.1,
+        "avg_order_value": 90.61,
+        "n_distinct_products": 239.0,
+        "return_rate": 0.1341,
+        "spend_90d": 14.45,
+        "spend_prev_90d": 24.6,
+        "purchases_90d": 5.0,
+        "cadence_cv": 0.2497,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 13.588235294117647,
+        "overdue_ratio": 12.216450216450216,
+        "expected_purchases_h": 6.623376623376624,
+        "spend_trend": 0.5644531249999999
+      }
+    },
+    {
+      "base": {
+        "recency_days": 104.0,
+        "n_purchase_days": 34.0,
+        "tenure_days": 619.0,
+        "total_spend": 7067.53,
+        "avg_order_value": 317.7,
+        "n_distinct_products": 205.0,
+        "return_rate": 0.1397,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 4.0,
+        "cadence_cv": 0.673,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 15.606060606060606,
+        "overdue_ratio": 6.6640776699029125,
+        "expected_purchases_h": 5.766990291262136,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 230.0,
+        "n_purchase_days": 31.0,
+        "tenure_days": 230.0,
+        "total_spend": 5111.36,
+        "avg_order_value": 68.59,
+        "n_distinct_products": 419.0,
+        "return_rate": 0.0337,
+        "spend_90d": 4.5,
+        "spend_prev_90d": 38.65,
+        "purchases_90d": 7.0,
+        "cadence_cv": 0.7085,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 32.857142857142854,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.11349306431273645
+      }
+    },
+    {
+      "base": {
+        "recency_days": 235.0,
+        "n_purchase_days": 5.0,
+        "tenure_days": 401.0,
+        "total_spend": 2090.06,
+        "avg_order_value": 61.33,
+        "n_distinct_products": 47.0,
+        "return_rate": 0.1186,
+        "spend_90d": 38.8,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 4.0,
+        "cadence_cv": 0.089,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 41.5,
+        "overdue_ratio": 5.662650602409639,
+        "expected_purchases_h": 2.1686746987951806,
+        "spend_trend": 38.8
+      }
+    },
+    {
+      "base": {
+        "recency_days": 99.0,
+        "n_purchase_days": 5.0,
+        "tenure_days": 175.0,
+        "total_spend": 3550.49,
+        "avg_order_value": 239.67,
+        "n_distinct_products": 314.0,
+        "return_rate": 0.0993,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 154.59,
+        "purchases_90d": 7.0,
+        "cadence_cv": 0.0073,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 19.0,
+        "overdue_ratio": 5.2105263157894735,
+        "expected_purchases_h": 4.7368421052631575,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 355.0,
+        "n_purchase_days": 35.0,
+        "tenure_days": 355.0,
+        "total_spend": 1670.76,
+        "avg_order_value": 594.91,
+        "n_distinct_products": 270.0,
+        "return_rate": 0.0692,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 4.0,
+        "cadence_cv": 0.5856,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 50.714285714285715,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 39.0,
+        "n_purchase_days": 25.0,
+        "tenure_days": 347.0,
+        "total_spend": 15523.39,
+        "avg_order_value": 174.67,
+        "n_distinct_products": 156.0,
+        "return_rate": 0.0237,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 64.85,
+        "purchases_90d": 7.0,
+        "cadence_cv": 1.9974,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 12.833333333333334,
+        "overdue_ratio": 3.038961038961039,
+        "expected_purchases_h": 7.012987012987013,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 361.0,
+        "n_purchase_days": 22.0,
+        "tenure_days": 647.0,
+        "total_spend": 116.44,
+        "avg_order_value": 474.93,
+        "n_distinct_products": 233.0,
+        "return_rate": 0.1547,
+        "spend_90d": 680.74,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 7.0,
+        "cadence_cv": 1.7335,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 13.619047619047619,
+        "overdue_ratio": 26.506993006993007,
+        "expected_purchases_h": 6.608391608391608,
+        "spend_trend": 680.74
+      }
+    },
+    {
+      "base": {
+        "recency_days": 262.0,
+        "n_purchase_days": 53.0,
+        "tenure_days": 562.0,
+        "total_spend": 1910.21,
+        "avg_order_value": 141.01,
+        "n_distinct_products": 473.0,
+        "return_rate": 0.2606,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 404.44,
+        "purchases_90d": 0.0,
+        "cadence_cv": 0.8683,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 37.42857142857143,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 344.0,
+        "n_purchase_days": 79.0,
+        "tenure_days": 614.0,
+        "total_spend": 557.74,
+        "avg_order_value": 95.13,
+        "n_distinct_products": 159.0,
+        "return_rate": 0.019,
+        "spend_90d": 274.01,
+        "spend_prev_90d": 42.8,
+        "purchases_90d": 4.0,
+        "cadence_cv": 0.4045,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 49.142857142857146,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 6.2559360730593605
+      }
+    },
+    {
+      "base": {
+        "recency_days": 53.0,
+        "n_purchase_days": 2.0,
+        "tenure_days": 494.0,
+        "total_spend": 230.51,
+        "avg_order_value": 494.45,
+        "n_distinct_products": 191.0,
+        "return_rate": 0.1417,
+        "spend_90d": 83.44,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 6.0,
+        "cadence_cv": 0.3103,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 441.0,
+        "overdue_ratio": 0.12018140589569161,
+        "expected_purchases_h": 0.20408163265306123,
+        "spend_trend": 83.44
+      }
+    },
+    {
+      "base": {
+        "recency_days": 81.0,
+        "n_purchase_days": 26.0,
+        "tenure_days": 81.0,
+        "total_spend": 100.07,
+        "avg_order_value": 46.9,
+        "n_distinct_products": 137.0,
+        "return_rate": 0.1926,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 216.26,
+        "purchases_90d": 3.0,
+        "cadence_cv": 0.854,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 11.571428571428571,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 137.0,
+        "n_purchase_days": 5.0,
+        "tenure_days": 137.0,
+        "total_spend": 1978.9,
+        "avg_order_value": 40.05,
+        "n_distinct_products": 99.0,
+        "return_rate": 0.0203,
+        "spend_90d": 377.49,
+        "spend_prev_90d": 447.56,
+        "purchases_90d": 2.0,
+        "cadence_cv": 1.1551,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 19.571428571428573,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.8415596575708936
+      }
+    },
+    {
+      "base": {
+        "recency_days": 270.0,
+        "n_purchase_days": 30.0,
+        "tenure_days": 270.0,
+        "total_spend": 1522.0,
+        "avg_order_value": 238.91,
+        "n_distinct_products": 437.0,
+        "return_rate": 0.2434,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 236.98,
+        "purchases_90d": 8.0,
+        "cadence_cv": 1.0108,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 38.57142857142857,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 367.0,
+        "n_purchase_days": 41.0,
+        "tenure_days": 562.0,
+        "total_spend": 355.15,
+        "avg_order_value": 316.19,
+        "n_distinct_products": 192.0,
+        "return_rate": 0.1502,
+        "spend_90d": 838.61,
+        "spend_prev_90d": 400.41,
+        "purchases_90d": 3.0,
+        "cadence_cv": 0.6217,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 52.42857142857143,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 2.0891607085025283
+      }
+    },
+    {
+      "base": {
+        "recency_days": 72.0,
+        "n_purchase_days": 19.0,
+        "tenure_days": 140.0,
+        "total_spend": 766.81,
+        "avg_order_value": 224.2,
+        "n_distinct_products": 408.0,
+        "return_rate": 0.0136,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 7.0,
+        "cadence_cv": 0.5288,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 10.285714285714286,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 34.0,
+        "n_purchase_days": 27.0,
+        "tenure_days": 522.0,
+        "total_spend": 3409.27,
+        "avg_order_value": 309.21,
+        "n_distinct_products": 102.0,
+        "return_rate": 0.0308,
+        "spend_90d": 68.57,
+        "spend_prev_90d": 36.49,
+        "purchases_90d": 7.0,
+        "cadence_cv": 1.0798,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 18.76923076923077,
+        "overdue_ratio": 1.8114754098360655,
+        "expected_purchases_h": 4.795081967213115,
+        "spend_trend": 1.8290210722859426
+      }
+    },
+    {
+      "base": {
+        "recency_days": 26.0,
+        "n_purchase_days": 50.0,
+        "tenure_days": 346.0,
+        "total_spend": 229.15,
+        "avg_order_value": 61.91,
+        "n_distinct_products": 453.0,
+        "return_rate": 0.1829,
+        "spend_90d": 837.43,
+        "spend_prev_90d": 213.17,
+        "purchases_90d": 4.0,
+        "cadence_cv": 0.6968,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 3.7142857142857144,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 3.9101181304571133
+      }
+    },
+    {
+      "base": {
+        "recency_days": 281.0,
+        "n_purchase_days": 35.0,
+        "tenure_days": 591.0,
+        "total_spend": 175.9,
+        "avg_order_value": 132.0,
+        "n_distinct_products": 249.0,
+        "return_rate": 0.1825,
+        "spend_90d": 258.34,
+        "spend_prev_90d": 72.22,
+        "purchases_90d": 3.0,
+        "cadence_cv": 1.1564,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 9.117647058823529,
+        "overdue_ratio": 30.81935483870968,
+        "expected_purchases_h": 9.870967741935484,
+        "spend_trend": 3.528270964217427
+      }
+    },
+    {
+      "base": {
+        "recency_days": 129.0,
+        "n_purchase_days": 7.0,
+        "tenure_days": 648.0,
+        "total_spend": 1739.2,
+        "avg_order_value": 131.73,
+        "n_distinct_products": 14.0,
+        "return_rate": 0.0333,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 9.0,
+        "cadence_cv": 0.1388,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 86.5,
+        "overdue_ratio": 1.4913294797687862,
+        "expected_purchases_h": 1.0404624277456647,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 305.0,
+        "n_purchase_days": 35.0,
+        "tenure_days": 570.0,
+        "total_spend": 2346.42,
+        "avg_order_value": 324.86,
+        "n_distinct_products": 87.0,
+        "return_rate": 0.045,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 137.15,
+        "purchases_90d": 1.0,
+        "cadence_cv": 1.3539,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 7.794117647058823,
+        "overdue_ratio": 39.132075471698116,
+        "expected_purchases_h": 11.547169811320755,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 156.0,
+        "n_purchase_days": 4.0,
+        "tenure_days": 256.0,
+        "total_spend": 509.28,
+        "avg_order_value": 290.96,
+        "n_distinct_products": 211.0,
+        "return_rate": 0.1633,
+        "spend_90d": 80.73,
+        "spend_prev_90d": 352.87,
+        "purchases_90d": 6.0,
+        "cadence_cv": 1.8835,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 33.333333333333336,
+        "overdue_ratio": 4.68,
+        "expected_purchases_h": 2.6999999999999997,
+        "spend_trend": 0.2281346257100065
+      }
+    },
+    {
+      "base": {
+        "recency_days": 37.0,
+        "n_purchase_days": 18.0,
+        "tenure_days": 456.0,
+        "total_spend": 135.62,
+        "avg_order_value": 69.57,
+        "n_distinct_products": 370.0,
+        "return_rate": 0.0172,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 3.0,
+        "cadence_cv": 0.8539,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 24.647058823529413,
+        "overdue_ratio": 1.5011933174224343,
+        "expected_purchases_h": 3.6515513126491643,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 133.0,
+        "n_purchase_days": 5.0,
+        "tenure_days": 421.0,
+        "total_spend": 1238.5,
+        "avg_order_value": 1265.62,
+        "n_distinct_products": 466.0,
+        "return_rate": 0.0099,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 41.68,
+        "purchases_90d": 2.0,
+        "cadence_cv": 0.4735,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 72.0,
+        "overdue_ratio": 1.8472222222222223,
+        "expected_purchases_h": 1.25,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 198.0,
+        "n_purchase_days": 73.0,
+        "tenure_days": 309.0,
+        "total_spend": 2010.42,
+        "avg_order_value": 141.01,
+        "n_distinct_products": 266.0,
+        "return_rate": 0.0759,
+        "spend_90d": 128.2,
+        "spend_prev_90d": 500.41,
+        "purchases_90d": 5.0,
+        "cadence_cv": 1.6664,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 28.285714285714285,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.25567898526156235
+      }
+    },
+    {
+      "base": {
+        "recency_days": 106.0,
+        "n_purchase_days": 78.0,
+        "tenure_days": 453.0,
+        "total_spend": 258.41,
+        "avg_order_value": 68.62,
+        "n_distinct_products": 342.0,
+        "return_rate": 0.0274,
+        "spend_90d": 247.13,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 0.0,
+        "cadence_cv": 1.0867,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 15.142857142857142,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 247.13
+      }
+    },
+    {
+      "base": {
+        "recency_days": 373.0,
+        "n_purchase_days": 6.0,
+        "tenure_days": 463.0,
+        "total_spend": 1334.45,
+        "avg_order_value": 229.77,
+        "n_distinct_products": 290.0,
+        "return_rate": 0.2711,
+        "spend_90d": 1122.83,
+        "spend_prev_90d": 901.87,
+        "purchases_90d": 9.0,
+        "cadence_cv": 1.4562,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 18.0,
+        "overdue_ratio": 20.72222222222222,
+        "expected_purchases_h": 5.0,
+        "spend_trend": 1.2436231129619988
+      }
+    },
+    {
+      "base": {
+        "recency_days": 252.0,
+        "n_purchase_days": 4.0,
+        "tenure_days": 508.0,
+        "total_spend": 511.66,
+        "avg_order_value": 321.44,
+        "n_distinct_products": 359.0,
+        "return_rate": 0.2361,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 45.22,
+        "purchases_90d": 6.0,
+        "cadence_cv": 1.1035,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 85.33333333333333,
+        "overdue_ratio": 2.953125,
+        "expected_purchases_h": 1.0546875,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 38.0,
+        "n_purchase_days": 38.0,
+        "tenure_days": 587.0,
+        "total_spend": 420.27,
+        "avg_order_value": 299.88,
+        "n_distinct_products": 91.0,
+        "return_rate": 0.0463,
+        "spend_90d": 89.01,
+        "spend_prev_90d": 928.58,
+        "purchases_90d": 5.0,
+        "cadence_cv": 0.4528,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 14.837837837837839,
+        "overdue_ratio": 2.5610200364298725,
+        "expected_purchases_h": 6.065573770491803,
+        "spend_trend": 0.09575292067385271
+      }
+    },
+    {
+      "base": {
+        "recency_days": 211.0,
+        "n_purchase_days": 14.0,
+        "tenure_days": 492.0,
+        "total_spend": 633.34,
+        "avg_order_value": 233.6,
+        "n_distinct_products": 396.0,
+        "return_rate": 0.2705,
+        "spend_90d": 3252.84,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 5.0,
+        "cadence_cv": 0.5993,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 21.615384615384617,
+        "overdue_ratio": 9.761565836298931,
+        "expected_purchases_h": 4.1637010676156585,
+        "spend_trend": 3252.84
+      }
+    },
+    {
+      "base": {
+        "recency_days": 121.0,
+        "n_purchase_days": 18.0,
+        "tenure_days": 289.0,
+        "total_spend": 596.87,
+        "avg_order_value": 124.19,
+        "n_distinct_products": 405.0,
+        "return_rate": 0.0426,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 76.89,
+        "purchases_90d": 6.0,
+        "cadence_cv": 1.9705,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 9.882352941176471,
+        "overdue_ratio": 12.244047619047619,
+        "expected_purchases_h": 9.107142857142856,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 303.0,
+        "n_purchase_days": 24.0,
+        "tenure_days": 635.0,
+        "total_spend": 463.02,
+        "avg_order_value": 406.68,
+        "n_distinct_products": 423.0,
+        "return_rate": 0.1775,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 6.0,
+        "cadence_cv": 1.2857,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 14.434782608695652,
+        "overdue_ratio": 20.990963855421686,
+        "expected_purchases_h": 6.234939759036145,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 288.0,
+        "n_purchase_days": 61.0,
+        "tenure_days": 639.0,
+        "total_spend": 914.3,
+        "avg_order_value": 185.95,
+        "n_distinct_products": 303.0,
+        "return_rate": 0.2944,
+        "spend_90d": 600.81,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 5.0,
+        "cadence_cv": 0.8504,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 41.142857142857146,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 600.81
+      }
+    },
+    {
+      "base": {
+        "recency_days": 10.0,
+        "n_purchase_days": 43.0,
+        "tenure_days": 10.0,
+        "total_spend": 12178.29,
+        "avg_order_value": 107.05,
+        "n_distinct_products": 19.0,
+        "return_rate": 0.02,
+        "spend_90d": 929.05,
+        "spend_prev_90d": 317.04,
+        "purchases_90d": 7.0,
+        "cadence_cv": 0.4167,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 1.4285714285714286,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 2.9211734373034837
+      }
+    },
+    {
+      "base": {
+        "recency_days": 35.0,
+        "n_purchase_days": 56.0,
+        "tenure_days": 493.0,
+        "total_spend": 4161.59,
+        "avg_order_value": 44.91,
+        "n_distinct_products": 410.0,
+        "return_rate": 0.2254,
+        "spend_90d": 286.24,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 1.0,
+        "cadence_cv": 1.0412,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 8.327272727272728,
+        "overdue_ratio": 4.203056768558952,
+        "expected_purchases_h": 10.807860262008733,
+        "spend_trend": 286.24
+      }
+    },
+    {
+      "base": {
+        "recency_days": 182.0,
+        "n_purchase_days": 70.0,
+        "tenure_days": 438.0,
+        "total_spend": 1072.55,
+        "avg_order_value": 136.69,
+        "n_distinct_products": 473.0,
+        "return_rate": 0.1484,
+        "spend_90d": 244.82,
+        "spend_prev_90d": 125.48,
+        "purchases_90d": 0.0,
+        "cadence_cv": 1.3389,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 26.0,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 1.9356419987349778
+      }
+    },
+    {
+      "base": {
+        "recency_days": 311.0,
+        "n_purchase_days": 25.0,
+        "tenure_days": 688.0,
+        "total_spend": 1466.79,
+        "avg_order_value": 143.89,
+        "n_distinct_products": 57.0,
+        "return_rate": 0.2287,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 2.0,
+        "cadence_cv": 0.6707,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 15.708333333333334,
+        "overdue_ratio": 19.79840848806366,
+        "expected_purchases_h": 5.729442970822281,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 103.0,
+        "n_purchase_days": 76.0,
+        "tenure_days": 146.0,
+        "total_spend": 873.4,
+        "avg_order_value": 291.72,
+        "n_distinct_products": 27.0,
+        "return_rate": 0.081,
+        "spend_90d": 409.47,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 9.0,
+        "cadence_cv": 0.7996,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 14.714285714285714,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 409.47
+      }
+    },
+    {
+      "base": {
+        "recency_days": 211.0,
+        "n_purchase_days": 73.0,
+        "tenure_days": 211.0,
+        "total_spend": 1717.03,
+        "avg_order_value": 150.94,
+        "n_distinct_products": 210.0,
+        "return_rate": 0.275,
+        "spend_90d": 24.32,
+        "spend_prev_90d": 7082.24,
+        "purchases_90d": 4.0,
+        "cadence_cv": 0.2169,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 30.142857142857142,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.003433457005551132
+      }
+    },
+    {
+      "base": {
+        "recency_days": 141.0,
+        "n_purchase_days": 77.0,
+        "tenure_days": 141.0,
+        "total_spend": 1991.92,
+        "avg_order_value": 447.21,
+        "n_distinct_products": 155.0,
+        "return_rate": 0.2444,
+        "spend_90d": 121.45,
+        "spend_prev_90d": 636.76,
+        "purchases_90d": 8.0,
+        "cadence_cv": 0.3011,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 20.142857142857142,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.19043213748118415
+      }
+    },
+    {
+      "base": {
+        "recency_days": 130.0,
+        "n_purchase_days": 1.0,
+        "tenure_days": 605.0,
+        "total_spend": 1898.02,
+        "avg_order_value": 145.97,
+        "n_distinct_products": 357.0,
+        "return_rate": 0.0428,
+        "spend_90d": 10.21,
+        "spend_prev_90d": 995.45,
+        "purchases_90d": 6.0,
+        "cadence_cv": 1.1761,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 475.0,
+        "overdue_ratio": 0.2736842105263158,
+        "expected_purchases_h": 0.18947368421052632,
+        "spend_trend": 0.010246374629936274
+      }
+    },
+    {
+      "base": {
+        "recency_days": 138.0,
+        "n_purchase_days": 14.0,
+        "tenure_days": 365.0,
+        "total_spend": 2217.53,
+        "avg_order_value": 348.74,
+        "n_distinct_products": 170.0,
+        "return_rate": 0.0004,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 21.66,
+        "purchases_90d": 3.0,
+        "cadence_cv": 1.1223,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 17.46153846153846,
+        "overdue_ratio": 7.903083700440529,
+        "expected_purchases_h": 5.154185022026432,
+        "spend_trend": 0.0
+      }
+    },
+    {
+      "base": {
+        "recency_days": 118.0,
+        "n_purchase_days": 40.0,
+        "tenure_days": 118.0,
+        "total_spend": 327.35,
+        "avg_order_value": 83.88,
+        "n_distinct_products": 101.0,
+        "return_rate": 0.0263,
+        "spend_90d": 57.33,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 8.0,
+        "cadence_cv": 0.2382,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 16.857142857142858,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 57.33
+      }
+    },
+    {
+      "base": {
+        "recency_days": 328.0,
+        "n_purchase_days": 53.0,
+        "tenure_days": 328.0,
+        "total_spend": 3012.2,
+        "avg_order_value": 90.85,
+        "n_distinct_products": 177.0,
+        "return_rate": 0.0322,
+        "spend_90d": 279.57,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 0.0,
+        "cadence_cv": 0.8025,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 46.857142857142854,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 279.57
+      }
+    },
+    {
+      "base": {
+        "recency_days": 40.0,
+        "n_purchase_days": 1.0,
+        "tenure_days": 40.0,
+        "total_spend": 532.43,
+        "avg_order_value": 129.9,
+        "n_distinct_products": 148.0,
+        "return_rate": 0.0027,
+        "spend_90d": 73.6,
+        "spend_prev_90d": 860.72,
+        "purchases_90d": 2.0,
+        "cadence_cv": 1.0115,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 0.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 5.714285714285714,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.08541057420043632
+      }
+    },
+    {
+      "base": {
+        "recency_days": 1.0,
+        "n_purchase_days": 5.0,
+        "tenure_days": 3.0,
+        "total_spend": 1652.59,
+        "avg_order_value": 66.55,
+        "n_distinct_products": 229.0,
+        "return_rate": 0.2161,
+        "spend_90d": 109.76,
+        "spend_prev_90d": 17.17,
+        "purchases_90d": 7.0,
+        "cadence_cv": 1.9805,
+        "bought_same_window_last_year": 1.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 0.14285714285714285,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 6.040726472206934
+      }
+    },
+    {
+      "base": {
+        "recency_days": 245.0,
+        "n_purchase_days": 71.0,
+        "tenure_days": 673.0,
+        "total_spend": 2216.8,
+        "avg_order_value": 521.43,
+        "n_distinct_products": 315.0,
+        "return_rate": 0.1215,
+        "spend_90d": 0.0,
+        "spend_prev_90d": 0.0,
+        "purchases_90d": 0.0,
+        "cadence_cv": 0.3286,
+        "bought_same_window_last_year": 0.0,
+        "is_uk": 1.0
+      },
+      "derived": {
+        "cadence_days": 7.0,
+        "overdue_ratio": 35.0,
+        "expected_purchases_h": 12.857142857142858,
+        "spend_trend": 0.0
+      }
+    }
+  ]
+}

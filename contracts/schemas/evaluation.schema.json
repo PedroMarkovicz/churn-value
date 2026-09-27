@@ -1,0 +1,591 @@
+{
+  "$defs": {
+    "Curves": {
+      "additionalProperties": false,
+      "properties": {
+        "gains": {
+          "$ref": "#/$defs/GainsCurve"
+        },
+        "pr": {
+          "$ref": "#/$defs/PRCurve"
+        },
+        "reliability": {
+          "items": {
+            "$ref": "#/$defs/ReliabilityBin"
+          },
+          "title": "Reliability",
+          "type": "array"
+        },
+        "roc": {
+          "$ref": "#/$defs/ROCCurve"
+        }
+      },
+      "required": [
+        "pr",
+        "roc",
+        "gains",
+        "reliability"
+      ],
+      "title": "Curves",
+      "type": "object"
+    },
+    "DriftRow": {
+      "additionalProperties": false,
+      "properties": {
+        "cutoff": {
+          "format": "date",
+          "title": "Cutoff",
+          "type": "string"
+        },
+        "feature": {
+          "title": "Feature",
+          "type": "string"
+        },
+        "psi": {
+          "title": "Psi",
+          "type": "number"
+        }
+      },
+      "required": [
+        "cutoff",
+        "feature",
+        "psi"
+      ],
+      "title": "DriftRow",
+      "type": "object"
+    },
+    "EconomicParams": {
+      "additionalProperties": false,
+      "description": "User-configurable business assumptions. Defaults live in configs/default.yaml.",
+      "properties": {
+        "contact_cost": {
+          "minimum": 0,
+          "title": "Contact Cost",
+          "type": "number"
+        },
+        "gamma": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Gamma",
+          "type": "number"
+        },
+        "lambda_a": {
+          "minimum": 1,
+          "title": "Lambda A",
+          "type": "number"
+        },
+        "lambda_c": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Lambda C",
+          "type": "number"
+        },
+        "margin": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Margin",
+          "type": "number"
+        },
+        "value_horizon_days": {
+          "exclusiveMinimum": 0,
+          "title": "Value Horizon Days",
+          "type": "number"
+        }
+      },
+      "required": [
+        "margin",
+        "lambda_c",
+        "lambda_a",
+        "gamma",
+        "contact_cost",
+        "value_horizon_days"
+      ],
+      "title": "EconomicParams",
+      "type": "object"
+    },
+    "Estimate": {
+      "additionalProperties": false,
+      "properties": {
+        "ci_high": {
+          "title": "Ci High",
+          "type": "number"
+        },
+        "ci_low": {
+          "title": "Ci Low",
+          "type": "number"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "value",
+        "ci_low",
+        "ci_high"
+      ],
+      "title": "Estimate",
+      "type": "object"
+    },
+    "GainsCurve": {
+      "additionalProperties": false,
+      "properties": {
+        "captured": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Captured",
+          "type": "array"
+        },
+        "fraction": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Fraction",
+          "type": "array"
+        }
+      },
+      "required": [
+        "fraction",
+        "captured"
+      ],
+      "title": "GainsCurve",
+      "type": "object"
+    },
+    "IsotonicSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "const": "isotonic",
+          "title": "Method",
+          "type": "string"
+        },
+        "x": {
+          "items": {
+            "type": "number"
+          },
+          "minItems": 1,
+          "title": "X",
+          "type": "array"
+        },
+        "y": {
+          "items": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "type": "number"
+          },
+          "minItems": 1,
+          "title": "Y",
+          "type": "array"
+        }
+      },
+      "required": [
+        "method",
+        "x",
+        "y"
+      ],
+      "title": "IsotonicSpec",
+      "type": "object"
+    },
+    "ModelEvaluation": {
+      "additionalProperties": false,
+      "properties": {
+        "calibrator": {
+          "discriminator": {
+            "mapping": {
+              "isotonic": "#/$defs/IsotonicSpec",
+              "platt": "#/$defs/PlattSpec"
+            },
+            "propertyName": "method"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/IsotonicSpec"
+            },
+            {
+              "$ref": "#/$defs/PlattSpec"
+            }
+          ],
+          "title": "Calibrator"
+        },
+        "curves": {
+          "$ref": "#/$defs/Curves"
+        },
+        "emp_per_customer": {
+          "$ref": "#/$defs/Estimate"
+        },
+        "mean_p": {
+          "title": "Mean P",
+          "type": "number"
+        },
+        "metrics": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Estimate"
+          },
+          "title": "Metrics",
+          "type": "object"
+        }
+      },
+      "required": [
+        "calibrator",
+        "mean_p",
+        "metrics",
+        "emp_per_customer",
+        "curves"
+      ],
+      "title": "ModelEvaluation",
+      "type": "object"
+    },
+    "PRCurve": {
+      "additionalProperties": false,
+      "properties": {
+        "precision": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Precision",
+          "type": "array"
+        },
+        "recall": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Recall",
+          "type": "array"
+        }
+      },
+      "required": [
+        "recall",
+        "precision"
+      ],
+      "title": "PRCurve",
+      "type": "object"
+    },
+    "PlattSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "intercept": {
+          "title": "Intercept",
+          "type": "number"
+        },
+        "method": {
+          "const": "platt",
+          "title": "Method",
+          "type": "string"
+        },
+        "slope": {
+          "title": "Slope",
+          "type": "number"
+        }
+      },
+      "required": [
+        "method",
+        "slope",
+        "intercept"
+      ],
+      "title": "PlattSpec",
+      "type": "object"
+    },
+    "PolicyRow": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_profit": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Expected Profit"
+        },
+        "n_contacted": {
+          "title": "N Contacted",
+          "type": "integer"
+        },
+        "policy": {
+          "title": "Policy",
+          "type": "string"
+        },
+        "random_same_k_profit": {
+          "title": "Random Same K Profit",
+          "type": "number"
+        },
+        "realized_profit": {
+          "title": "Realized Profit",
+          "type": "number"
+        },
+        "realized_profit_ci_high": {
+          "title": "Realized Profit Ci High",
+          "type": "number"
+        },
+        "realized_profit_ci_low": {
+          "title": "Realized Profit Ci Low",
+          "type": "number"
+        },
+        "share_of_oracle": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Share Of Oracle"
+        }
+      },
+      "required": [
+        "policy",
+        "n_contacted",
+        "expected_profit",
+        "realized_profit",
+        "share_of_oracle",
+        "random_same_k_profit",
+        "realized_profit_ci_low",
+        "realized_profit_ci_high"
+      ],
+      "title": "PolicyRow",
+      "type": "object"
+    },
+    "Population": {
+      "additionalProperties": false,
+      "properties": {
+        "churn_rate": {
+          "title": "Churn Rate",
+          "type": "number"
+        },
+        "n_customers": {
+          "title": "N Customers",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "n_customers",
+        "churn_rate"
+      ],
+      "title": "Population",
+      "type": "object"
+    },
+    "ROCCurve": {
+      "additionalProperties": false,
+      "properties": {
+        "fpr": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Fpr",
+          "type": "array"
+        },
+        "tpr": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Tpr",
+          "type": "array"
+        }
+      },
+      "required": [
+        "fpr",
+        "tpr"
+      ],
+      "title": "ROCCurve",
+      "type": "object"
+    },
+    "ReliabilityBin": {
+      "additionalProperties": false,
+      "properties": {
+        "bin_high": {
+          "title": "Bin High",
+          "type": "number"
+        },
+        "bin_low": {
+          "title": "Bin Low",
+          "type": "number"
+        },
+        "churn_rate": {
+          "title": "Churn Rate",
+          "type": "number"
+        },
+        "mean_p": {
+          "title": "Mean P",
+          "type": "number"
+        },
+        "n": {
+          "title": "N",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "bin_low",
+        "bin_high",
+        "mean_p",
+        "churn_rate",
+        "n"
+      ],
+      "title": "ReliabilityBin",
+      "type": "object"
+    },
+    "Split": {
+      "additionalProperties": false,
+      "properties": {
+        "calibration": {
+          "format": "date",
+          "title": "Calibration",
+          "type": "string"
+        },
+        "test": {
+          "format": "date",
+          "title": "Test",
+          "type": "string"
+        },
+        "train": {
+          "items": {
+            "format": "date",
+            "type": "string"
+          },
+          "title": "Train",
+          "type": "array"
+        }
+      },
+      "required": [
+        "train",
+        "calibration",
+        "test"
+      ],
+      "title": "Split",
+      "type": "object"
+    },
+    "StabilityRow": {
+      "additionalProperties": false,
+      "properties": {
+        "brier": {
+          "title": "Brier",
+          "type": "number"
+        },
+        "churn_rate": {
+          "title": "Churn Rate",
+          "type": "number"
+        },
+        "cutoff": {
+          "format": "date",
+          "title": "Cutoff",
+          "type": "string"
+        },
+        "expected_profit": {
+          "title": "Expected Profit",
+          "type": "number"
+        },
+        "mean_p": {
+          "title": "Mean P",
+          "type": "number"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "n_contacted": {
+          "title": "N Contacted",
+          "type": "integer"
+        },
+        "n_customers": {
+          "title": "N Customers",
+          "type": "integer"
+        },
+        "pr_auc": {
+          "title": "Pr Auc",
+          "type": "number"
+        },
+        "realized_profit": {
+          "title": "Realized Profit",
+          "type": "number"
+        },
+        "roc_auc": {
+          "title": "Roc Auc",
+          "type": "number"
+        },
+        "role": {
+          "enum": [
+            "calibration",
+            "test",
+            "out_of_time"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cutoff",
+        "role",
+        "model",
+        "n_customers",
+        "churn_rate",
+        "mean_p",
+        "roc_auc",
+        "pr_auc",
+        "brier",
+        "n_contacted",
+        "expected_profit",
+        "realized_profit"
+      ],
+      "title": "StabilityRow",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "calibration_population": {
+      "$ref": "#/$defs/Population"
+    },
+    "drift": {
+      "items": {
+        "$ref": "#/$defs/DriftRow"
+      },
+      "title": "Drift",
+      "type": "array"
+    },
+    "economics": {
+      "$ref": "#/$defs/EconomicParams"
+    },
+    "models": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ModelEvaluation"
+      },
+      "title": "Models",
+      "type": "object"
+    },
+    "policies": {
+      "items": {
+        "$ref": "#/$defs/PolicyRow"
+      },
+      "title": "Policies",
+      "type": "array"
+    },
+    "split": {
+      "$ref": "#/$defs/Split"
+    },
+    "stability": {
+      "items": {
+        "$ref": "#/$defs/StabilityRow"
+      },
+      "title": "Stability",
+      "type": "array"
+    },
+    "test_population": {
+      "$ref": "#/$defs/Population"
+    }
+  },
+  "required": [
+    "split",
+    "test_population",
+    "calibration_population",
+    "economics",
+    "models",
+    "policies",
+    "stability",
+    "drift"
+  ],
+  "title": "EvaluationFile",
+  "type": "object"
+}

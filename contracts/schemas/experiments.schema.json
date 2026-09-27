@@ -1,0 +1,81 @@
+{
+  "$defs": {
+    "RunSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "metrics": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Metrics",
+          "type": "object"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Params",
+          "type": "object"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "title": "Started At",
+          "type": "string"
+        },
+        "tags": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "object"
+        },
+        "trial_cv_log_loss": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Trial Cv Log Loss",
+          "type": "array"
+        }
+      },
+      "required": [
+        "run_id",
+        "model",
+        "started_at",
+        "tags",
+        "params",
+        "metrics",
+        "trial_cv_log_loss"
+      ],
+      "title": "RunSummary",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "experiment": {
+      "title": "Experiment",
+      "type": "string"
+    },
+    "runs": {
+      "items": {
+        "$ref": "#/$defs/RunSummary"
+      },
+      "title": "Runs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "experiment",
+    "runs"
+  ],
+  "title": "ExperimentsFile",
+  "type": "object"
+}

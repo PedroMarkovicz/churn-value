@@ -1,0 +1,68 @@
+{
+  "$defs": {
+    "ModelCase": {
+      "additionalProperties": false,
+      "properties": {
+        "features": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Features",
+          "type": "array"
+        },
+        "p": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "P",
+          "type": "number"
+        },
+        "score": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "features",
+        "score",
+        "p"
+      ],
+      "title": "ModelCase",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "cases": {
+      "items": {
+        "$ref": "#/$defs/ModelCase"
+      },
+      "title": "Cases",
+      "type": "array"
+    },
+    "model": {
+      "title": "Model",
+      "type": "string"
+    },
+    "order": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Order",
+      "type": "array"
+    },
+    "tolerance": {
+      "title": "Tolerance",
+      "type": "number"
+    }
+  },
+  "required": [
+    "model",
+    "tolerance",
+    "order",
+    "cases"
+  ],
+  "title": "ModelGolden",
+  "type": "object"
+}

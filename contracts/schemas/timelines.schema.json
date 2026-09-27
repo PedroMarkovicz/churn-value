@@ -1,0 +1,60 @@
+{
+  "$defs": {
+    "Timeline": {
+      "additionalProperties": false,
+      "properties": {
+        "customer_id": {
+          "title": "Customer Id",
+          "type": "integer"
+        },
+        "days": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Days",
+          "type": "array"
+        },
+        "revenue": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Revenue",
+          "type": "array"
+        }
+      },
+      "required": [
+        "customer_id",
+        "days",
+        "revenue"
+      ],
+      "title": "Timeline",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "cutoff": {
+      "format": "date",
+      "title": "Cutoff",
+      "type": "string"
+    },
+    "horizon_days": {
+      "title": "Horizon Days",
+      "type": "integer"
+    },
+    "timelines": {
+      "items": {
+        "$ref": "#/$defs/Timeline"
+      },
+      "title": "Timelines",
+      "type": "array"
+    }
+  },
+  "required": [
+    "cutoff",
+    "horizon_days",
+    "timelines"
+  ],
+  "title": "TimelinesFile",
+  "type": "object"
+}

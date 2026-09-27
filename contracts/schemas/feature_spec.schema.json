@@ -1,0 +1,118 @@
+{
+  "$defs": {
+    "FeatureEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "dtype": {
+          "enum": [
+            "int",
+            "float"
+          ],
+          "title": "Dtype",
+          "type": "string"
+        },
+        "editable": {
+          "title": "Editable",
+          "type": "boolean"
+        },
+        "group": {
+          "enum": [
+            "base",
+            "derived",
+            "context"
+          ],
+          "title": "Group",
+          "type": "string"
+        },
+        "max": {
+          "title": "Max",
+          "type": "number"
+        },
+        "min": {
+          "title": "Min",
+          "type": "number"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "group",
+        "unit",
+        "description",
+        "editable",
+        "dtype",
+        "min",
+        "max"
+      ],
+      "title": "FeatureEntry",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "cadence_floor_days": {
+      "title": "Cadence Floor Days",
+      "type": "number"
+    },
+    "context": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "title": "Context",
+      "type": "object"
+    },
+    "features": {
+      "items": {
+        "$ref": "#/$defs/FeatureEntry"
+      },
+      "title": "Features",
+      "type": "array"
+    },
+    "horizon_days": {
+      "title": "Horizon Days",
+      "type": "integer"
+    },
+    "onnx_input": {
+      "title": "Onnx Input",
+      "type": "string"
+    },
+    "onnx_output": {
+      "title": "Onnx Output",
+      "type": "string"
+    },
+    "order": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Order",
+      "type": "array"
+    },
+    "spend_trend_eps": {
+      "title": "Spend Trend Eps",
+      "type": "number"
+    }
+  },
+  "required": [
+    "order",
+    "features",
+    "horizon_days",
+    "cadence_floor_days",
+    "spend_trend_eps",
+    "context",
+    "onnx_input",
+    "onnx_output"
+  ],
+  "title": "FeatureSpec",
+  "type": "object"
+}
