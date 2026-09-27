@@ -8,6 +8,7 @@ import pytest
 
 from churnvalue.config import SnapshotConfig
 from churnvalue.data.clean import clean_transactions
+from churnvalue.snapshots import build_snapshots
 
 START = pd.Timestamp("2009-12-01")
 END = pd.Timestamp("2011-12-09")
@@ -85,4 +86,15 @@ def tx_frame(rows: list[tuple[int, str, str, float, bool]]) -> pd.DataFrame:
             "is_return": [r[4] for r in rows],
             "country": ["United Kingdom"] * len(rows),
         }
+    )
+
+
+@pytest.fixture(scope="session")
+def snapshots_synthetic(tx_synthetic: pd.DataFrame) -> pd.DataFrame:
+    """16 labelled monthly snapshots of the synthetic customers (about 120-200 per cutoff)."""
+    return build_snapshots(
+        tx_synthetic,
+        SnapshotConfig(
+            horizon_days=90, eligibility_f=0.5, min_history_months=6, cadence_floor_days=7.0
+        ),
     )
