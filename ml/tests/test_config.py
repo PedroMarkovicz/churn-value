@@ -17,6 +17,10 @@ def test_default_config_loads_with_spec_values():
     assert cfg.economics.lambda_a == 10.0
     assert cfg.economics.gamma == 0.30
     assert cfg.data.sha256 == "572e36277c2390fbfde10664750731e0a86f55e33470d91919085f0408e67bfb"
+    assert cfg.training.n_trials == 40
+    assert cfg.training.deployed_model == "lightgbm_seasonal"
+    assert cfg.tracking.uri == "sqlite:///mlflow.db"
+    assert cfg.contracts_dir == Path("../contracts")
 
 
 def _write(tmp_path: Path, mutate) -> Path:

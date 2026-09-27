@@ -27,4 +27,18 @@ evaluation:
   emp_gamma_alpha: 6.0
   emp_gamma_beta: 14.0
 
+training:
+  n_trials: 40
+  seed: 42
+  min_train_cutoffs: 3
+  deployed_model: lightgbm_seasonal
+
+tracking:
+  uri: sqlite:///mlflow.db
+  experiment: churn-value
+
 reports_dir: reports
+models_dir: models
+artifacts_dir: artifacts
+contracts_dir: ../contracts
+model_card_path: ../docs/model-card.md

@@ -39,13 +39,31 @@ class EvaluationConfig(_Frozen):
     emp_gamma_beta: float = Field(gt=0)
 
 
+class TrainingConfig(_Frozen):
+    n_trials: int = Field(ge=1)
+    seed: int
+    min_train_cutoffs: int = Field(ge=1)
+    deployed_model: str
+
+
+class TrackingConfig(_Frozen):
+    uri: str
+    experiment: str
+
+
 class Config(_Frozen):
     data: DataConfig
     snapshots: SnapshotConfig
     splits: SplitConfig
     economics: EconomicParams
     evaluation: EvaluationConfig
+    training: TrainingConfig
+    tracking: TrackingConfig
     reports_dir: Path
+    models_dir: Path
+    artifacts_dir: Path
+    contracts_dir: Path
+    model_card_path: Path
 
 
 DEFAULT_CONFIG_PATH = Path("configs/default.yaml")
