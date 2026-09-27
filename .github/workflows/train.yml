@@ -20,6 +20,8 @@ jobs:
         working-directory: ml
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false # gh uses GH_TOKEN; keep the write token out of .git/config
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
