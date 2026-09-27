@@ -5,8 +5,17 @@ import numpy as np
 import pytest
 
 from churnvalue.config import load_config
+from churnvalue.contract import EvaluationFile
 from churnvalue.economics import EconomicParams, customer_economics
-from churnvalue.evaluate import evaluate_baselines, policy_table
+from churnvalue.evaluate import (
+    BASELINE_SCORERS,
+    calibrate_scorers,
+    evaluate_baselines,
+    evaluate_models,
+    policy_table,
+    supervised_scorer,
+)
+from churnvalue.models import CUSTOMER_FEATURES, SUPERVISED
 from churnvalue.snapshots import build_snapshots
 
 PARAMS = EconomicParams(
@@ -69,3 +78,36 @@ def test_evaluate_baselines_end_to_end_on_synthetic(tx_synthetic):
         assert row["realized_profit_ci_low"] <= row["realized_profit_ci_high"]
     names = [r["policy"] for r in report["policies"]]
     assert names == ["do_nothing", "contact_all", "cadence_rule", "bgnbd", "oracle"]
+
+
+def test_evaluate_models_adds_curves_stability_and_drift(trained_synthetic, snapshots_synthetic):
+    cfg, estimators = trained_synthetic
+    spec = SUPERVISED["lightgbm_seasonal"]
+    scorers = {**BASELINE_SCORERS, spec.name: supervised_scorer(estimators[spec.name], spec)}
+    report = evaluate_models(snapshots_synthetic, scorers, cfg)
+    EvaluationFile.model_validate(report)  # the web contract
+    json.dumps(report, allow_nan=False)
+    assert list(report["models"]) == ["cadence_rule", "bgnbd", "lightgbm_seasonal"]
+    curves = report["models"]["lightgbm_seasonal"]["curves"]
+    assert set(curves) == {"pr", "roc", "gains", "reliability"}
+    # Six cutoffs follow the training window: calibration, test and four out-of-time ones.
+    roles = [r["role"] for r in report["stability"] if r["model"] == "lightgbm_seasonal"]
+    assert roles.count("calibration") == 1 and roles.count("test") == 1
+    assert roles.count("out_of_time") == 4
+    at_calibration = next(
+        r for r in report["stability"] if r["role"] == "calibration" and r["model"] == "bgnbd"
+    )
+    # Calibrated on that very cutoff, the mean probability matches its churn rate.
+    assert at_calibration["mean_p"] == pytest.approx(at_calibration["churn_rate"], abs=0.02)
+    features = {r["feature"] for r in report["drift"]}
+    assert features == set(CUSTOMER_FEATURES)
+    assert len(report["drift"]) == 16 * len(CUSTOMER_FEATURES)
+
+
+def test_calibrated_scorer_applies_its_calibrator(snapshots_synthetic):
+    frame = snapshots_synthetic.loc[snapshots_synthetic["cutoff"] == "2011-06-10"]
+    models = calibrate_scorers(BASELINE_SCORERS, frame, seed=0)
+    p = models["bgnbd"].predict(frame)
+    raw = BASELINE_SCORERS["bgnbd"](frame)
+    assert np.array_equal(p, models["bgnbd"].calibrator.transform(raw))
+    assert ((p >= 0) & (p <= 1)).all()
