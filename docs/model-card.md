@@ -7,7 +7,7 @@
 - **Deployed model:** `lightgbm_seasonal` — LightGBM, tuned with Optuna under rolling-origin cross-validation (mean validation log loss 0.6741), then Platt calibration on the 2011-06-10 cutoff.
 - **Inputs:** 19 features computed at the cutoff: base customer history, arithmetic derived features and the cutoff month (context).
 - **Output:** calibrated probability that the customer makes no purchase in the next 90 days, used to rank customers by expected retention profit.
-- **Provenance:** code `92253155cd30811829a063a6dfb12b607bf7b553`, data SHA-256 `572e36277c23…`, config SHA-256 `b94e3e86505d…`, contract 1.0.0, created 2026-09-27.
+- **Provenance:** code `9f11c8a947f9471ebbde04e37e0fcc328b8728f0`, data SHA-256 `572e36277c23…`, config SHA-256 `b94e3e86505d…`, contract 1.0.0, created 2026-09-27.
 
 ## Intended use
 
