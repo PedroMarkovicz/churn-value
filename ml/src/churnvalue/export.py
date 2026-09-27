@@ -88,9 +88,14 @@ def onnx_churn_probability(model: bytes, x: np.ndarray) -> np.ndarray:
 
 
 def feature_spec(snapshots: pd.DataFrame, cfg: Config, spec: ModelSpec) -> FeatureSpec:
-    """Feature order, catalogue metadata and valid ranges (from the training cutoffs)."""
+    """Feature order, catalogue metadata and valid ranges.
+
+    Ranges span the training cutoffs and the served (test) cutoff: history-length features
+    such as tenure grow with the data, so training-only ranges would exclude the very
+    customers the web app shows.
+    """
     split = temporal_split(snapshots, cfg)
-    train = snapshots.loc[snapshots["cutoff"].isin(split.train)]
+    support = snapshots.loc[snapshots["cutoff"].isin([*split.train, split.test])]
     test = snapshots.loc[snapshots["cutoff"] == split.test]
     entries = []
     for name in spec.features:
@@ -103,8 +108,8 @@ def feature_spec(snapshots: pd.DataFrame, cfg: Config, spec: ModelSpec) -> Featu
                 description=info.description,
                 editable=info.editable,
                 dtype="int" if name in INTEGER_FEATURES else "float",
-                min=float(train[name].min()),
-                max=float(train[name].max()),
+                min=float(support[name].min()),
+                max=float(support[name].max()),
             )
         )
     return FeatureSpec(

@@ -158,3 +158,39 @@ def test_model_card_renders_every_section_without_missing_values(exported):
         assert heading in card
     assert re.search(r"\bnan\b", card, flags=re.IGNORECASE) is None
     assert json.dumps(evaluation, allow_nan=False)
+
+
+def test_feature_ranges_cover_every_served_customer(exported):
+    """The web app's sliders use these ranges; a served customer must never fall outside."""
+    cfg, _, _, _ = exported
+    spec = FeatureSpec.model_validate_json(_read(cfg, "feature_spec.json"))
+    customers = CustomersFile.model_validate_json(_read(cfg, "customers.json"))
+    for entry in spec.features:
+        values = [c.features[entry.name] for c in customers.customers]
+        assert entry.min <= min(values), entry.name
+        assert max(values) <= entry.max, entry.name
+
+
+def test_export_refuses_when_onnx_and_native_disagree(
+    exported, snapshots_synthetic, tx_synthetic, monkeypatch, tmp_path
+):
+    cfg, estimators, evaluation, _ = exported
+    fresh = cfg.model_copy(update={"artifacts_dir": tmp_path / "artifacts"})
+    scorers = {
+        **BASELINE_SCORERS,
+        **{n: supervised_scorer(estimators[n], s) for n, s in SUPERVISED.items()},
+    }
+    monkeypatch.setattr(
+        "churnvalue.export.onnx_churn_probability", lambda model, x: np.full(len(x), 0.5)
+    )
+    with pytest.raises(RuntimeError, match="ONNX"):
+        export_artifacts(
+            fresh,
+            snapshots_synthetic,
+            tx_synthetic,
+            scorers,
+            estimators["lightgbm_seasonal"],
+            evaluation,
+            EXPERIMENTS,
+        )
+    assert not fresh.artifacts_dir.exists()  # nothing written, not even a partial set
