@@ -103,6 +103,18 @@ def test_context_features_encode_cutoff_month():
     assert out["cutoff_month_cos"].tolist() == pytest.approx([0.0, 0.0], abs=1e-12)
 
 
+@pytest.mark.parametrize("month", range(1, 13))
+def test_context_features_are_exact_so_float32_cannot_flip_a_split(month: int):
+    frame = pd.DataFrame({"x": [1]})
+    out = add_context_features(frame, pd.Timestamp(2011, month, 10))
+    exact = {0.0, 0.5, -0.5, 1.0, -1.0, 0.866025403784, -0.866025403784}
+    for column in CONTEXT_FEATURES:
+        value = out[column].iat[0]
+        assert value in exact
+        assert float(np.float32(value)) == pytest.approx(value, abs=1e-7)
+        assert str(value) != "-0.0"
+
+
 def test_customer_with_only_returns_has_no_feature_row():
     tx = tx_frame(
         [
