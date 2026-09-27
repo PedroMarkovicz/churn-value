@@ -18,6 +18,7 @@ are always shown, bars are sorted, and there are no pies, no dual axes, no 3D.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import matplotlib as mpl
 import matplotlib.dates as mdates
@@ -41,6 +42,13 @@ MODEL_COLORS = dict(
     zip(MODEL_ORDER, ["#2A78D6", "#EB6834", "#1BAF7A", "#EDA100", "#E87BA4"], strict=True)
 )
 ORACLE_COLOR = INK
+MODEL_LABELS = {
+    "cadence_rule": "cadence rule",
+    "bgnbd": "BG/NBD",
+    "logreg": "logistic regression",
+    "lightgbm": "LightGBM",
+    "lightgbm_seasonal": "LightGBM + season",
+}
 
 SEQUENTIAL = LinearSegmentedColormap.from_list(
     "churnvalue_sequential", ["#EEF4FC", "#9EC5F4", "#3987E5", "#1C5CAB", "#0D366B"]
@@ -159,6 +167,30 @@ def annotate_counts(ax: Axes, positions, counts, y: float = 0.98, fontsize: floa
             color=MUTED,
             transform=ax.get_xaxis_transform(),
         )
+
+
+def spread_positions(values: dict[str, float], min_gap: float) -> dict[str, float]:
+    """Label y-positions near ``values`` but at least ``min_gap`` apart, order preserved."""
+    ordered = sorted(values.items(), key=lambda item: item[1])
+    placed: list[float] = []
+    for _, value in ordered:
+        placed.append(value if not placed else max(value, placed[-1] + min_gap))
+    # Centre the block on the data so labels move as little as possible.
+    shift = (sum(v for _, v in ordered) - sum(placed)) / len(placed) if placed else 0.0
+    return {name: y + shift for (name, _), y in zip(ordered, placed, strict=True)}
+
+
+def direct_labels(
+    ax: Axes,
+    x: Any,  # a number or a date, in data coordinates
+    values: dict[str, float],
+    labels: dict[str, str],
+    min_gap: float,
+    fontsize: float = 8.0,
+) -> None:
+    """Label line ends at ``x`` in ink (never the series colour), nudged apart vertically."""
+    for key, y in spread_positions(values, min_gap).items():
+        ax.text(x, y, f" {labels[key]}", va="center", ha="left", fontsize=fontsize, color=INK)
 
 
 def gbp(value: float, decimals: int = 0) -> str:

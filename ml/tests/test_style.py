@@ -22,6 +22,17 @@ def test_model_palette_is_fixed_and_complete():
     assert len(set(style.MODEL_COLORS.values())) == len(style.MODEL_ORDER)
     assert style.CHURN not in style.MODEL_COLORS.values()
     assert style.ACCENT not in style.MODEL_COLORS.values()
+    assert list(style.MODEL_LABELS) == style.MODEL_ORDER
+
+
+def test_spread_positions_keeps_order_and_gap():
+    placed = style.spread_positions({"a": 0.50, "b": 0.51, "c": 0.90}, min_gap=0.05)
+    assert placed["a"] < placed["b"] < placed["c"]
+    assert placed["b"] - placed["a"] >= 0.05 - 1e-12
+    assert placed["c"] - placed["b"] >= 0.05 - 1e-12
+    # The block is centred on the data: labels move as little as possible on average.
+    assert sum(placed.values()) == pytest.approx(0.50 + 0.51 + 0.90)
+    assert style.spread_positions({}, 0.1) == {}
 
 
 def test_save_fig_names_by_stage(tmp_path: Path):
