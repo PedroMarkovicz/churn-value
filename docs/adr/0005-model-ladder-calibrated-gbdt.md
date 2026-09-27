@@ -25,3 +25,9 @@
 **Consequences.**
 - The evaluation framework is built before any complex model.
 - The holdout label window covers the Q4 peak, so seasonality is reported.
+
+**Amendments after Plan 2.**
+- Tuning objective: mean rolling-origin log loss (a proper scoring rule), 40 seeded TPE trials per model. The logistic regression uses `log1p`, standardisation and L2 instead of splines.
+- The deployed model was fixed in advance as LightGBM + season (top rung, servable as ONNX).
+- Test cutoff, default economics: LightGBM + season realizes £23.1k [£15.7k, £31.7k] against £25.6k expected, with mean p 0.316 against an actual 0.308. The plain LightGBM ranks alike but realizes £15.0k against £62.9k expected. Six seeds give £19.4k–£23.1k.
+- Rolling-origin folds cannot judge the month features, because no fold sees its validation month; the cutoffs after training (Apr–Sep 2011) can.

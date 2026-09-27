@@ -92,7 +92,7 @@ The **base** features are editable in the what-if view:
 - `bought_same_window_last_year` (purchase in `(t − 365, t − 365 + H]`)
 - `is_uk`
 
-The **context** features describe the cutoff rather than the customer: `cutoff_month_sin` and `cutoff_month_cos`. They are fixed in the what-if view. The prototype showed that supervised models need them for calibration to carry across seasons (§5.6).
+The **context** features describe the cutoff rather than the customer: `cutoff_month_sin` and `cutoff_month_cos`. They are fixed in the what-if view. Plan 2 confirmed that supervised models need them for calibration to carry across seasons (§5.6). They are rounded to exact values (0, ±0.5, ±0.866025403784, ±1): floating-point noise such as sin(7π/6) = −0.4999999999999997 falls on the other side of a tree split at −0.5 once the ONNX model casts its inputs to float32.
 
 The **derived** features are recomputed in TS for the what-if view and guarded by golden vectors (§7.3):
 
@@ -154,7 +154,7 @@ The profit-vs-%-contacted curve is still plotted. The gap between its empirical 
 | Value horizon `T` | 365 d | 90–730 d | `T = H` reproduces the original window-revenue view |
 | Budget | off | £ or N contacts | |
 
-**Why not the original defaults (λc = 0.25, λa = 5).** The original charged 25 % of the *90-day revenue*. Applied to a 12-month margin V, the same λc is an incentive almost 4× larger. On the test cutoff, the break-even probability is then ≈ 0.53, and even the best untuned model loses money (the oracle makes £74k). With λc = 0.10 and λa = 10, the oracle makes £88.6k, contacting everyone loses £128k, and an untuned seasonal LightGBM made about +£17k in the prototype. The EMP literature uses an incentive of about 5 % of CLV (Verbraken et al., 2013). The original values remain reachable on the sliders.
+**Why not the original defaults (λc = 0.25, λa = 5).** The original charged 25 % of the *90-day revenue*. Applied to a 12-month margin V, the same λc is an incentive almost 4× larger. On the test cutoff, the break-even probability is then ≈ 0.53, and even the best untuned model loses money (the oracle makes £74k). With λc = 0.10 and λa = 10, the oracle makes £88.6k, contacting everyone loses £128k, and the deployed seasonal LightGBM realizes £23.1k (£19.4k–£23.1k across six seeds). The EMP literature uses an incentive of about 5 % of CLV (Verbraken et al., 2013). The original values remain reachable on the sliders.
 
 `γ` is an **assumption, not an estimate**. The dataset has no treatment or control data, so uplift modelling is impossible. The sensitivity page exists because of this.
 
@@ -179,8 +179,10 @@ Each rung must justify its complexity in money:
    - PyMC-Marketing is not used because its PyTensor backend needs a C toolchain on Windows.
    - `lifetimes` is archived and is not used either.
    - Parameter-recovery tests on simulated data validate the implementation.
-3. **Logistic regression** — standardised features, with splines where warranted.
-4. **LightGBM** — tuned with Optuna under temporal CV.
+3. **Logistic regression** — `log1p` of the heavy-tailed features, standardised, L2 penalty tuned.
+4. **LightGBM** on the customer features, and **LightGBM + season**, which adds the two cutoff-month features. Both are tuned with Optuna (40 seeded TPE trials) on the mean log loss of the rolling-origin folds.
+
+The deployed model is fixed in advance as **LightGBM + season**: it is the top rung, and the one the browser what-if can run as ONNX. The test results decide nothing retroactively.
 
 Every model is **calibrated** (isotonic or Platt, chosen on the calibration cutoff).
 
@@ -227,7 +229,16 @@ Metrics and profit per cutoff, plus drift in key features across snapshots (PSI)
   - Pooled calibration does not fix it.
   - Saerens et al. (2002) EM prior adjustment makes it worse, because it assumes p(x|y) is stable.
 
-  In an untuned prototype, **LightGBM with the context features** calibrated to a mean of 0.29 against the actual 0.31. It realized about +£17k at the default scenario. The Model page must therefore show **expected vs realized profit side by side**. Calibration on the test cutoff is a first-class result, not a footnote.
+  Plan 2 measured the fix. All models are calibrated on June 2011 and tested on September 2011 (actual churn 0.308):
+
+  | Model | ROC-AUC | Mean p | Expected profit | Realized profit [95 % CI] |
+  |---|---|---|---|---|
+  | BG/NBD | 0.712 | 0.489 | £125,850 | −£23,067 [−£39.7k, −£7.8k] |
+  | Logistic regression | 0.761 | 0.416 | £67,245 | £8,089 [−£2.4k, £18.8k] |
+  | LightGBM | 0.771 | 0.434 | £62,859 | £14,972 [£5.9k, £25.1k] |
+  | **LightGBM + season** | 0.766 | 0.316 | £25,621 | **£23,139 [£15.7k, £31.7k]** |
+
+  The supervised models rank alike. Only LightGBM + season keeps its calibration after the season turns: its gap stays within ±0.035 on every cutoff after training, against +0.13 for LightGBM and +0.18 for BG/NBD in September. So only its expected profit is close to what it realizes. The logistic regression also sees the month and still drifts (+0.11): knowing the month is necessary, not sufficient. The Model page must therefore show **expected vs realized profit side by side**. Calibration on the test cutoff is a first-class result, not a footnote.
 - **Two root causes found by the notebooks** (04 and 06):
   - **The eligibility window absorbs the lateness signal.** Inside it, churn stays between 34 % and 43 % across overdue-ratio deciles (only the 1 % more than three cycles late reach 48 %), which is why the cadence-rule baseline barely beats random (ROC-AUC 0.55). The model has to find its signal in frequency and recent activity instead.
   - **The BG/NBD score drifts by construction.** Refitted at each cutoff, its purchase rate drifts down slowly (−20 %) while its estimated dropout probability grows from ≈ 0 to 6 % per purchase as history accumulates, so the same customer's P(alive) changes between cutoffs for reasons unrelated to their behaviour.
@@ -236,6 +247,10 @@ Metrics and profit per cutoff, plus drift in key features across snapshots (PSI)
 - Wholesale customer heterogeneity.
 - The value of γ is assumed.
 - The `CAC = λa·λc·V` coupling is inherited from the original project and made explicit in the UI.
+- **Rolling-origin folds cannot test the season features:** no fold has seen its validation month, and both LightGBM models under-predict churn in every fold. Fold log loss favours the logistic regression. The later cutoffs (Apr–Sep 2011) are where the season features can be judged (notebooks 07–08).
+- **A censored feature:** `bought_same_window_last_year` is 0 for everyone at the June–August 2010 cutoffs, because the window lies before the first transaction, and it is only partly observed from September to November 2010. Dropping it changes nothing measurable (notebook 11), so it is kept and documented.
+- **Seed variance:** refitted with six seeds, the deployed configuration realizes £19.4k–£23.1k; the pipeline's seed 42 is at the top of that range. The headline is quoted as a range.
+- **Feature drift is structural or calendar-driven, not behavioural:** `tenure_days` grows with the data. The Christmas closure (no sales from 23 Dec 2010 to 4 Jan 2011) and the Q4 peak move `recency_days` and `spend_trend` at single cutoffs. Order value, returns and country do not drift (notebook 08).
 
 ## 6. Architecture
 
@@ -268,9 +283,9 @@ Churn scoring is a batch process: a company scores its base monthly and runs cam
 | `experiments.json` | summary of MLflow runs (models, params, fold metrics) |
 | `feature_spec.json` | feature order, dtypes, valid ranges, base/derived split |
 | `model.onnx`, `calibrator.json` | what-if inference |
-| `golden/*.json` | test vectors for economics and derived features |
+| `golden/model.json` | native model score and calibrated p for 50 test customers (ONNX + calibrator parity in the browser) |
 
-Schemas are generated from Pydantic models, and TS types are generated from the schemas. **A contract change on the Python side breaks the web build.**
+Schemas are generated from Pydantic models, and TS types are generated from the schemas. **A contract change on the Python side breaks the web build.** `churnvalue contracts` writes them to `contracts/schemas/`, next to the code-only golden vectors (`contracts/golden/`: economics, derived features); a test fails when the committed files are stale. `churnvalue export` also generates `docs/model-card.md`.
 
 ### 6.3 Frontend
 
@@ -295,16 +310,16 @@ Out of scope, by decision: CSV upload of new customers (it would require a secon
 ### 6.5 ML engineering
 
 - `uv` + `pyproject.toml`, ruff, pyright, pytest, pre-commit.
-- Typer CLI with stages: `download → snapshots → features → train → evaluate → export`.
+- Typer CLI with stages: `download → build-snapshots → train → evaluate → export`, plus `evaluate-baselines`, `contracts` and `notebooks`.
 - YAML config validated by Pydantic; Pandera schemas; fixed seeds.
-- **MLflow (local)** tracks runs. `evaluate` exports `experiments.json`, so the site shows the tracking history.
+- **MLflow (local, SQLite store `mlflow.db`)** tracks one run per model: the tuned parameters, the CV folds, the Optuna history and the test metrics, tagged with the git commit, the config hash and the data checksum. `export` writes `experiments.json`, so the site shows the tracking history.
 - The model card is generated from the evaluation outputs.
 
 ### 6.6 CI/CD
 
 - **On PR:** ruff, pyright, pytest; eslint, tsc, vitest, playwright; contract drift check (regenerated TS types must match); Cloudflare preview deploy.
 - **On `main`:** deploy to **Cloudflare Workers (static assets)** via GitHub Actions.
-- **`train` workflow (manual):** runs the pipeline and publishes the artifacts as a **GitHub Release**. The site build pins a release tag. Training never runs on every push.
+- **`train` workflow (manual):** runs the pipeline and publishes the artifacts as a **GitHub Release** (a tarball of `artifacts/` plus `manifest.json`, with the model card as release notes). The site build pins a release tag. Training never runs on every push.
 
 ## 6.7 Analysis notebooks (ADR 0012)
 
@@ -330,7 +345,7 @@ Out of scope, by decision: CSV upload of new customers (it would require a secon
 | 10 | `business_value` | What is the model worth in money, and under which assumptions? | Plan 2 |
 | 11 | `ablation` | What do the context features buy, and which calibration fixes failed? | Plan 2 |
 
-**Outline of notebooks 01–06.** The codes are the section chips; ✓ marks the hand-off.
+**Outline of notebooks 01–11.** The codes are the section chips; ✓ marks the hand-off.
 
 - **01 data_ingestion**
   - I1 provenance and licence (DOI, CC BY 4.0, citation)
@@ -374,6 +389,11 @@ Out of scope, by decision: CSV upload of new customers (it would require a secon
   - B4 ranking quality with CIs (PR curves)
   - B5 reliability diagram, calibration cutoff vs test: the seasonal drift
   - B6 policy table with CIs, expected vs realized profit, share of the oracle; the bar Plan 2 must clear
+- **07 model_training** — M1 the rungs · M2 rolling-origin folds · M3 logistic regression coefficients · M4 Optuna histories · M5 fold results (ranking vs level) · M6 MLflow runs
+- **08 evaluation** — V1 test metrics with CIs · V2 PR, ROC and gains curves · V3 reliability, June-calibrated, on September · V4 stability over the cutoffs after training · V5 feature drift (PSI)
+- **09 explainability** — X1 global SHAP importance · X2 direction (beeswarm) · X3 dependence shapes · X4 the month effect the model learned · X5 two customers, a good call and a false alarm
+- **10 business_value** — $1 policies with CIs · $2 how many to contact · $3 budget mode · $4 sensitivity to γ and λc · $5 acquisition cost and the cap B = V
+- **11 ablation** — A1 month features on/off · A2 the censored last-year flag · A3 seed spread · A4 calibration fixes that fail
 
 **Design system** (adapted from the author's earlier project; layout reused, accent replaced):
 - **Header card** with "CHURN-VALUE · pipeline stage NN", a title and a one-line thesis, followed by a paragraph that links this stage's question to the previous one.
@@ -401,7 +421,7 @@ Out of scope, by decision: CSV upload of new customers (it would require a secon
 1. **Label and eligibility** — hand-computed expectations on small synthetic transaction fixtures.
 2. **Leakage (property-based)** — mutating any transaction after `t` must leave all features at `t` unchanged. Temporal folds must never overlap label windows.
 3. **Economics parity** — Python generates golden vectors (inputs → `V`, CRC, CAC, B, `E[π]`, decision, budget selection, derived features). Vitest asserts TS equality within tolerance.
-4. **ONNX parity** — ONNX and native LightGBM predictions match on the holdout within tolerance.
+4. **ONNX parity** — ONNX and native LightGBM predictions match on every test customer within 1e-5, and `churnvalue export` refuses to write artifacts otherwise. The month features are exact so that float32 inputs cannot cross a split (§3.4).
 5. **E2E smoke** — the site loads, a slider changes the optimal policy, and a customer drawer opens.
 
 ## 8. Delivery phases

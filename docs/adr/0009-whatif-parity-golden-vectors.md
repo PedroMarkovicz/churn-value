@@ -16,3 +16,8 @@
 **Consequences.**
 - Derived features stay few and arithmetic by design.
 - Parity checks are part of CI.
+
+**Amendments after Plan 2.**
+- Golden vectors are split by what they depend on. Economics and derived features depend only on code, so they are committed under `contracts/golden/`, and a test fails when they are stale. The model vectors depend on the trained model and ship in the artifacts (`golden/model.json`).
+- ONNX runs in float32. The month features are rounded to exact values, because sin(7π/6) = −0.4999999999999997 crossed a split at −0.5 after the cast. `churnvalue export` checks parity (≤ 1e-5) on every test customer and refuses to write artifacts otherwise.
+- Per-customer SHAP excludes the month features, which are identical for everyone on one cutoff; they are folded into a month-adjusted baseline.
