@@ -12,13 +12,13 @@ import type { ReactNode } from "react";
 
 import type { AppData } from "@/app/data.ts";
 import { parseSearch, stringifySearch } from "@/app/search.ts";
-import type { EvaluationFile } from "@/contract/index.ts";
 import { buildTable } from "@/domain/table.ts";
 import { ScenarioProvider } from "@/scenario/ScenarioProvider.tsx";
 
 import {
   customerFixture,
   customersFixture,
+  evaluationFixture,
   featureSpecFixture,
   manifestFixture,
 } from "./fixtures/artifacts.ts";
@@ -35,7 +35,7 @@ export function fixtureData(): AppData {
   return {
     manifest: manifestFixture(),
     customers,
-    evaluation: {} as EvaluationFile, // not read by the pages of this release
+    evaluation: evaluationFixture(),
     featureSpec: featureSpecFixture(),
     table: buildTable(customers),
   };

@@ -3,6 +3,8 @@ import { validateArtifact } from "@/contract/load.ts";
 import {
   customerFixture,
   customersFixture,
+  evaluationFixture,
+  experimentsFixture,
   featureSpecFixture,
   manifestFixture,
   timelinesFixture,
@@ -14,6 +16,8 @@ test("every fixture builder produces a valid artifact", () => {
     validateArtifact("customers", customersFixture([customerFixture(1, 0.4, 1)])),
   ).not.toThrow();
   expect(() => validateArtifact("feature_spec", featureSpecFixture())).not.toThrow();
+  expect(() => validateArtifact("evaluation", evaluationFixture())).not.toThrow();
+  expect(() => validateArtifact("experiments", experimentsFixture())).not.toThrow();
   expect(() =>
     validateArtifact(
       "timelines",

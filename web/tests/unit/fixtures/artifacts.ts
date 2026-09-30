@@ -5,10 +5,13 @@
 import type {
   Customer,
   CustomersFile,
+  EvaluationFile,
+  ExperimentsFile,
   FeatureEntry,
   FeatureSpec,
   Manifest,
   ModelInfo,
+  StabilityRow,
   TimelinesFile,
 } from "@/contract/index.ts";
 
@@ -173,5 +176,155 @@ export function timelinesFixture(customers: Customer[]): TimelinesFile {
       if (c.churn === 0) days.push(30);
       return { customer_id: c.customer_id, days, revenue: days.map(() => c.aov_gg) };
     }),
+  };
+}
+
+const CUTOFFS = [
+  "2011-04-10",
+  "2011-05-10",
+  "2011-06-10",
+  "2011-07-10",
+  "2011-08-10",
+  "2011-09-10",
+];
+// Calibration gap (mean p − churn) per cutoff: the rule drifts after June, the GBDT holds.
+const GAPS: Record<string, number[]> = {
+  rule_a: [0.02, 0.03, 0, 0.06, 0.1, 0.13],
+  gbdt_b: [0.02, 0.03, 0, -0.018, -0.025, 0.008],
+};
+
+function estimate(value: number, half: number) {
+  return { value, ci_low: value - half, ci_high: value + half };
+}
+
+function modelEvaluation(meanP: number, rocAuc: number) {
+  return {
+    calibrator: { method: "platt" as const, slope: 1, intercept: 0 },
+    curves: {
+      gains: { fraction: [0, 1], captured: [0, 1] },
+      pr: { recall: [0, 1], precision: [1, 0.3] },
+      roc: { fpr: [0, 1], tpr: [0, 1] },
+      reliability: [
+        { bin_low: 0, bin_high: 0.5, mean_p: 0.2, churn_rate: 0.18, n: 60 },
+        { bin_low: 0.5, bin_high: 1, mean_p: 0.7, churn_rate: 0.72, n: 40 },
+      ],
+    },
+    emp_per_customer: estimate(10, 3),
+    mean_p: meanP,
+    metrics: {
+      roc_auc: estimate(rocAuc, 0.02),
+      pr_auc: estimate(rocAuc - 0.2, 0.02),
+      brier: estimate(0.2, 0.01),
+      lift_at_10: estimate(2, 0.2),
+    },
+  };
+}
+
+export function evaluationFixture(): EvaluationFile {
+  const role = (cutoff: string): StabilityRow["role"] =>
+    cutoff === "2011-06-10" ? "calibration" : cutoff === "2011-09-10" ? "test" : "out_of_time";
+  const stability: StabilityRow[] = CUTOFFS.flatMap((cutoff, i) =>
+    MODELS.map((m) => ({
+      cutoff,
+      role: role(cutoff),
+      model: m.name,
+      n_customers: 1000,
+      churn_rate: 0.4,
+      mean_p: 0.4 + (GAPS[m.name]?.[i] ?? 0),
+      roc_auc: 0.7,
+      pr_auc: 0.5,
+      brier: 0.2,
+      n_contacted: 500,
+      expected_profit: 1000,
+      realized_profit: 900,
+    })),
+  );
+  const policy = (name: string, expected: number | null, realized: number) => ({
+    policy: name,
+    n_contacted: 3,
+    expected_profit: expected,
+    realized_profit: realized,
+    realized_profit_ci_low: realized - 5000,
+    realized_profit_ci_high: realized + 5000,
+    random_same_k_profit: 0,
+    share_of_oracle: null,
+  });
+  const bucket = (b: string, min: number, max: number | null, ratio: number | null) => ({
+    bucket: b,
+    min_purchase_days: min,
+    max_purchase_days: max,
+    n: 100,
+    predicted_revenue: 1000 * (ratio ?? 1),
+    actual_revenue: 1000,
+    ratio,
+  });
+  return {
+    split: {
+      train: [
+        "2010-06-10",
+        "2010-07-10",
+        "2010-08-10",
+        "2010-09-10",
+        "2010-10-10",
+        "2010-11-10",
+        "2010-12-10",
+        "2011-01-10",
+        "2011-02-10",
+        "2011-03-10",
+      ],
+      calibration: "2011-06-10",
+      test: "2011-09-10",
+    },
+    calibration_population: { n_customers: 5, churn_rate: 0.4 },
+    test_population: { n_customers: 6, churn_rate: 0.308 },
+    economics: {
+      margin: 0.35,
+      lambda_c: 0.1,
+      lambda_a: 10,
+      gamma: 0.3,
+      contact_cost: 1,
+      value_horizon_days: 365,
+    },
+    models: { rule_a: modelEvaluation(0.44, 0.55), gbdt_b: modelEvaluation(0.316, 0.77) },
+    policies: [
+      policy("do_nothing", 0, 0),
+      policy("contact_all", null, -128345),
+      policy("rule_a", 50000, -20000),
+      policy("gbdt_b", 25621, 23139),
+      policy("oracle", null, 88558),
+    ],
+    stability,
+    drift: [
+      { cutoff: "2010-06-10", feature: "tenure_days", psi: 4.7 },
+      { cutoff: "2011-09-10", feature: "tenure_days", psi: 0.3 },
+      { cutoff: "2010-06-10", feature: "recency_days", psi: 0.05 },
+      { cutoff: "2011-09-10", feature: "recency_days", psi: 0.12 },
+      { cutoff: "2010-06-10", feature: "spend_90d", psi: 0 },
+      { cutoff: "2011-09-10", feature: "spend_90d", psi: 0.02 },
+    ],
+    value_check: [
+      bucket("2", 2, 2, 1.33),
+      bucket("3", 3, 3, 0.47),
+      bucket("4-5", 4, 5, 0.7),
+      bucket("6-10", 6, 10, 0.65),
+      bucket("11+", 11, null, 0.67),
+    ],
+  };
+}
+
+export function experimentsFixture(): ExperimentsFile {
+  return {
+    experiment: "churn-value",
+    runs: [
+      {
+        run_id: "run-gbdt",
+        model: "gbdt_b",
+        started_at: "2026-09-30T01:43:35Z",
+        tags: { git_sha: "0123456789abcdef0123456789abcdef01234567" },
+        params: { num_leaves: "14", learning_rate: "0.01356535951542509" },
+        metrics: { cv_log_loss: 0.6741, fold_roc_auc: 0.7952, fold_pr_auc: 0.732 },
+        trial_cv_log_loss: Array.from({ length: 40 }, (_, i) => 0.7 - i / 1000),
+      },
+    ],
   };
 }
