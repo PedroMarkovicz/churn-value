@@ -21,6 +21,7 @@ import {
   mismatches,
   readLock,
   sha256File,
+  unpackVerified,
   untarGz,
 } from "./artifacts-lib.ts";
 
@@ -30,11 +31,15 @@ const LOCK = join(WEB, "artifacts.lock.json");
 const LOCAL = join(WEB, "..", "ml", "artifacts");
 const REPOSITORY = "PedroMarkovicz/churn-value";
 
+/** Copy exactly the listed files, after each matched its SHA-256; nothing else is installed. */
 function install(from: string, files: Record<string, string>): void {
   const bad = mismatches(from, files);
   if (bad.length > 0) throw new Error(`checksum mismatch in ${from}: ${bad.join(", ")}`);
   rmSync(OUT, { recursive: true, force: true });
-  cpSync(from, OUT, { recursive: true });
+  for (const name of Object.keys(files)) {
+    mkdirSync(dirname(join(OUT, name)), { recursive: true });
+    cpSync(join(from, name), join(OUT, name));
+  }
   console.log(`artifacts -> public/data (${Object.keys(files).length} files verified)`);
 }
 
@@ -43,12 +48,8 @@ function headers(accept: string): Record<string, string> {
   return token ? { Accept: accept, Authorization: `Bearer ${token}` } : { Accept: accept };
 }
 
-/** Download a release asset and unpack it into a fresh temporary directory. */
-async function downloadRelease(
-  repository: string,
-  tag: string,
-  asset: string,
-): Promise<{ dir: string; sha256: string }> {
+/** The bytes of a release asset. */
+async function downloadAsset(repository: string, tag: string, asset: string): Promise<Buffer> {
   const api = `https://api.github.com/repos/${repository}/releases/tags/${tag}`;
   const release = await fetch(api, { headers: headers("application/vnd.github+json") });
   if (!release.ok)
@@ -59,13 +60,17 @@ async function downloadRelease(
   // The asset URL redirects to storage; fetch drops the token on that cross-origin hop.
   const body = await fetch(found.url, { headers: headers("application/octet-stream") });
   if (!body.ok) throw new Error(`${found.url}: HTTP ${body.status}`);
-  const bytes = Buffer.from(await body.arrayBuffer());
+  return Buffer.from(await body.arrayBuffer());
+}
+
+/** Write unpacked files (already checked for safe paths) into a fresh temporary directory. */
+function writeTemp(files: Map<string, Buffer>): string {
   const dir = mkdtempSync(join(tmpdir(), "churn-value-artifacts-"));
-  for (const [path, data] of untarGz(bytes)) {
+  for (const [path, data] of files) {
     mkdirSync(dirname(join(dir, path)), { recursive: true });
     writeFileSync(join(dir, path), data);
   }
-  return { dir, sha256: createHash("sha256").update(bytes).digest("hex") };
+  return dir;
 }
 
 async function fromLock(): Promise<void> {
@@ -74,15 +79,18 @@ async function fromLock(): Promise<void> {
     console.log(`artifacts ${lock.tag} already in public/data`);
     return;
   }
-  const { dir, sha256 } = await downloadRelease(lock.repository, lock.tag, lock.asset);
-  if (sha256 !== lock.asset_sha256) throw new Error(`${lock.asset} has SHA-256 ${sha256}`);
+  // The archive's checksum is verified before a single entry is read or written.
+  const bytes = await downloadAsset(lock.repository, lock.tag, lock.asset);
+  const dir = writeTemp(unpackVerified(bytes, lock.asset_sha256));
   install(dir, lock.files);
   rmSync(dir, { recursive: true, force: true });
 }
 
 async function pin(tag: string): Promise<void> {
   const asset = `${tag}.tar.gz`; // the name .github/workflows/train.yml gives it
-  const { dir, sha256 } = await downloadRelease(REPOSITORY, tag, asset);
+  const bytes = await downloadAsset(REPOSITORY, tag, asset);
+  const sha256 = createHash("sha256").update(bytes).digest("hex");
+  const dir = writeTemp(untarGz(bytes)); // pinning trusts this release; paths are still checked
   const files = { ...manifestFiles(dir), "manifest.json": sha256File(join(dir, "manifest.json")) };
   const lock: ArtifactsLock = { repository: REPOSITORY, tag, asset, asset_sha256: sha256, files };
   install(dir, files);

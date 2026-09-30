@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 
-import { mismatches, readLock, untarGz } from "../../../scripts/artifacts-lib.ts";
+import { mismatches, readLock, unpackVerified, untarGz } from "../../../scripts/artifacts-lib.ts";
 
 /** A minimal ustar archive, as `tar -czf x.tar.gz -C artifacts .` lays it out. */
 function tarGz(entries: [string, string, "0" | "5"][]): Buffer {
@@ -60,4 +60,22 @@ test("readLock names the missing key", () => {
     JSON.stringify({ repository: "o/r", tag: "t", asset: "t.tar.gz", files: {} }),
   );
   expect(() => readLock(path)).toThrow('has no "asset_sha256"');
+});
+
+test.each([
+  "../evil.json",
+  "./../../evil.json",
+  "/etc/evil",
+  "C:/evil.json",
+  "golden/../../evil.json",
+  String.raw`..\evil.json`, // Windows also resolves a backslash
+])("untarGz refuses an entry that would escape the target directory: %s", (name) => {
+  expect(() => untarGz(tarGz([[name, "x", "0"]]))).toThrow(/unsafe path/);
+});
+
+test("unpackVerified checks the archive's SHA-256 before reading any entry", () => {
+  const archive = tarGz([["./manifest.json", "{}", "0"]]);
+  const sha = createHash("sha256").update(archive).digest("hex");
+  expect([...unpackVerified(archive, sha).keys()]).toEqual(["manifest.json"]);
+  expect(() => unpackVerified(archive, "0".repeat(64))).toThrow(/SHA-256/);
 });

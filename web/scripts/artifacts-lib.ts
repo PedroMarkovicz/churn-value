@@ -45,6 +45,24 @@ export function manifestFiles(dir: string): Record<string, string> {
   return manifest.files;
 }
 
+/** A relative path that stays inside the target directory; anything else is refused. */
+function safePath(path: string): string {
+  const parts = path.split(/[\\/]/); // tar writes "/", but Windows also resolves "\"
+  if (/^[a-zA-Z]:/.test(path) || path.startsWith("/") || parts.includes("..")) {
+    throw new Error(`the archive has an unsafe path: ${path}`);
+  }
+  return parts.filter((part) => part !== "" && part !== ".").join("/");
+}
+
+/** The files of a release tarball, after its SHA-256 matched the one in the lock. */
+export function unpackVerified(archive: Buffer, expectedSha256: string): Map<string, Buffer> {
+  const actual = createHash("sha256").update(archive).digest("hex");
+  if (actual !== expectedSha256) {
+    throw new Error(`the archive has SHA-256 ${actual}, the lock expects ${expectedSha256}`);
+  }
+  return untarGz(archive);
+}
+
 /**
  * The regular files of a .tar.gz (ustar, as GNU tar writes it), keyed by path without "./".
  * Enough for our release tarball; directories, links and pax headers are skipped.
@@ -64,7 +82,7 @@ export function untarGz(archive: Buffer): Map<string, Buffer> {
     const path = (prefix ? `${prefix}/${name}` : name).replace(/^\.\//, "");
     const start = offset + 512;
     if ((type === "0" || type === "") && path !== "") {
-      files.set(path, tar.subarray(start, start + size));
+      files.set(safePath(path), tar.subarray(start, start + size));
     }
     offset = start + Math.ceil(size / 512) * 512;
   }
