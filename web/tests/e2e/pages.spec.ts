@@ -38,7 +38,7 @@ test("the sensitivity headline gives the analytic break-even for a shared link",
   );
 });
 
-for (const path of ["/", "/simulator", "/sensitivity"]) {
+for (const path of ["/", "/simulator", "/sensitivity", "/customers"]) {
   test(`no accessibility violations on ${path}`, async ({ page }) => {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -57,7 +57,7 @@ test("an unknown page offers the way back", async ({ page }) => {
   );
 });
 
-for (const path of ["/", "/simulator", "/sensitivity"]) {
+for (const path of ["/", "/simulator", "/sensitivity", "/customers"]) {
   test(`${path} never scrolls sideways`, async ({ page }) => {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();

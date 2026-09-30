@@ -111,7 +111,7 @@ export function CustomerTable({
   return (
     <div
       ref={scrollRef}
-      className="max-h-[70vh] overflow-auto rounded-[10px] bg-panel shadow-[0_0_0_1px_var(--color-rule)]"
+      className="relative max-h-[70vh] overflow-auto rounded-[10px] bg-panel shadow-[0_0_0_1px_var(--color-rule)]"
     >
       <table
         aria-rowcount={rows.length + 1}
