@@ -1,17 +1,18 @@
 {
   "repository": "PedroMarkovicz/churn-value",
-  "tag": "artifacts-20260930-1f8aaf0",
-  "asset": "artifacts-20260930-1f8aaf0.tar.gz",
-  "asset_sha256": "d25e71e8d7dbe796ac0f64eb6d5c2454128baa32b69b5732595cf1b1ed6e5c92",
+  "tag": "artifacts-20260930-63e1393",
+  "asset": "artifacts-20260930-63e1393.tar.gz",
+  "asset_sha256": "ef766feecc5ac41a4a9a9f1aea1a2f512e105bd1e2f0e35f5203662503e5015f",
   "files": {
     "customers.json": "c012f2277d77ee20d9fc34279065446668f34378ef7b80417caced1f66b4c6cb",
     "timelines.json": "383492a065332b0ee030b21f72ad4ea2bb08744de7c0575cc1c525a4335fede9",
-    "evaluation.json": "5a16402154913838aad264d1b3424a5e4d0b64ae4735159d1d58acf541c0487a",
-    "experiments.json": "02c11f6bf95f76b351b3a25900151788796b11ca690688cb222d48d8e4bc8f43",
+    "evaluation.json": "9009fa88e0de1ed4364125035c22c4e2b500582e46a004a803dba1bc8a2c5440",
+    "experiments.json": "ab916778c49fb2ac5e020702eecaecc2097ce04dfb463a141a62af834da358bb",
     "feature_spec.json": "1f4626b5fb56520b6ebf70a1a69e9ee0266ba2c759c72fca8747e2140f31314e",
     "calibrator.json": "58f4b275292f03b68553f04e07650f8385ee15ca0d0eef7f8947da7af6814193",
-    "model.onnx": "4329d437dcb03aa1e1520ccf151ac0990f9012b9ab35ef885a081f30226a94ee",
+    "model.onnx": "c7ff46f8d2fad5a13e4a6f53096bd5eaf4601a460fdadac010a47eeb1fb60909",
     "golden/model.json": "79be9e8d818494375af3f1f7b6009508a540e5862da17a0e5dc80e6e985110ff",
-    "manifest.json": "737d5d8b1ec4e2021411024e3f7c2779cf13fb92dae61170b59c83fb676455fa"
+    "model_card.md": "bbc9940d969f11c49e9976a88b8becb9071c32027b741a2b5e1aad69f2c3a79d",
+    "manifest.json": "1d1ecc77dabe6bff982f9f89df6670c8ba4e2fd17042c4d5d249a5f43a7877ed"
   }
 }
