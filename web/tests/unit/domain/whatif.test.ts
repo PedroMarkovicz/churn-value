@@ -11,6 +11,7 @@ import { expectedAov } from "@/domain/gammaGamma.ts";
 import { buildTable } from "@/domain/table.ts";
 import {
   baseValues,
+  draftText,
   editableFields,
   formatValue,
   modelFeatures,
@@ -54,6 +55,17 @@ test("the fields are the editable base features, recent activity first", () => {
     min: 0,
     max: 344,
   });
+});
+
+test("the fields start from readable text, not floating-point noise", () => {
+  const field = (name: string) => {
+    const found = fields.find((f) => f.name === name);
+    if (!found) throw new Error(`no field ${name}`);
+    return found;
+  };
+  expect(draftText(field("spend_prev_90d"), 348.15000000000003)).toBe("348.15");
+  expect(draftText(field("cadence_cv"), 0.8944738308078793)).toBe("0.894");
+  expect(draftText(field("recency_days"), 122)).toBe("122");
 });
 
 test("values are written the way the field reads", () => {
@@ -100,6 +112,27 @@ test.each([
     { tenure_days: 22 },
     "n_purchase_days",
     "At most 3: every purchase day falls between the first and the last.",
+  ],
+  [
+    { recency_days: 200, tenure_days: 400, purchases_90d: 0, spend_90d: 0 },
+    "spend_prev_90d",
+    "£0: their last purchase was 180 or more days ago.",
+  ],
+  [
+    { tenure_days: 60, purchases_90d: 1, spend_prev_90d: 0 },
+    "purchases_90d",
+    "All 5: their first purchase was within the last 90 days.",
+  ],
+  [{ tenure_days: 60 }, "spend_prev_90d", "£0: their first purchase was within the last 90 days."],
+  [
+    { tenure_days: 60, purchases_90d: 5, spend_prev_90d: 0 },
+    "spend_90d",
+    "The total spend (£500): their first purchase was within the last 90 days.",
+  ],
+  [
+    { purchases_90d: 5, spend_90d: 400 },
+    "spend_prev_90d",
+    "£0: every purchase day is within the last 90 days.",
   ],
 ])("%o is flagged on %s", (edit, field, message) => {
   expect(problems({ ...base, ...edit }, fields)).toContainEqual({ field, message });

@@ -116,3 +116,48 @@ test.each([
     );
   });
 });
+
+test("under a budget, the reading does not claim who is on the list", async () => {
+  render(
+    <WhatIf
+      customer={customer}
+      row={row}
+      spec={spec}
+      scenario={{ ...DEFAULT_SCENARIO, budget_mode: "calls", budget_value: 2 }}
+      scorer={() => Promise.resolve(0.5)}
+    />,
+  );
+  const input = screen.getByLabelText("Days since last purchase");
+  await userEvent.clear(input);
+  await userEvent.type(input, "60");
+  await waitFor(() => {
+    expect(result()).toHaveTextContent("the budget decides whether the list reaches them.");
+  });
+  expect(result()).not.toHaveTextContent("the list would");
+});
+
+test("fields show readable numbers, and untouched fields reach the model exactly", async () => {
+  const noisy = customerFixture(9, 0.4, 1, 100, 30, {
+    features: {
+      ...fixtureFeatures(100, 30),
+      spend_prev_90d: 100.15000000000003,
+      cadence_cv: 0.8944738308078793,
+    },
+  });
+  const scorer = vi.fn<Scorer>(() => Promise.resolve(0.5));
+  renderWhatIf(scorer, noisy, { ...row, id: 9 });
+  expect(screen.getByLabelText("Spend in the 90 days before those (£)")).toHaveValue("100.15");
+  expect(screen.getByLabelText("Unevenness of the gaps between purchases (0 = even)")).toHaveValue(
+    "0.894",
+  );
+  expect(result()).toHaveTextContent("Change a value to see how the model's answer moves.");
+  const input = screen.getByLabelText("Days since last purchase");
+  await userEvent.clear(input);
+  await userEvent.type(input, "60");
+  await waitFor(() => {
+    expect(scorer).toHaveBeenCalled();
+  });
+  const features = scorer.mock.lastCall?.[0];
+  expect(features?.[spec.order.indexOf("cadence_cv")]).toBe(0.8944738308078793);
+  expect(features?.[spec.order.indexOf("spend_prev_90d")]).toBe(100.15000000000003);
+});

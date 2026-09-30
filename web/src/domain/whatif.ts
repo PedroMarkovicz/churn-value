@@ -19,7 +19,7 @@ import { expectedAov } from "./gammaGamma.ts";
 /** A customer's base features, by name. */
 export type Values = Readonly<Record<string, number>>;
 
-/** spend_90d, purchases_90d: the recent window is 90 days by the features' definitions. */
+/** spend_90d, purchases_90d: the recent window is 90 days; spend_prev_90d covers the 90 before. */
 const WINDOW_DAYS = 90;
 const PENNY = 0.01;
 
@@ -100,6 +100,13 @@ export function formatValue(
   return String(Math.round(value * 100) / 100);
 }
 
+/** A value as the field shows it: pounds to the penny, ratios to three decimals, counts whole. */
+export function draftText(field: Pick<Field, "unit" | "integer">, value: number): string {
+  if (field.integer) return String(value);
+  if (field.unit === "£") return String(Math.round(value * 100) / 100);
+  return String(Number(value.toFixed(3)));
+}
+
 export interface Problem {
   field: string;
   message: string;
@@ -107,8 +114,8 @@ export interface Problem {
 
 /**
  * What is wrong with `values`, at most one message per field. Each field is checked on its own
- * first (a number, whole if it must be, inside the training range); then eight rules that hold for
- * every holdout customer compare the fields that passed.
+ * first (a number, whole if it must be, inside the training range); then thirteen rules that hold
+ * for every holdout customer compare the fields that passed.
  */
 export function problems(values: Values, fields: readonly Field[]): Problem[] {
   const found = new Map<string, string>();
@@ -169,6 +176,30 @@ export function problems(values: Values, fields: readonly Field[]): Problem[] {
       flag(
         "n_purchase_days",
         `At most ${count(span + 1)}: every purchase day falls between the first and the last.`,
+      );
+    }
+  }
+  // The window before the recent one (90–180 days before the cutoff).
+  if (before !== undefined && before > 0) {
+    if (recency !== undefined && recency >= 2 * WINDOW_DAYS) {
+      flag("spend_prev_90d", "£0: their last purchase was 180 or more days ago.");
+    }
+    if (tenure !== undefined && tenure < WINDOW_DAYS) {
+      flag("spend_prev_90d", "£0: their first purchase was within the last 90 days.");
+    }
+    if (n !== undefined && recent !== undefined && n <= recent) {
+      flag("spend_prev_90d", "£0: every purchase day is within the last 90 days.");
+    }
+  }
+  // A customer whose first purchase is recent has all their history in the recent window.
+  if (tenure !== undefined && tenure < WINDOW_DAYS) {
+    if (recent !== undefined && n !== undefined && recent !== n) {
+      flag("purchases_90d", `All ${count(n)}: their first purchase was within the last 90 days.`);
+    }
+    if (spend !== undefined && total !== undefined && Math.abs(spend - total) > PENNY) {
+      flag(
+        "spend_90d",
+        `The total spend (${money(total)}): their first purchase was within the last 90 days.`,
       );
     }
   }

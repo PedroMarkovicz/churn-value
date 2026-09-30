@@ -165,3 +165,12 @@ test("the short-history hint quotes the value backtest when it has one", () => {
   );
   expect(shortHistoryHint([{ ...bucket, ratio: 0.9 }])).toBe(base);
 });
+
+test("under a budget, the what-if speaks of worth, not of the list it cannot see", () => {
+  const budget = "the budget decides whether the list reaches them.";
+  expect(whatIfVerdict(20.59, 1.2, true)).toBe(`Still just above break-even; ${budget}`);
+  expect(whatIfVerdict(20, 15, true)).toBe(`Still worth a call; ${budget}`);
+  expect(whatIfVerdict(-3, 20, true)).toBe(`Now worth a call; ${budget}`);
+  expect(whatIfVerdict(20, -3, true)).toBe("No longer worth a call.");
+  expect(whatIfVerdict(-3, -1, true)).toBe("Still not worth a call.");
+});

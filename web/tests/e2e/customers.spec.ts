@@ -16,9 +16,9 @@ test("a shared customer link opens the drawer, and the what-if matches the model
   const served =
     customers.customers.find((c) => c.customer_id === ID)?.p[customers.deployed_model] ??
     Number.NaN;
-  const expected = await nodeChurnProbability(ID, { recency_days: 300 });
+  const expected = await nodeChurnProbability(ID, { n_purchase_days: 12 });
   expect(Math.abs(expected - served)).toBeGreaterThan(0.001); // the edit moves the answer
-  await drawer.getByLabel("Days since last purchase").fill("300");
+  await drawer.getByLabel("Purchase days in total").fill("12"); // a consistent edit: 6 → 12
   const result = drawer.getByRole("status", { name: "What-if result" });
   await expect(result).toContainText(`${(served * 100).toFixed(1)}%`, { timeout: 30_000 });
   await expect(result).toContainText(`${(expected * 100).toFixed(1)}%`, { timeout: 30_000 });

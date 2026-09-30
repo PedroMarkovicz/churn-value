@@ -100,16 +100,31 @@ export function reasonsTitle(contributions: readonly Contribution[], horizonDays
   return "The model's explanation lists no reasons for this customer.";
 }
 
-/** One line on what the edit does to the call (the expected profit before and after). */
-export function whatIfVerdict(before: number, after: number): string {
+/**
+ * One line on what the edit does to the call (the expected profit before and after). Under a
+ * budget, whether the list reaches the customer depends on everyone else, so the line speaks of
+ * worth only.
+ */
+export function whatIfVerdict(before: number, after: number, budgeted = false): string {
+  const reach = "the budget decides whether the list reaches them.";
   if (before > 0 && after > 0) {
-    if (after < before / 4) return "Still just above break-even: the list would keep them, barely.";
+    if (after < before / 4) {
+      return budgeted
+        ? `Still just above break-even; ${reach}`
+        : "Still just above break-even: the list would keep them, barely.";
+    }
+    if (budgeted) return `Still worth a call; ${reach}`;
     return after < before
       ? "Still worth a call, though less than before."
       : "Still worth a call, and more than before.";
   }
-  if (after > 0) return "Now worth a call: the list would add them.";
-  if (before > 0) return "No longer worth a call: the list would drop them.";
+  if (after > 0)
+    return budgeted ? `Now worth a call; ${reach}` : "Now worth a call: the list would add them.";
+  if (before > 0) {
+    return budgeted
+      ? "No longer worth a call."
+      : "No longer worth a call: the list would drop them.";
+  }
   return "Still not worth a call.";
 }
 

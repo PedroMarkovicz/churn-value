@@ -11,6 +11,7 @@ import { whatIfVerdict } from "@/domain/customerText.ts";
 import { moneyPrecise, percent } from "@/domain/format.ts";
 import {
   baseValues,
+  draftText,
   editableFields,
   type Field,
   formatValue,
@@ -30,7 +31,12 @@ const DEFAULT_SCORER = workerScorer(); // null where there are no workers (then:
 type Drafts = Readonly<Record<string, string>>;
 
 function draftsOf(values: Readonly<Record<string, number>>, fields: readonly Field[]): Drafts {
-  return Object.fromEntries(fields.map((f) => [f.name, String(values[f.name] ?? "")]));
+  return Object.fromEntries(
+    fields.map((f) => {
+      const value = values[f.name];
+      return [f.name, value === undefined ? "" : draftText(f, value)];
+    }),
+  );
 }
 
 function parse(text: string): number {
@@ -100,7 +106,7 @@ function FieldInput({ field, draft, was, message, onChange }: FieldProps) {
   );
 }
 
-function Answer({ row, after }: { row: CustomerRow; after: Priced }) {
+function Answer({ row, after, budgeted }: { row: CustomerRow; after: Priced; budgeted: boolean }) {
   return (
     <>
       <dl className="grid gap-1.5">
@@ -121,7 +127,7 @@ function Answer({ row, after }: { row: CustomerRow; after: Priced }) {
           </dd>
         </div>
       </dl>
-      <p className="mt-2">{whatIfVerdict(row.expProfit, after.expProfit)}</p>
+      <p className="mt-2">{whatIfVerdict(row.expProfit, after.expProfit, budgeted)}</p>
     </>
   );
 }
@@ -138,15 +144,22 @@ export function WhatIf({ customer, row, spec, scenario, scorer = DEFAULT_SCORER 
   const titleId = useId();
   const fields = useMemo(() => editableFields(spec), [spec]);
   const base = useMemo(() => baseValues(customer.features, spec), [customer, spec]);
-  const [drafts, setDrafts] = useState<Drafts>(() => draftsOf(base, fields));
+  const initial = useMemo(() => draftsOf(base, fields), [base, fields]);
+  const [drafts, setDrafts] = useState<Drafts>(initial);
+  // A field is changed when its text is; untouched fields keep the exact served value, so the
+  // rounding in the fields never reaches the model.
+  const changed = fields.filter((f) => drafts[f.name] !== initial[f.name]);
   const values = useMemo(
     () => ({
       ...base,
-      ...Object.fromEntries(Object.entries(drafts).map(([name, text]) => [name, parse(text)])),
+      ...Object.fromEntries(
+        Object.entries(drafts)
+          .filter(([name, text]) => text !== initial[name])
+          .map(([name, text]) => [name, parse(text)]),
+      ),
     }),
-    [base, drafts],
+    [base, drafts, initial],
   );
-  const changed = fields.filter((f) => !Object.is(values[f.name], base[f.name]));
   const found = useMemo(() => problems(values, fields), [values, fields]);
   const messages = new Map(found.map((p) => [p.field, p.message]));
   const runnable = changed.length > 0 && found.length === 0;
@@ -167,7 +180,7 @@ export function WhatIf({ customer, row, spec, scenario, scorer = DEFAULT_SCORER 
           type="button"
           disabled={changed.length === 0}
           onClick={() => {
-            setDrafts(draftsOf(base, fields));
+            setDrafts(initial);
           }}
           className="text-sm font-semibold text-accent disabled:text-muted"
         >
@@ -228,7 +241,11 @@ export function WhatIf({ customer, row, spec, scenario, scorer = DEFAULT_SCORER 
             page still works.
           </p>
         ) : scored.status === "ready" ? (
-          <Answer row={row} after={price(values, scored.p, spec, scenario)} />
+          <Answer
+            row={row}
+            after={price(values, scored.p, spec, scenario)}
+            budgeted={scenario.budget_mode !== "none"}
+          />
         ) : (
           <p className="text-muted">Running the model in your browser…</p>
         )}
