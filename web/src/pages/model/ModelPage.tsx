@@ -24,7 +24,7 @@ export function ModelPage({ experiments }: { experiments: ExperimentsFile }) {
         lede={`Money depends on the probabilities, not only on the ranking: every list is priced with them. These charts compare every model in the ladder on the months after training and on the ${monthName(test)} ${test.slice(0, 4)} holdout.`}
       />
       <FixedScenario economics={evaluation.economics} />
-      <div className="grid gap-7">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-7">
         <CalibrationOverTime
           series={series}
           missing={missing}

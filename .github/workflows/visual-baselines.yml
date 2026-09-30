@@ -1,0 +1,37 @@
+name: visual-baselines
+
+# Manual: make the screenshot baselines in the same pinned container the CI job checks them in.
+# Download the artifact, put it under web/tests/e2e/__screenshots__/, review, and commit.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  baselines:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: web/.nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: Fetch the pinned artifacts (checksums verified)
+        run: npm run artifacts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - run: npm run build
+      - run: npm run test:visual:update
+      - uses: actions/upload-artifact@v4
+        with:
+          name: visual-baselines
+          path: web/tests/e2e/__screenshots__
+          retention-days: 7

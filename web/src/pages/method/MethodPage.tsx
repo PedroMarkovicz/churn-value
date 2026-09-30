@@ -41,7 +41,7 @@ export function MethodPage({ card }: { card: CardResult }) {
         lede={`A customer counts as churned when a buyer who was due to reorder buys nothing in the next ${count(horizon)} days. Everything the model sees is measured before that window opens.`}
       />
       <FixedScenario economics={evaluation.economics} />
-      <div className="grid gap-7">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-7">
         <LabelDiagram
           horizonDays={horizon}
           eligibilityF={manifest.pipeline?.eligibility_f ?? null}

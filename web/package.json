@@ -19,8 +19,9 @@
     "gen:contract": "node scripts/gen-contract.ts",
     "artifacts": "node scripts/fetch-artifacts.ts",
     "palette": "node scripts/validate-palette.ts",
-    "e2e": "playwright test",
-    "test:visual:update": "playwright test --grep @visual --update-snapshots",
+    "e2e": "playwright test --project=desktop --project=mobile",
+    "test:visual": "playwright test --project=visual-desktop --project=visual-mobile",
+    "test:visual:update": "playwright test --project=visual-desktop --project=visual-mobile --update-snapshots",
     "check:bundle": "node scripts/check-bundle.ts",
     "lighthouse": "npx --yes @lhci/cli@0.15.1 autorun"
   },

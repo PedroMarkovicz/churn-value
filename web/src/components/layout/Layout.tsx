@@ -103,7 +103,7 @@ export function Layout() {
               churn-value
             </Link>
             <nav aria-label="Pages">
-              <ul className="flex gap-5 text-sm text-muted">
+              <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted">
                 {PAGES.map((page) => (
                   <li key={page.to}>
                     <Link

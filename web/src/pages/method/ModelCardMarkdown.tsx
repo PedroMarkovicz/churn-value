@@ -8,6 +8,8 @@ import Markdown, { type Components } from "react-markdown";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 
+import { ScrollRegion } from "@/components/ScrollRegion.tsx";
+
 // The card's own headings sit one level under the page's section heading.
 const COMPONENTS: Components = {
   h1: ({ id, children }) => (
@@ -33,9 +35,9 @@ const COMPONENTS: Components = {
     </blockquote>
   ),
   table: ({ children }) => (
-    <div className="mt-3 overflow-x-auto">
+    <ScrollRegion label="Model card table, scrollable">
       <table className="w-full border-collapse text-sm">{children}</table>
-    </div>
+    </ScrollRegion>
   ),
   th: ({ children }) => (
     <th

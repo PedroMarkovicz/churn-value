@@ -126,3 +126,9 @@ export async function nodeChurnProbability(
   const t = (score - at(calibrator.x, lo)) / (at(calibrator.x, hi) - at(calibrator.x, lo));
   return at(calibrator.y, lo) + t * (at(calibrator.y, hi) - at(calibrator.y, lo));
 }
+
+export const manifest = JSON.parse(readFileSync(`${DATA}manifest.json`, "utf8")) as {
+  git_sha: string;
+  contract_version: string;
+  models: { name: string; label: string; deployable: boolean }[];
+};

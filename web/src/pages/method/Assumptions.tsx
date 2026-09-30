@@ -1,4 +1,5 @@
 /** The assumptions (spec §5.6): name, symbol, the value used here, the range, and the source. */
+import { ScrollRegion } from "@/components/ScrollRegion.tsx";
 import type { EconomicParams } from "@/contract/index.ts";
 import { assumptionRows } from "@/domain/method.ts";
 
@@ -16,7 +17,7 @@ export function Assumptions({ economics }: { economics: EconomicParams }) {
       <p className="mt-1 max-w-[72ch] text-sm text-muted">
         The pages let you move each of these; the results on this page use the values below.
       </p>
-      <div className="mt-3 overflow-x-auto">
+      <ScrollRegion label="Assumptions, scrollable">
         <table className="w-full min-w-[640px] border-collapse text-sm">
           <caption className="sr-only">Assumptions</caption>
           <thead>
@@ -46,7 +47,7 @@ export function Assumptions({ economics }: { economics: EconomicParams }) {
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
     </section>
   );
 }
