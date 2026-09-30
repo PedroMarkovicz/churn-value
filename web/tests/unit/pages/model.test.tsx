@@ -131,3 +131,11 @@ test("the run strip names the run, and the experiment runs open in a dialog", as
   expect(dialog).toHaveTextContent("GBDT B");
   expect(dialog).toHaveTextContent("learning_rate 0.01357");
 });
+
+test("the run strip links to the model card on the Method page", async () => {
+  await renderPage(page);
+  expect(screen.getByRole("link", { name: "Model card" })).toHaveAttribute(
+    "href",
+    "/method#model-card",
+  );
+});

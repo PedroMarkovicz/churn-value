@@ -8,8 +8,9 @@ import {
 import { loadAppData } from "@/app/data.ts";
 import { parseSearch, stringifySearch } from "@/app/search.ts";
 import { Layout } from "@/components/layout/Layout.tsx";
-import { loadArtifact } from "@/contract/load.ts";
+import { ArtifactError, loadArtifact, loadModelCard } from "@/contract/load.ts";
 import { DataErrorPage, LoadingPage, NotFoundPage } from "@/pages/errors/ErrorPages.tsx";
+import type { CardResult } from "@/pages/method/ModelCard.tsx";
 import { OverviewPage } from "@/pages/overview/OverviewPage.tsx";
 import { SensitivityPage } from "@/pages/sensitivity/SensitivityPage.tsx";
 import { SimulatorPage } from "@/pages/simulator/SimulatorPage.tsx";
@@ -64,12 +65,31 @@ const modelRoute = createRoute({
   component: lazyRouteComponent(() => import("@/pages/model/ModelRoute.tsx"), "ModelRoute"),
 });
 
+const methodRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/method",
+  // A missing or altered card must not take the page down (spec §7): report it in its place.
+  loader: (): Promise<CardResult> =>
+    loadModelCard().then(
+      (text) => ({ ok: true, text }),
+      (error: unknown) => ({
+        ok: false,
+        reason:
+          error instanceof ArtifactError ? `${error.artifact}: ${error.reason}` : String(error),
+      }),
+    ),
+  staleTime: Infinity,
+  pendingComponent: LoadingPage,
+  component: lazyRouteComponent(() => import("@/pages/method/MethodRoute.tsx"), "MethodRoute"),
+});
+
 export const routeTree = rootRoute.addChildren([
   overviewRoute,
   simulatorRoute,
   sensitivityRoute,
   customersRoute,
   modelRoute,
+  methodRoute,
 ]);
 
 export function makeRouter() {

@@ -1,7 +1,8 @@
 /**
  * The reproducible run (spec §5.5): trials, seed, folds, code, data and contract of the served
- * release, and the experiment runs in a dialog. (Task 8 adds the link to the model card.)
+ * release, the experiment runs in a dialog, and the way to the model card.
  */
+import { Link } from "@tanstack/react-router";
 import { Dialog } from "radix-ui";
 
 import type { ExperimentsFile, Manifest } from "@/contract/index.ts";
@@ -102,6 +103,14 @@ export function RunStrip({
             </Dialog.Content>
           </Dialog.Portal>
         </Dialog.Root>
+        <Link
+          to="/method"
+          hash="model-card"
+          search={(previous) => previous}
+          className="font-semibold text-accent underline underline-offset-2"
+        >
+          Model card
+        </Link>
       </span>
     </section>
   );
