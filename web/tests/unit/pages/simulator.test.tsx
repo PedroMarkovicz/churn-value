@@ -46,3 +46,30 @@ test("the policy comparison names the share of perfect foresight", async () => {
   // an expectation, with no interval)
   expect(intervals).toHaveLength(4);
 });
+
+test("typing a budget keeps what was typed and settles out-of-range values on leaving the field", async () => {
+  await renderPage(SimulatorPage);
+  await userEvent.click(screen.getByRole("radio", { name: "£ spend" }));
+  const spend = screen.getByLabelText("Expected spend, £");
+  await userEvent.clear(spend);
+  await userEvent.type(spend, "2000");
+  expect(spend).toHaveValue(2000);
+  await waitFor(() => {
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      /^(With a £2,000 budget|The budget does not cover)/,
+    );
+  });
+  await userEvent.clear(spend);
+  await userEvent.type(spend, "50");
+  expect(spend).toHaveValue(50); // not snapped back while typing
+  expect(screen.getByText("Between £100 and £100,000.")).toBeInTheDocument();
+  await userEvent.tab();
+  expect(spend).toHaveValue(100); // clamped when the field is left
+
+  await userEvent.click(screen.getByRole("radio", { name: "Calls" }));
+  const calls = screen.getByLabelText("Number of calls");
+  await userEvent.clear(calls);
+  await userEvent.type(calls, "2.5");
+  await userEvent.tab();
+  expect(calls).toHaveValue(3); // whole calls only
+});

@@ -1,13 +1,15 @@
 /** The assumption controls, grouped as the business thinks of them (spec §5.2). */
 import { Slider, ToggleGroup } from "radix-ui";
-import { useId } from "react";
+import { useId, useState } from "react";
 
+import { count, money } from "@/domain/format.ts";
 import { formatParameter, HINTS, replacementRegime } from "@/scenario/copy.ts";
 import { useScenario } from "@/scenario/ScenarioProvider.tsx";
 import {
   BUDGET_LIMITS,
   type BudgetMode,
   type Parameter,
+  type ParameterSpec,
   PARAMETERS,
   type Scenario,
 } from "@/scenario/schema.ts";
@@ -57,6 +59,67 @@ function ParameterSlider({ name }: { name: Parameter }) {
   );
 }
 
+/**
+ * The budget amount. What is typed stays as typed: only a value in range reaches the scenario,
+ * and anything else is settled (clamped, and rounded to whole calls) when the field is left.
+ */
+function BudgetInput({ id, limits }: { id: string; limits: ParameterSpec }) {
+  const { scenario, setScenario } = useScenario();
+  const [draft, setDraft] = useState<string | null>(null); // null: show the scenario's value
+  const calls = scenario.budget_mode === "calls";
+  const text = draft ?? String(scenario.budget_value);
+  const value = Number(text);
+  const valid =
+    text.trim() !== "" && Number.isFinite(value) && value >= limits.min && value <= limits.max;
+  const settle = (v: number) => (calls ? Math.round(v) : v);
+  const hint = calls
+    ? `Between ${count(limits.min)} and ${count(limits.max)} calls.`
+    : `Between ${money(limits.min)} and ${money(limits.max)}.`;
+  const commit = () => {
+    if (!valid && text.trim() !== "" && Number.isFinite(value)) {
+      setScenario({
+        ...scenario,
+        budget_value: settle(Math.min(limits.max, Math.max(limits.min, value))),
+      });
+    }
+    setDraft(null);
+  };
+  return (
+    <label htmlFor={id} className="grid gap-1 text-xs text-muted">
+      {calls ? "Number of calls" : "Expected spend, £"}
+      <input
+        id={id}
+        type="number"
+        inputMode="numeric"
+        min={limits.min}
+        max={limits.max}
+        step={limits.step}
+        value={text}
+        aria-invalid={!valid}
+        aria-describedby={valid ? undefined : `${id}-hint`}
+        onChange={(event) => {
+          const next = event.target.value;
+          setDraft(next);
+          const v = Number(next);
+          if (next.trim() !== "" && Number.isFinite(v) && v >= limits.min && v <= limits.max) {
+            setScenario({ ...scenario, budget_value: settle(v) });
+          }
+        }}
+        onBlur={commit}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") event.currentTarget.blur();
+        }}
+        className="w-32 rounded-md bg-panel px-2 py-1 text-sm text-ink shadow-[inset_0_0_0_1px_var(--color-rule)] aria-invalid:shadow-[inset_0_0_0_1.5px_var(--color-accent)]"
+      />
+      {!valid && (
+        <span id={`${id}-hint`} className="text-ink">
+          {hint}
+        </span>
+      )}
+    </label>
+  );
+}
+
 const MODES: { mode: BudgetMode; label: string }[] = [
   { mode: "none", label: "None" },
   { mode: "spend", label: "£ spend" },
@@ -96,27 +159,7 @@ function BudgetControl() {
           </ToggleGroup.Item>
         ))}
       </ToggleGroup.Root>
-      {limits && (
-        <label htmlFor={inputId} className="grid gap-1 text-xs text-muted">
-          {scenario.budget_mode === "spend" ? "Expected spend, £" : "Number of calls"}
-          <input
-            id={inputId}
-            type="number"
-            inputMode="numeric"
-            min={limits.min}
-            max={limits.max}
-            step={limits.step}
-            value={scenario.budget_value}
-            onChange={(event) => {
-              const value = Number(event.target.value);
-              if (Number.isFinite(value) && value >= limits.min && value <= limits.max) {
-                setScenario({ ...scenario, budget_value: value });
-              }
-            }}
-            className="w-32 rounded-md bg-panel px-2 py-1 text-sm text-ink shadow-[inset_0_0_0_1px_var(--color-rule)]"
-          />
-        </label>
-      )}
+      {limits && <BudgetInput key={scenario.budget_mode} id={inputId} limits={limits} />}
       <p className="text-xs leading-snug text-muted">
         Cap the campaign by expected spend or by the number of calls.
       </p>
