@@ -17,6 +17,7 @@ from sklearn.preprocessing import FunctionTransformer, StandardScaler
 from churnvalue.features import BASE_FEATURES, CONTEXT_FEATURES, DERIVED_FEATURES
 
 Kind = Literal["logreg", "lightgbm"]
+Family = Literal["rule", "probabilistic", "linear", "gbdt"]
 FloatArray = NDArray[np.float64]
 
 CUSTOMER_FEATURES: tuple[str, ...] = (*BASE_FEATURES, *DERIVED_FEATURES)
@@ -55,6 +56,27 @@ class ModelSpec:
     kind: Kind
     features: tuple[str, ...]
 
+
+@dataclass(frozen=True)
+class LadderEntry:
+    """How a rung is presented: the web app reads these through the manifest (contract 1.1.0)."""
+
+    name: str
+    label: str
+    family: Family
+
+
+# Every rung, in evaluation order: the baselines first, then the supervised models.
+LADDER: dict[str, LadderEntry] = {
+    entry.name: entry
+    for entry in (
+        LadderEntry("cadence_rule", "Cadence rule", "rule"),
+        LadderEntry("bgnbd", "BG/NBD", "probabilistic"),
+        LadderEntry("logreg", "Logistic regression", "linear"),
+        LadderEntry("lightgbm", "LightGBM", "gbdt"),
+        LadderEntry("lightgbm_seasonal", "LightGBM + season", "gbdt"),
+    )
+}
 
 SUPERVISED: dict[str, ModelSpec] = {
     spec.name: spec

@@ -1,4 +1,41 @@
 {
+  "$defs": {
+    "ModelInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "deployable": {
+          "title": "Deployable",
+          "type": "boolean"
+        },
+        "family": {
+          "enum": [
+            "rule",
+            "probabilistic",
+            "linear",
+            "gbdt"
+          ],
+          "title": "Family",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "label",
+        "family",
+        "deployable"
+      ],
+      "title": "ModelInfo",
+      "type": "object"
+    }
+  },
   "additionalProperties": false,
   "properties": {
     "config_sha256": {
@@ -33,6 +70,13 @@
       "title": "Git Sha",
       "type": "string"
     },
+    "models": {
+      "items": {
+        "$ref": "#/$defs/ModelInfo"
+      },
+      "title": "Models",
+      "type": "array"
+    },
     "test_cutoff": {
       "format": "date",
       "title": "Test Cutoff",
@@ -47,6 +91,7 @@
     "config_sha256",
     "deployed_model",
     "test_cutoff",
+    "models",
     "files"
   ],
   "title": "Manifest",

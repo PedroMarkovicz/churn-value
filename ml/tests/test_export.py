@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from churnvalue.btyd import GammaGammaParams, gamma_gamma_expected_aov
 from churnvalue.contract import (
     CalibratorFile,
     CustomersFile,
@@ -18,7 +19,13 @@ from churnvalue.contract import (
     TimelinesFile,
 )
 from churnvalue.evaluate import BASELINE_SCORERS, evaluate_models, supervised_scorer
-from churnvalue.export import deployed_spec, export_artifacts, onnx_churn_probability
+from churnvalue.export import (
+    deployed_spec,
+    export_artifacts,
+    ladder_info,
+    onnx_churn_probability,
+    served_gamma_gamma,
+)
 from churnvalue.model_card import render_model_card
 from churnvalue.models import SUPERVISED, feature_matrix
 from churnvalue.training import load_training
@@ -145,19 +152,62 @@ def test_only_a_lightgbm_model_can_be_deployed(exported):
 def test_model_card_renders_every_section_without_missing_values(exported):
     cfg, _, evaluation, result = exported
     card = render_model_card(
-        result.manifest, evaluation, load_training(cfg.models_dir), result.importance
+        result.manifest, result.evaluation, load_training(cfg.models_dir), result.importance
     )
     for heading in (
         "## Model details",
         "## Evaluation on the test cutoff",
         "## Business result at the default scenario",
         "## Calibration and profit across later cutoffs",
+        "## Value estimate",
         "## What drives the score",
         "## Limitations and risks",
     ):
         assert heading in card
     assert re.search(r"\bnan\b", card, flags=re.IGNORECASE) is None
     assert json.dumps(evaluation, allow_nan=False)
+
+
+def test_manifest_describes_every_model_in_ladder_order(exported):
+    cfg, _, evaluation, result = exported
+    customers = CustomersFile.model_validate_json(_read(cfg, "customers.json"))
+    names = [info.name for info in result.manifest.models]
+    assert names == customers.models == list(evaluation["models"])
+    deployable = [info.name for info in result.manifest.models if info.deployable]
+    assert deployable == [result.manifest.deployed_model]
+
+
+def test_served_gamma_gamma_reproduces_every_customers_aov(exported):
+    cfg, _, _, _ = exported
+    spec = FeatureSpec.model_validate_json(_read(cfg, "feature_spec.json"))
+    customers = CustomersFile.model_validate_json(_read(cfg, "customers.json"))
+    params = GammaGammaParams(spec.gamma_gamma.p, spec.gamma_gamma.q, spec.gamma_gamma.v)
+    n = [c.features["n_purchase_days"] for c in customers.customers]
+    m = [c.features["avg_order_value"] for c in customers.customers]
+    served = [c.aov_gg for c in customers.customers]
+    assert gamma_gamma_expected_aov(params, n, m) == pytest.approx(served, rel=1e-9)
+
+
+def test_served_evaluation_carries_the_value_backtest(exported):
+    cfg, _, _, _ = exported
+    evaluation = EvaluationFile.model_validate_json(_read(cfg, "evaluation.json"))
+    assert evaluation.value_check is not None
+    assert [row.bucket for row in evaluation.value_check] == ["2", "3", "4-5", "6-10", "11+"]
+    assert sum(row.n for row in evaluation.value_check) == round(
+        evaluation.test_population.n_customers * (1 - evaluation.test_population.churn_rate)
+    )
+
+
+def test_export_refuses_a_model_without_ladder_metadata():
+    with pytest.raises(ValueError, match="LADDER"):
+        ladder_info(["cadence_rule", "xgboost"], "cadence_rule")
+
+
+def test_export_refuses_gamma_gamma_parameters_that_do_not_reproduce_aov(snapshots_synthetic):
+    test = snapshots_synthetic.loc[snapshots_synthetic["cutoff"] == "2011-09-10"].copy()
+    test["gg_v"] *= 1.01
+    with pytest.raises(RuntimeError, match="Gamma-Gamma"):
+        served_gamma_gamma(test)
 
 
 def test_feature_ranges_cover_every_served_customer(exported):

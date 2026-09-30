@@ -1,0 +1,80 @@
+{
+  "$defs": {
+    "GammaGammaCase": {
+      "additionalProperties": false,
+      "properties": {
+        "aov_gg": {
+          "title": "Aov Gg",
+          "type": "number"
+        },
+        "avg_order_value": {
+          "title": "Avg Order Value",
+          "type": "number"
+        },
+        "n_purchase_days": {
+          "title": "N Purchase Days",
+          "type": "number"
+        },
+        "params": {
+          "$ref": "#/$defs/GammaGammaSpec"
+        }
+      },
+      "required": [
+        "params",
+        "n_purchase_days",
+        "avg_order_value",
+        "aov_gg"
+      ],
+      "title": "GammaGammaCase",
+      "type": "object"
+    },
+    "GammaGammaSpec": {
+      "additionalProperties": false,
+      "description": "Gamma-Gamma parameters of the served cutoff: AOV^GG = p(v + x m) / (p x + q - 1).",
+      "properties": {
+        "p": {
+          "exclusiveMinimum": 0,
+          "title": "P",
+          "type": "number"
+        },
+        "q": {
+          "exclusiveMinimum": 1,
+          "title": "Q",
+          "type": "number"
+        },
+        "v": {
+          "exclusiveMinimum": 0,
+          "title": "V",
+          "type": "number"
+        }
+      },
+      "required": [
+        "p",
+        "q",
+        "v"
+      ],
+      "title": "GammaGammaSpec",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "cases": {
+      "items": {
+        "$ref": "#/$defs/GammaGammaCase"
+      },
+      "title": "Cases",
+      "type": "array"
+    },
+    "tolerance": {
+      "title": "Tolerance",
+      "type": "number"
+    }
+  },
+  "required": [
+    "tolerance",
+    "cases"
+  ],
+  "title": "GammaGammaGolden",
+  "type": "object"
+}

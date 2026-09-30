@@ -285,22 +285,24 @@ Churn scoring is a batch process: a company scores its base monthly and runs cam
 | `model.onnx`, `calibrator.json` | what-if inference |
 | `golden/model.json` | native model score and calibrated p for 50 test customers (ONNX + calibrator parity in the browser) |
 
-Schemas are generated from Pydantic models, and TS types are generated from the schemas. **A contract change on the Python side breaks the web build.** `churnvalue contracts` writes them to `contracts/schemas/`, next to the code-only golden vectors (`contracts/golden/`: economics, derived features); a test fails when the committed files are stale. `churnvalue export` also generates `docs/model-card.md`.
+Schemas are generated from Pydantic models, and TS types are generated from the schemas. **A contract change on the Python side breaks the web build.** `churnvalue contracts` writes them to `contracts/schemas/`, next to the code-only golden vectors (`contracts/golden/`: economics, derived features, Gamma-Gamma); a test fails when the committed files are stale. `churnvalue export` also generates `docs/model-card.md`.
 
 ### 6.3 Frontend
 
-- Vite + React + TypeScript
-- Tailwind + shadcn/ui
-- TanStack Table
-- Observable Plot or visx for the curves
-- Scenario state in the URL, so any scenario is a shareable link
-- Vitest (economics parity through golden vectors) and Playwright (e2e smoke)
+- Vite + React + TypeScript (6.0), in `web/`
+- Tailwind v4 with the design tokens of ADR 0013; Radix primitives (through shadcn), restyled
+- TanStack Router; the scenario lives in plain query strings, so any scenario is a shareable link
+- visx for the charts, with shared primitives (takeaway title, table view, tooltip, direct labels)
+- TanStack Table for the customer list
+- Artifacts pinned to a release by SHA-256 and validated on load by Ajv standalone validators generated from the schemas
+- Economics, derived features and Gamma-Gamma in pure TypeScript, parity-tested against the golden vectors; heavier grids and bootstrap intervals in a Web Worker
+- Vitest and Testing Library, Playwright with axe, Lighthouse CI budgets (ADR 0007 amendments)
 
 ### 6.4 Pages
 
-1. **Overview** — the problem, the headline result at the default scenario (% of oracle profit captured, model vs cadence rule), and how to read the app.
-2. **Retention Simulator** — parameters, profit curve with the optimum, policy comparison, budget mode.
-3. **Sensitivity / Break-even** — heatmaps over γ × λc (and λa) showing where the campaign is profitable and the current scenario's safety margin.
+1. **Overview** — every holdout customer as a square, ranked by expected profit and coloured by outcome, linked to the campaign account that itemises the realized profit (ADR 0013).
+2. **Retention Simulator** — parameters, profit curve (expected against realized) with the optimum, policy comparison with bootstrap intervals recomputed for the scenario, budget mode.
+3. **Sensitivity / Break-even** — a stress test first: what the list built for the assumed acceptance earns at every true acceptance, with the analytic break-even. The optimal policy adapts to the assumptions and almost never loses (worst cell of the γ × λc map: −£155), so the map alone hides the real risk, a wrong assumption. Then a tornado of the assumptions and the γ × λc map with a λa toggle.
 4. **Action List** — customers ranked by `E[π]`. A drawer shows `p`, `V`, CRC, CAC, B, `E[π]`, the SHAP waterfall, the **cadence timeline** (purchase history, expected-next-purchase window, horizon H) and the **what-if** editor.
 5. **Model** — model ladder with CIs, curves, calibration, SHAP global, per-cutoff stability and drift, experiment summary.
 6. **Methodology / Model card** — label and eligibility diagram, validation scheme, assumptions, limitations, data licence.
@@ -317,7 +319,7 @@ Out of scope, by decision: CSV upload of new customers (it would require a secon
 
 ### 6.6 CI/CD
 
-- **On PR:** ruff, pyright, pytest; eslint, tsc, vitest, playwright; contract drift check (regenerated TS types must match); Cloudflare preview deploy.
+- **On PR:** ruff, pyright, pytest; in `web/`: contract drift check (regenerated TS types and validators must match), palette check, eslint, prettier, tsc, vitest, a bundle budget, Playwright with axe on desktop and mobile, and Lighthouse CI budgets, all against the pinned artifacts release; Cloudflare preview deploy (Plan 4).
 - **On `main`:** deploy to **Cloudflare Workers (static assets)** via GitHub Actions.
 - **`train` workflow (manual):** runs the pipeline and publishes the artifacts as a **GitHub Release** (a tarball of `artifacts/` plus `manifest.json`, with the model card as release notes). The site build pins a release tag. Training never runs on every push.
 

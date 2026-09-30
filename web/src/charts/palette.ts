@@ -1,0 +1,31 @@
+/**
+ * The data colours (spec §3.2), as values the palette check can read. The interface uses the same
+ * values through the CSS tokens in styles/index.css; a unit test keeps the two in step.
+ */
+export const SURFACE = "#ffffff"; // charts sit on panels
+
+/** Categorical, 8 slots, assigned by ladder position (the notebooks use slots 1-5). */
+export const MODEL_SLOTS = [
+  "#2a78d6",
+  "#eb6834",
+  "#1baf7a",
+  "#eda100",
+  "#e87ba4",
+  "#008300",
+  "#0e8ba6",
+  "#a0662b",
+] as const;
+
+/** Colour of the model at `position` in the manifest's ladder; a ninth model gets none. */
+export function modelColor(position: number): string | null {
+  return MODEL_SLOTS[position] ?? null;
+}
+
+export const MONEY = { profit: "#2f5bd3", loss: "#b8352f", midpoint: "#c9ccd8" } as const;
+
+export const OUTCOME = {
+  hit: "#2f5bd3",
+  waste: "#9db3ee",
+  miss: "#d9423f",
+  quiet: "#dcdfea",
+} as const;

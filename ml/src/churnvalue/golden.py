@@ -12,6 +12,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from churnvalue.btyd import GammaGammaParams, gamma_gamma_expected_aov
 from churnvalue.calibration import Calibrator
 from churnvalue.config import SnapshotConfig
 from churnvalue.contract import (
@@ -20,6 +21,9 @@ from churnvalue.contract import (
     DerivedGolden,
     EconomicsCase,
     EconomicsGolden,
+    GammaGammaCase,
+    GammaGammaGolden,
+    GammaGammaSpec,
     ModelCase,
     ModelGolden,
 )
@@ -170,6 +174,27 @@ def derived_golden(horizon_days: int, cadence_floor_days: float) -> DerivedGolde
     )
 
 
+# (p, q, v): a fit like the real data's, a heavy-shrinkage one, and one with q close to 1
+GAMMA_GAMMA_PARAMS = [(3.2, 4.1, 180.0), (0.8, 2.5, 40.0), (12.0, 1.05, 2_500.0)]
+GAMMA_GAMMA_CUSTOMERS = [(1.0, 25.0), (2.0, 300.9), (6.0, 499.9), (40.0, 88.8), (150.0, 12_345.6)]
+
+
+def gamma_gamma_golden() -> GammaGammaGolden:
+    """(params, purchase days, average order value) -> shrunk AOV, for the what-if's value."""
+    cases = []
+    for (p, q, v), (n, m) in itertools.product(GAMMA_GAMMA_PARAMS, GAMMA_GAMMA_CUSTOMERS):
+        aov = gamma_gamma_expected_aov(GammaGammaParams(p, q, v), [n], [m])
+        cases.append(
+            GammaGammaCase(
+                params=GammaGammaSpec(p=p, q=q, v=v),
+                n_purchase_days=n,
+                avg_order_value=m,
+                aov_gg=float(aov[0]),
+            )
+        )
+    return GammaGammaGolden(tolerance=TOLERANCE, cases=cases)
+
+
 def model_golden(
     estimator: Any, spec: ModelSpec, calibrator: Calibrator, frame: pd.DataFrame, n: int = 50
 ) -> ModelGolden:
@@ -198,5 +223,6 @@ def golden_documents(snapshots: SnapshotConfig) -> dict[str, str]:
         "derived_features.json": derived_golden(
             snapshots.horizon_days, snapshots.cadence_floor_days
         ),
+        "gamma_gamma.json": gamma_gamma_golden(),
     }
     return {name: golden.model_dump_json(indent=2) + "\n" for name, golden in goldens.items()}

@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 from conftest import tx_frame
 
+from churnvalue.btyd import GammaGammaParams, gamma_gamma_expected_aov
 from churnvalue.config import SnapshotConfig
 from churnvalue.snapshots import (
     bgnbd_inputs,
@@ -84,6 +85,17 @@ def test_build_snapshot_columns_and_eligibility(tx_synthetic, snapshot_cfg: Snap
     assert snap["p_alive"].between(0, 1).all()
     assert (snap["aov_gg"] > 0).all()
     assert snap["customer_id"].is_unique
+
+
+def test_snapshot_carries_the_gamma_gamma_parameters_behind_aov_gg(
+    tx_synthetic, snapshot_cfg: SnapshotConfig
+):
+    snap = build_snapshot(tx_synthetic, pd.Timestamp("2011-03-10"), snapshot_cfg)
+    params = snap[["gg_p", "gg_q", "gg_v"]].drop_duplicates()
+    assert len(params) == 1  # one fit per cutoff
+    gg = GammaGammaParams(*params.iloc[0].to_list())
+    recomputed = gamma_gamma_expected_aov(gg, snap["n_purchase_days"], snap["avg_order_value"])
+    assert recomputed == pytest.approx(snap["aov_gg"].to_numpy(), rel=1e-12)
 
 
 def test_build_snapshots_has_both_classes_per_cutoff(tx_synthetic, snapshot_cfg: SnapshotConfig):

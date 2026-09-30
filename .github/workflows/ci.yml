@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read # read the code and download the pinned artifacts release
+
 jobs:
   ml:
     runs-on: ubuntu-latest
@@ -21,3 +24,48 @@ jobs:
       - run: uv run ruff check .
       - run: uv run pyright
       - run: uv run pytest
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: web/.nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: Contract code matches the schemas
+        run: npm run gen:contract && git diff --exit-code -- src/contract
+      - run: npm run palette
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - name: Cache the pinned artifacts
+        uses: actions/cache@v4
+        with:
+          path: web/public/data
+          key: artifacts-${{ hashFiles('web/artifacts.lock.json') }}
+      - name: Fetch the pinned artifacts (checksums verified)
+        run: npm run artifacts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - run: npm test
+      - run: npm run build
+      - run: npm run check:bundle
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+      - name: Lighthouse budgets
+        run: npx --yes @lhci/cli@0.15.1 autorun
+      - name: Keep the reports of a failed run
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-reports
+          path: |
+            web/playwright-report
+            web/.lighthouseci
+          retention-days: 7

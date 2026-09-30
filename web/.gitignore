@@ -1,0 +1,7 @@
+node_modules
+dist
+public/data
+playwright-report
+test-results
+.lighthouseci
+*.tsbuildinfo

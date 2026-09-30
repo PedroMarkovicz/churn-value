@@ -5,11 +5,17 @@ import pandas as pd
 import pytest
 from pydantic import ValidationError
 
+from churnvalue.btyd import GammaGammaParams, gamma_gamma_expected_aov
 from churnvalue.config import load_config
 from churnvalue.contract import SCHEMAS, CalibratorFile, Customer, schema_documents
 from churnvalue.economics import customer_economics, expected_profit, value_at_risk
 from churnvalue.features import add_derived_features
-from churnvalue.golden import derived_golden, economics_golden, golden_documents
+from churnvalue.golden import (
+    derived_golden,
+    economics_golden,
+    gamma_gamma_golden,
+    golden_documents,
+)
 
 ROOT = Path(__file__).parents[1]
 CONTRACTS = ROOT.parent / "contracts"
@@ -79,6 +85,19 @@ def test_economics_golden_cases_are_self_consistent_and_cover_every_branch():
         )
     budget = golden.budget_cases
     assert any(case.budget == 0.0 and not any(case.selected) for case in budget)
+
+
+def test_gamma_gamma_golden_matches_the_formula_and_shrinks_short_histories():
+    golden = gamma_gamma_golden()
+    for case in golden.cases:
+        params = GammaGammaParams(case.params.p, case.params.q, case.params.v)
+        aov = gamma_gamma_expected_aov(params, [case.n_purchase_days], [case.avg_order_value])
+        assert aov[0] == pytest.approx(case.aov_gg, rel=golden.tolerance)
+    one = [c for c in golden.cases if c.n_purchase_days == 1.0]
+    many = [c for c in golden.cases if c.n_purchase_days == 150.0]
+    # one purchase is pulled far towards the population mean, many purchases barely move
+    assert all(abs(c.aov_gg - c.avg_order_value) / c.avg_order_value > 0.05 for c in one)
+    assert all(abs(c.aov_gg - c.avg_order_value) / c.avg_order_value < 0.05 for c in many)
 
 
 def test_derived_golden_includes_edge_customers():

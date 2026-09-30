@@ -14,6 +14,7 @@ from onnxmltools.convert import convert_lightgbm
 from onnxmltools.convert.common.data_types import FloatTensorType
 from pydantic import BaseModel
 
+from churnvalue.btyd import GammaGammaParams, gamma_gamma_expected_aov
 from churnvalue.calibration import calibrator_from_dict
 from churnvalue.config import Config
 from churnvalue.contract import (
@@ -26,7 +27,9 @@ from churnvalue.contract import (
     ExperimentsFile,
     FeatureEntry,
     FeatureSpec,
+    GammaGammaSpec,
     Manifest,
+    ModelInfo,
     Timeline,
     TimelinesFile,
 )
@@ -40,8 +43,9 @@ from churnvalue.explain import (
 )
 from churnvalue.features import CONTEXT_FEATURES, FEATURE_CATALOGUE, SPEND_TREND_EPS, purchase_days
 from churnvalue.golden import model_golden
-from churnvalue.models import SUPERVISED, ModelSpec, feature_matrix
+from churnvalue.models import LADDER, SUPERVISED, ModelSpec, feature_matrix
 from churnvalue.provenance import config_sha256, git_sha
+from churnvalue.value_check import value_backtest
 
 ONNX_INPUT = "features"
 ONNX_OUTPUT = "probabilities"  # (n, 2): column 1 is the churn probability
@@ -87,6 +91,40 @@ def onnx_churn_probability(model: bytes, x: np.ndarray) -> np.ndarray:
     return np.asarray(outputs[0])[:, 1].astype(np.float64)
 
 
+GAMMA_GAMMA_COLUMNS = ("gg_p", "gg_q", "gg_v")
+
+
+def served_gamma_gamma(test: pd.DataFrame) -> GammaGammaSpec:
+    """The test cutoff's Gamma-Gamma fit; refuses if it does not reproduce every served aov_gg."""
+    fits = test[list(GAMMA_GAMMA_COLUMNS)].drop_duplicates()
+    if len(fits) != 1:
+        raise ValueError(f"expected one Gamma-Gamma fit on the test cutoff, found {len(fits)}")
+    p, q, v = (float(x) for x in fits.iloc[0])
+    recomputed = gamma_gamma_expected_aov(
+        GammaGammaParams(p, q, v), test["n_purchase_days"], test["avg_order_value"]
+    )
+    gap = float(np.max(np.abs(recomputed / test["aov_gg"].to_numpy() - 1.0)))
+    if gap > 1e-9:
+        raise RuntimeError(f"Gamma-Gamma parameters reproduce aov_gg only to {gap:.2e}")
+    return GammaGammaSpec(p=p, q=q, v=v)
+
+
+def ladder_info(names: list[str], deployed: str) -> list[ModelInfo]:
+    """Presentation metadata for every evaluated model, in ladder order."""
+    unknown = [name for name in names if name not in LADDER]
+    if unknown:
+        raise ValueError(f"models without a LADDER entry in churnvalue.models: {unknown}")
+    return [
+        ModelInfo(
+            name=name,
+            label=LADDER[name].label,
+            family=LADDER[name].family,
+            deployable=name == deployed,
+        )
+        for name in names
+    ]
+
+
 def feature_spec(snapshots: pd.DataFrame, cfg: Config, spec: ModelSpec) -> FeatureSpec:
     """Feature order, catalogue metadata and valid ranges.
 
@@ -121,6 +159,7 @@ def feature_spec(snapshots: pd.DataFrame, cfg: Config, spec: ModelSpec) -> Featu
         context={name: float(test[name].iloc[0]) for name in CONTEXT_FEATURES},
         onnx_input=ONNX_INPUT,
         onnx_output=ONNX_OUTPUT,
+        gamma_gamma=served_gamma_gamma(test),
     )
 
 
@@ -191,6 +230,7 @@ def _json_bytes(model: BaseModel) -> bytes:
 class ExportResult:
     manifest: Manifest
     importance: pd.Series  # mean |SHAP| on the test cutoff, for the model card
+    evaluation: dict[str, Any]  # as served: the evaluation report plus the value backtest
 
 
 def export_artifacts(
@@ -206,7 +246,11 @@ def export_artifacts(
     spec = deployed_spec(cfg)
     split = temporal_split(snapshots, cfg)
     test = snapshots.loc[snapshots["cutoff"] == split.test].reset_index(drop=True)
-    evaluation_file = EvaluationFile.model_validate(evaluation)
+    if list(evaluation["models"]) != list(scorers):
+        raise ValueError("the evaluation report and the scorers list different models")
+    value_check = value_backtest(test, transactions, split.test, cfg.snapshots.horizon_days)
+    served = {**evaluation, "value_check": [row.model_dump() for row in value_check]}
+    evaluation_file = EvaluationFile.model_validate(served)
     calibrators = {
         name: calibrator_from_dict(body["calibrator"])
         for name, body in evaluation["models"].items()
@@ -254,7 +298,8 @@ def export_artifacts(
         config_sha256=config_sha256(cfg),
         deployed_model=spec.name,
         test_cutoff=split.test.date(),
+        models=ladder_info(list(scorers), spec.name),
         files={relative: sha256_bytes(data) for relative, data in payloads.items()},
     )
     (out_dir / "manifest.json").write_text(manifest.model_dump_json(indent=2) + "\n", "utf-8")
-    return ExportResult(manifest, global_importance(explanation))
+    return ExportResult(manifest, global_importance(explanation), served)

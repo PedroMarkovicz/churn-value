@@ -21,3 +21,8 @@
 - Golden vectors are split by what they depend on. Economics and derived features depend only on code, so they are committed under `contracts/golden/`, and a test fails when they are stale. The model vectors depend on the trained model and ship in the artifacts (`golden/model.json`).
 - ONNX runs in float32. The month features are rounded to exact values, because sin(7π/6) = −0.4999999999999997 crossed a split at −0.5 after the cast. `churnvalue export` checks parity (≤ 1e-5) on every test customer and refuses to write artifacts otherwise.
 - Per-customer SHAP excludes the month features, which are identical for everyone on one cutoff; they are folded into a month-adjusted baseline.
+
+**Amendments in contract 1.1.0 (Plan 3a).**
+- `feature_spec.json` carries the served cutoff's Gamma-Gamma parameters, so the what-if recomputes AOV^GG, and with it V, when spend is edited. `build-snapshots` keeps the fit of every cutoff on its rows; `export` refuses to write when the parameters do not reproduce every served `aov_gg` to 1e-9. Golden vectors in `contracts/golden/gamma_gamma.json` pin the formula for the TypeScript twin.
+- `evaluation.json` carries a value backtest: for customers who stayed, the revenue the value formula predicted for the label window against what they spent. On the test cutoff the formula is conservative overall (0.68×) and overstates only two-purchase customers (1.33×).
+- `manifest.json` lists every model with its label, family and whether it is served, so the web app writes no model name in its code.

@@ -7,7 +7,7 @@
 - **Deployed model:** `lightgbm_seasonal` — LightGBM, tuned with Optuna under rolling-origin cross-validation (mean validation log loss 0.6741), then Platt calibration on the 2011-06-10 cutoff.
 - **Inputs:** 19 features computed at the cutoff: base customer history, arithmetic derived features and the cutoff month (context).
 - **Output:** calibrated probability that the customer makes no purchase in the next 90 days, used to rank customers by expected retention profit.
-- **Provenance:** code `9f11c8a947f9471ebbde04e37e0fcc328b8728f0`, data SHA-256 `572e36277c23…`, config SHA-256 `b94e3e86505d…`, contract 1.0.0, created 2026-09-27.
+- **Provenance:** code `d63587c331a55c4f870e16004edd59cf34862d14`, data SHA-256 `572e36277c23…`, config SHA-256 `b94e3e86505d…`, contract 1.1.0, created 2026-09-30.
 
 ## Intended use
 
@@ -58,6 +58,18 @@ The deployed policy realizes £23,139 against £25,621 expected; expected and re
 | 2011-07-10 | out_of_time | 0.377 | 0.359 | 0.790 | £40,061 | £48,493 |
 | 2011-08-10 | out_of_time | 0.338 | 0.313 | 0.768 | £28,150 | £42,853 |
 | 2011-09-10 | test | 0.308 | 0.316 | 0.766 | £25,621 | £23,139 |
+
+## Value estimate
+
+Customers who stayed on the test cutoff: revenue the value formula predicted for the label window, divided by what they actually spent in it.
+
+| Purchase days | Customers | Predicted / actual |
+|---|---|---|
+| 2 | 117 | 1.33× |
+| 3 | 118 | 0.47× |
+| 4-5 | 235 | 0.70× |
+| 6-10 | 406 | 0.65× |
+| 11+ | 452 | 0.67× |
 
 ## What drives the score
 

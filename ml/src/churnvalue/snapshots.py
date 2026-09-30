@@ -79,6 +79,10 @@ def btyd_columns(features: pd.DataFrame) -> pd.DataFrame:
         {
             "p_alive": bgnbd_p_alive(bgnbd, x, t_x, big_t),
             "aov_gg": gamma_gamma_expected_aov(gg, n, aov),
+            # constant per cutoff; `export` serves them so the browser can recompute aov_gg
+            "gg_p": gg.p,
+            "gg_q": gg.q,
+            "gg_v": gg.v,
         },
         index=features.index,
     )
