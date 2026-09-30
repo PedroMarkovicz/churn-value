@@ -96,9 +96,10 @@ export function loadArtifact<K extends ArtifactName>(
   if (!pending) {
     const file = `${name}.json`;
     pending = fetchJson(`${base}${file}`, file).then((data) => {
-      const artifact = validateArtifact(name, data);
-      if (name === "manifest") assertCompatible(artifact as Manifest);
-      return artifact;
+      // The version first: another major version may have another shape, and the useful message
+      // then is the version, not the first field that no longer matches.
+      if (name === "manifest") assertCompatibleVersion(data);
+      return validateArtifact(name, data);
     });
     // A failed load must be retryable: forget it so the next call fetches again.
     pending.catch(() => cache.delete(name));
@@ -107,11 +108,17 @@ export function loadArtifact<K extends ArtifactName>(
   return pending as Promise<ArtifactTypes[K]>;
 }
 
-export function assertCompatible(manifest: Manifest): void {
-  if (!isCompatible(manifest.contract_version)) {
+/** Throws unless `data` names a contract version this app can read (checked before its shape). */
+export function assertCompatibleVersion(data: unknown): void {
+  const version =
+    data !== null && typeof data === "object" && "contract_version" in data
+      ? (data).contract_version
+      : undefined;
+  if (typeof version !== "string") return; // the schema check reports the missing field
+  if (!isCompatible(version)) {
     throw new ArtifactError(
       "manifest.json",
-      `contract ${manifest.contract_version} cannot be read by this app (built for ${APP_CONTRACT_VERSION})`,
+      `contract ${version} cannot be read by this app (built for ${APP_CONTRACT_VERSION})`,
     );
   }
 }

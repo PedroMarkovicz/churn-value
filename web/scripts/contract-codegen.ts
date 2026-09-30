@@ -76,16 +76,22 @@ function withoutPropertyTitles(node: unknown, isRoot = true): unknown {
 }
 
 /**
- * Drop OpenAPI's `discriminator` (Pydantic tags the calibrator union with it). Ajv cannot read its
- * `mapping`, and the `oneOf` already enforces the rule: each variant pins `method` to a constant.
+ * Shape the schemas for the runtime validators:
+ * - drop OpenAPI's `discriminator` (Pydantic tags the calibrator union with it). Ajv cannot read
+ *   its `mapping`, and the `oneOf` already enforces the rule: each variant pins `method`;
+ * - drop `additionalProperties: false` (Pydantic's `extra="forbid"`), so artifacts of a newer
+ *   minor contract version, which only add fields, still validate (spec §6.1).
  */
-function withoutDiscriminators(node: unknown): unknown {
-  if (Array.isArray(node)) return node.map((n: unknown) => withoutDiscriminators(n));
+function forValidation(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map((n: unknown) => forValidation(n));
   if (node === null || typeof node !== "object") return node;
   return Object.fromEntries(
     Object.entries(node as Schema)
-      .filter(([key]) => key !== "discriminator")
-      .map(([key, value]) => [key, withoutDiscriminators(value)]),
+      .filter(
+        ([key, value]) =>
+          key !== "discriminator" && !(key === "additionalProperties" && value === false),
+      )
+      .map(([key, value]) => [key, forValidation(value)]),
   );
 }
 
@@ -115,7 +121,7 @@ function validatorModule(dir: string): string {
   });
   const exports: Record<string, string> = {};
   for (const name of ARTIFACT_SCHEMAS) {
-    ajv.addSchema(withoutDiscriminators(readSchema(name, dir)) as object, name);
+    ajv.addSchema(forValidation(readSchema(name, dir)) as object, name);
     exports[`validate_${name}`] = name;
   }
   return BANNER + "/* eslint-disable */\n" + standaloneCode(ajv, exports);
