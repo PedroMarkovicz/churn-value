@@ -1,4 +1,4 @@
-import { act, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import { SimulatorPage } from "@/pages/simulator/SimulatorPage.tsx";
@@ -13,19 +13,34 @@ test("a slider applies at once and reaches the URL after a pause", async () => {
   act(() => {
     thumb.focus();
   });
-  await userEvent.keyboard("{PageDown}{PageDown}{PageDown}"); // Radix: PageDown = 10 steps
-  expect(thumb).toHaveAttribute("aria-valuetext", "0%");
-  expect(screen.getByRole("heading", { level: 1 })).not.toHaveTextContent(before);
-  expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-    "Under these assumptions no customer is worth a call.",
-  );
-  expect(router.state.location.search).toEqual({}); // not yet
-  await waitFor(
-    () => {
+  // The pause is measured on fake timers: on real ones, a busy test machine can take longer than
+  // the pause to run the key presses, and "not yet" would fail for the wrong reason.
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  try {
+    // Synchronous key presses: Testing Library's async wrapper cannot advance Vitest's fake timers.
+    for (let i = 0; i < 3; i++) {
+      act(() => {
+        fireEvent.keyDown(thumb, { key: "PageDown" }); // Radix: PageDown = 10 steps
+      });
+    }
+    expect(thumb).toHaveAttribute("aria-valuetext", "0%");
+    expect(screen.getByRole("heading", { level: 1 })).not.toHaveTextContent(before);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      "Under these assumptions no customer is worth a call.",
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(URL_DELAY_MS - 1);
+    });
+    expect(router.state.location.search).toEqual({}); // not yet
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    await vi.waitFor(() => {
       expect(router.state.location.search).toEqual({ g: "0" });
-    },
-    { timeout: URL_DELAY_MS * 8 },
-  );
+    });
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 test("the policy comparison names the share of perfect foresight", async () => {
