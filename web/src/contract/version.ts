@@ -1,5 +1,5 @@
 /** The contract version this build of the app was written against (ml/src/churnvalue/contract.py). */
-export const APP_CONTRACT_VERSION = "1.1.0";
+export const APP_CONTRACT_VERSION = "1.2.0";
 
 function parse(version: string): [number, number, number] | null {
   const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(version);

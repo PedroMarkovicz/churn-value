@@ -19,7 +19,7 @@ export const MODELS: ModelInfo[] = [
 
 export function manifestFixture(overrides: Partial<Manifest> = {}): Manifest {
   return {
-    contract_version: "1.1.0",
+    contract_version: "1.2.0",
     created_at: "2026-09-27T12:00:00Z",
     git_sha: "0123456789abcdef0123456789abcdef01234567",
     data_sha256: "572e36277c2390fbfde10664750731e0a86f55e33470d91919085f0408e67bfb",
@@ -28,6 +28,7 @@ export function manifestFixture(overrides: Partial<Manifest> = {}): Manifest {
     test_cutoff: "2011-09-10",
     models: MODELS,
     files: { "customers.json": "0".repeat(64) },
+    pipeline: { seed: 42, n_trials: 40, n_folds: 5, horizon_days: 90, eligibility_f: 0.5 },
     ...overrides,
   };
 }

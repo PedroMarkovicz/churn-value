@@ -30,7 +30,7 @@ test("the footer cites the data and names the build", async () => {
   await renderPage(Stub, { layout: Layout });
   const footer = screen.getByRole("contentinfo");
   expect(footer).toHaveTextContent("Online Retail II, Chen, D. (2012)");
-  expect(footer).toHaveTextContent("Contract 1.1.0, built from commit 0123456.");
+  expect(footer).toHaveTextContent("Contract 1.2.0, built from commit 0123456.");
   expect(footer).toHaveTextContent("Scored by GBDT B");
 });
 

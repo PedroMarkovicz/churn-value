@@ -2,8 +2,9 @@
 /* eslint-disable */
 "use strict";
 export const validate_manifest = validate20;
-const schema31 = {"$defs":{"ModelInfo":{"properties":{"deployable":{"title":"Deployable","type":"boolean"},"family":{"enum":["rule","probabilistic","linear","gbdt"],"title":"Family","type":"string"},"label":{"title":"Label","type":"string"},"name":{"title":"Name","type":"string"}},"required":["name","label","family","deployable"],"title":"ModelInfo","type":"object"}},"properties":{"config_sha256":{"title":"Config Sha256","type":"string"},"contract_version":{"title":"Contract Version","type":"string"},"created_at":{"format":"date-time","title":"Created At","type":"string"},"data_sha256":{"title":"Data Sha256","type":"string"},"deployed_model":{"title":"Deployed Model","type":"string"},"files":{"additionalProperties":{"type":"string"},"title":"Files","type":"object"},"git_sha":{"title":"Git Sha","type":"string"},"models":{"items":{"$ref":"#/$defs/ModelInfo"},"title":"Models","type":"array"},"test_cutoff":{"format":"date","title":"Test Cutoff","type":"string"}},"required":["contract_version","created_at","git_sha","data_sha256","config_sha256","deployed_model","test_cutoff","models","files"],"title":"Manifest","type":"object"};
+const schema31 = {"$defs":{"ModelInfo":{"properties":{"deployable":{"title":"Deployable","type":"boolean"},"family":{"enum":["rule","probabilistic","linear","gbdt"],"title":"Family","type":"string"},"label":{"title":"Label","type":"string"},"name":{"title":"Name","type":"string"}},"required":["name","label","family","deployable"],"title":"ModelInfo","type":"object"},"PipelineInfo":{"description":"How the served run was built (contract 1.2.0): the Model and Method pages quote it.","properties":{"eligibility_f":{"title":"Eligibility F","type":"number"},"horizon_days":{"title":"Horizon Days","type":"integer"},"n_folds":{"title":"N Folds","type":"integer"},"n_trials":{"title":"N Trials","type":"integer"},"seed":{"title":"Seed","type":"integer"}},"required":["seed","n_trials","n_folds","horizon_days","eligibility_f"],"title":"PipelineInfo","type":"object"}},"properties":{"config_sha256":{"title":"Config Sha256","type":"string"},"contract_version":{"title":"Contract Version","type":"string"},"created_at":{"format":"date-time","title":"Created At","type":"string"},"data_sha256":{"title":"Data Sha256","type":"string"},"deployed_model":{"title":"Deployed Model","type":"string"},"files":{"additionalProperties":{"type":"string"},"title":"Files","type":"object"},"git_sha":{"title":"Git Sha","type":"string"},"models":{"items":{"$ref":"#/$defs/ModelInfo"},"title":"Models","type":"array"},"pipeline":{"anyOf":[{"$ref":"#/$defs/PipelineInfo"},{"type":"null"}],"default":null},"test_cutoff":{"format":"date","title":"Test Cutoff","type":"string"}},"required":["contract_version","created_at","git_sha","data_sha256","config_sha256","deployed_model","test_cutoff","models","files"],"title":"Manifest","type":"object"};
 const schema32 = {"properties":{"deployable":{"title":"Deployable","type":"boolean"},"family":{"enum":["rule","probabilistic","linear","gbdt"],"title":"Family","type":"string"},"label":{"title":"Label","type":"string"},"name":{"title":"Name","type":"string"}},"required":["name","label","family","deployable"],"title":"ModelInfo","type":"object"};
+const schema33 = {"description":"How the served run was built (contract 1.2.0): the Model and Method pages quote it.","properties":{"eligibility_f":{"title":"Eligibility F","type":"number"},"horizon_days":{"title":"Horizon Days","type":"integer"},"n_folds":{"title":"N Folds","type":"integer"},"n_trials":{"title":"N Trials","type":"integer"},"seed":{"title":"Seed","type":"integer"}},"required":["seed","n_trials","n_folds","horizon_days","eligibility_f"],"title":"PipelineInfo","type":"object"};
 
 function validate20(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
@@ -225,13 +226,181 @@ else {
 var valid0 = true;
 }
 if(valid0){
-if(data.test_cutoff !== undefined){
+if(data.pipeline !== undefined){
+let data14 = data.pipeline;
 const _errs31 = errors;
-if(errors === _errs31){
-if(errors === _errs31){
-if(!(typeof data.test_cutoff === "string")){
-validate20.errors = [{instancePath:instancePath+"/test_cutoff",schemaPath:"#/properties/test_cutoff/type",keyword:"type",params:{type: "string"},message:"must be string"}];
+const _errs32 = errors;
+let valid5 = false;
+const _errs33 = errors;
+const _errs34 = errors;
+if(errors === _errs34){
+if(data14 && typeof data14 == "object" && !Array.isArray(data14)){
+let missing2;
+if((((((data14.seed === undefined) && (missing2 = "seed")) || ((data14.n_trials === undefined) && (missing2 = "n_trials"))) || ((data14.n_folds === undefined) && (missing2 = "n_folds"))) || ((data14.horizon_days === undefined) && (missing2 = "horizon_days"))) || ((data14.eligibility_f === undefined) && (missing2 = "eligibility_f"))){
+const err0 = {instancePath:instancePath+"/pipeline",schemaPath:"#/$defs/PipelineInfo/required",keyword:"required",params:{missingProperty: missing2},message:"must have required property '"+missing2+"'"};
+if(vErrors === null){
+vErrors = [err0];
+}
+else {
+vErrors.push(err0);
+}
+errors++;
+}
+else {
+if(data14.eligibility_f !== undefined){
+let data15 = data14.eligibility_f;
+const _errs36 = errors;
+if(!((typeof data15 == "number") && (isFinite(data15)))){
+const err1 = {instancePath:instancePath+"/pipeline/eligibility_f",schemaPath:"#/$defs/PipelineInfo/properties/eligibility_f/type",keyword:"type",params:{type: "number"},message:"must be number"};
+if(vErrors === null){
+vErrors = [err1];
+}
+else {
+vErrors.push(err1);
+}
+errors++;
+}
+var valid7 = _errs36 === errors;
+}
+else {
+var valid7 = true;
+}
+if(valid7){
+if(data14.horizon_days !== undefined){
+let data16 = data14.horizon_days;
+const _errs38 = errors;
+if(!(((typeof data16 == "number") && (!(data16 % 1) && !isNaN(data16))) && (isFinite(data16)))){
+const err2 = {instancePath:instancePath+"/pipeline/horizon_days",schemaPath:"#/$defs/PipelineInfo/properties/horizon_days/type",keyword:"type",params:{type: "integer"},message:"must be integer"};
+if(vErrors === null){
+vErrors = [err2];
+}
+else {
+vErrors.push(err2);
+}
+errors++;
+}
+var valid7 = _errs38 === errors;
+}
+else {
+var valid7 = true;
+}
+if(valid7){
+if(data14.n_folds !== undefined){
+let data17 = data14.n_folds;
+const _errs40 = errors;
+if(!(((typeof data17 == "number") && (!(data17 % 1) && !isNaN(data17))) && (isFinite(data17)))){
+const err3 = {instancePath:instancePath+"/pipeline/n_folds",schemaPath:"#/$defs/PipelineInfo/properties/n_folds/type",keyword:"type",params:{type: "integer"},message:"must be integer"};
+if(vErrors === null){
+vErrors = [err3];
+}
+else {
+vErrors.push(err3);
+}
+errors++;
+}
+var valid7 = _errs40 === errors;
+}
+else {
+var valid7 = true;
+}
+if(valid7){
+if(data14.n_trials !== undefined){
+let data18 = data14.n_trials;
+const _errs42 = errors;
+if(!(((typeof data18 == "number") && (!(data18 % 1) && !isNaN(data18))) && (isFinite(data18)))){
+const err4 = {instancePath:instancePath+"/pipeline/n_trials",schemaPath:"#/$defs/PipelineInfo/properties/n_trials/type",keyword:"type",params:{type: "integer"},message:"must be integer"};
+if(vErrors === null){
+vErrors = [err4];
+}
+else {
+vErrors.push(err4);
+}
+errors++;
+}
+var valid7 = _errs42 === errors;
+}
+else {
+var valid7 = true;
+}
+if(valid7){
+if(data14.seed !== undefined){
+let data19 = data14.seed;
+const _errs44 = errors;
+if(!(((typeof data19 == "number") && (!(data19 % 1) && !isNaN(data19))) && (isFinite(data19)))){
+const err5 = {instancePath:instancePath+"/pipeline/seed",schemaPath:"#/$defs/PipelineInfo/properties/seed/type",keyword:"type",params:{type: "integer"},message:"must be integer"};
+if(vErrors === null){
+vErrors = [err5];
+}
+else {
+vErrors.push(err5);
+}
+errors++;
+}
+var valid7 = _errs44 === errors;
+}
+else {
+var valid7 = true;
+}
+}
+}
+}
+}
+}
+}
+else {
+const err6 = {instancePath:instancePath+"/pipeline",schemaPath:"#/$defs/PipelineInfo/type",keyword:"type",params:{type: "object"},message:"must be object"};
+if(vErrors === null){
+vErrors = [err6];
+}
+else {
+vErrors.push(err6);
+}
+errors++;
+}
+}
+var _valid0 = _errs33 === errors;
+valid5 = valid5 || _valid0;
+if(_valid0){
+var props0 = {};
+props0.eligibility_f = true;
+props0.horizon_days = true;
+props0.n_folds = true;
+props0.n_trials = true;
+props0.seed = true;
+}
+const _errs46 = errors;
+if(data14 !== null){
+const err7 = {instancePath:instancePath+"/pipeline",schemaPath:"#/properties/pipeline/anyOf/1/type",keyword:"type",params:{type: "null"},message:"must be null"};
+if(vErrors === null){
+vErrors = [err7];
+}
+else {
+vErrors.push(err7);
+}
+errors++;
+}
+var _valid0 = _errs46 === errors;
+valid5 = valid5 || _valid0;
+if(!valid5){
+const err8 = {instancePath:instancePath+"/pipeline",schemaPath:"#/properties/pipeline/anyOf",keyword:"anyOf",params:{},message:"must match a schema in anyOf"};
+if(vErrors === null){
+vErrors = [err8];
+}
+else {
+vErrors.push(err8);
+}
+errors++;
+validate20.errors = vErrors;
 return false;
+}
+else {
+errors = _errs32;
+if(vErrors !== null){
+if(_errs32){
+vErrors.length = _errs32;
+}
+else {
+vErrors = null;
 }
 }
 }
@@ -239,6 +408,23 @@ var valid0 = _errs31 === errors;
 }
 else {
 var valid0 = true;
+}
+if(valid0){
+if(data.test_cutoff !== undefined){
+const _errs48 = errors;
+if(errors === _errs48){
+if(errors === _errs48){
+if(!(typeof data.test_cutoff === "string")){
+validate20.errors = [{instancePath:instancePath+"/test_cutoff",schemaPath:"#/properties/test_cutoff/type",keyword:"type",params:{type: "string"},message:"must be string"}];
+return false;
+}
+}
+}
+var valid0 = _errs48 === errors;
+}
+else {
+var valid0 = true;
+}
 }
 }
 }
@@ -258,12 +444,12 @@ return false;
 validate20.errors = vErrors;
 return errors === 0;
 }
-validate20.evaluated = {"props":{"config_sha256":true,"contract_version":true,"created_at":true,"data_sha256":true,"deployed_model":true,"files":true,"git_sha":true,"models":true,"test_cutoff":true},"dynamicProps":false,"dynamicItems":false};
+validate20.evaluated = {"props":{"config_sha256":true,"contract_version":true,"created_at":true,"data_sha256":true,"deployed_model":true,"files":true,"git_sha":true,"models":true,"pipeline":true,"test_cutoff":true},"dynamicProps":false,"dynamicItems":false};
 
 export const validate_customers = validate21;
-const schema33 = {"$defs":{"Contribution":{"properties":{"feature":{"title":"Feature","type":"string"},"shap":{"title":"Shap","type":"number"},"value":{"title":"Value","type":"number"}},"required":["feature","value","shap"],"title":"Contribution","type":"object"},"Customer":{"properties":{"aov_gg":{"exclusiveMinimum":0,"title":"Aov Gg","type":"number"},"cadence_days":{"exclusiveMinimum":0,"title":"Cadence Days","type":"number"},"churn":{"enum":[0,1],"title":"Churn","type":"integer"},"customer_id":{"title":"Customer Id","type":"integer"},"features":{"additionalProperties":{"type":"number"},"title":"Features","type":"object"},"p":{"additionalProperties":{"maximum":1,"minimum":0,"type":"number"},"title":"P","type":"object"},"shap_baseline":{"title":"Shap Baseline","type":"number"},"top_contributions":{"items":{"$ref":"#/$defs/Contribution"},"title":"Top Contributions","type":"array"}},"required":["customer_id","churn","p","features","aov_gg","cadence_days","shap_baseline","top_contributions"],"title":"Customer","type":"object"}},"properties":{"customers":{"items":{"$ref":"#/$defs/Customer"},"title":"Customers","type":"array"},"cutoff":{"format":"date","title":"Cutoff","type":"string"},"deployed_model":{"title":"Deployed Model","type":"string"},"horizon_days":{"title":"Horizon Days","type":"integer"},"models":{"items":{"type":"string"},"title":"Models","type":"array"}},"required":["cutoff","horizon_days","models","deployed_model","customers"],"title":"CustomersFile","type":"object"};
-const schema34 = {"properties":{"aov_gg":{"exclusiveMinimum":0,"title":"Aov Gg","type":"number"},"cadence_days":{"exclusiveMinimum":0,"title":"Cadence Days","type":"number"},"churn":{"enum":[0,1],"title":"Churn","type":"integer"},"customer_id":{"title":"Customer Id","type":"integer"},"features":{"additionalProperties":{"type":"number"},"title":"Features","type":"object"},"p":{"additionalProperties":{"maximum":1,"minimum":0,"type":"number"},"title":"P","type":"object"},"shap_baseline":{"title":"Shap Baseline","type":"number"},"top_contributions":{"items":{"$ref":"#/$defs/Contribution"},"title":"Top Contributions","type":"array"}},"required":["customer_id","churn","p","features","aov_gg","cadence_days","shap_baseline","top_contributions"],"title":"Customer","type":"object"};
-const schema35 = {"properties":{"feature":{"title":"Feature","type":"string"},"shap":{"title":"Shap","type":"number"},"value":{"title":"Value","type":"number"}},"required":["feature","value","shap"],"title":"Contribution","type":"object"};
+const schema34 = {"$defs":{"Contribution":{"properties":{"feature":{"title":"Feature","type":"string"},"shap":{"title":"Shap","type":"number"},"value":{"title":"Value","type":"number"}},"required":["feature","value","shap"],"title":"Contribution","type":"object"},"Customer":{"properties":{"aov_gg":{"exclusiveMinimum":0,"title":"Aov Gg","type":"number"},"cadence_days":{"exclusiveMinimum":0,"title":"Cadence Days","type":"number"},"churn":{"enum":[0,1],"title":"Churn","type":"integer"},"customer_id":{"title":"Customer Id","type":"integer"},"features":{"additionalProperties":{"type":"number"},"title":"Features","type":"object"},"p":{"additionalProperties":{"maximum":1,"minimum":0,"type":"number"},"title":"P","type":"object"},"shap_baseline":{"title":"Shap Baseline","type":"number"},"top_contributions":{"items":{"$ref":"#/$defs/Contribution"},"title":"Top Contributions","type":"array"}},"required":["customer_id","churn","p","features","aov_gg","cadence_days","shap_baseline","top_contributions"],"title":"Customer","type":"object"}},"properties":{"customers":{"items":{"$ref":"#/$defs/Customer"},"title":"Customers","type":"array"},"cutoff":{"format":"date","title":"Cutoff","type":"string"},"deployed_model":{"title":"Deployed Model","type":"string"},"horizon_days":{"title":"Horizon Days","type":"integer"},"models":{"items":{"type":"string"},"title":"Models","type":"array"}},"required":["cutoff","horizon_days","models","deployed_model","customers"],"title":"CustomersFile","type":"object"};
+const schema35 = {"properties":{"aov_gg":{"exclusiveMinimum":0,"title":"Aov Gg","type":"number"},"cadence_days":{"exclusiveMinimum":0,"title":"Cadence Days","type":"number"},"churn":{"enum":[0,1],"title":"Churn","type":"integer"},"customer_id":{"title":"Customer Id","type":"integer"},"features":{"additionalProperties":{"type":"number"},"title":"Features","type":"object"},"p":{"additionalProperties":{"maximum":1,"minimum":0,"type":"number"},"title":"P","type":"object"},"shap_baseline":{"title":"Shap Baseline","type":"number"},"top_contributions":{"items":{"$ref":"#/$defs/Contribution"},"title":"Top Contributions","type":"array"}},"required":["customer_id","churn","p","features","aov_gg","cadence_days","shap_baseline","top_contributions"],"title":"Customer","type":"object"};
+const schema36 = {"properties":{"feature":{"title":"Feature","type":"string"},"shap":{"title":"Shap","type":"number"},"value":{"title":"Value","type":"number"}},"required":["feature","value","shap"],"title":"Contribution","type":"object"};
 
 function validate22(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
@@ -333,7 +519,7 @@ validate22.errors = [{instancePath:instancePath+"/churn",schemaPath:"#/propertie
 return false;
 }
 if(!((data2 === 0) || (data2 === 1))){
-validate22.errors = [{instancePath:instancePath+"/churn",schemaPath:"#/properties/churn/enum",keyword:"enum",params:{allowedValues: schema34.properties.churn.enum},message:"must be equal to one of the allowed values"}];
+validate22.errors = [{instancePath:instancePath+"/churn",schemaPath:"#/properties/churn/enum",keyword:"enum",params:{allowedValues: schema35.properties.churn.enum},message:"must be equal to one of the allowed values"}];
 return false;
 }
 var valid0 = _errs5 === errors;
@@ -676,8 +862,8 @@ return errors === 0;
 validate21.evaluated = {"props":{"customers":true,"cutoff":true,"deployed_model":true,"horizon_days":true,"models":true},"dynamicProps":false,"dynamicItems":false};
 
 export const validate_timelines = validate24;
-const schema36 = {"$defs":{"Timeline":{"properties":{"customer_id":{"title":"Customer Id","type":"integer"},"days":{"items":{"type":"integer"},"title":"Days","type":"array"},"revenue":{"items":{"type":"number"},"title":"Revenue","type":"array"}},"required":["customer_id","days","revenue"],"title":"Timeline","type":"object"}},"properties":{"cutoff":{"format":"date","title":"Cutoff","type":"string"},"horizon_days":{"title":"Horizon Days","type":"integer"},"timelines":{"items":{"$ref":"#/$defs/Timeline"},"title":"Timelines","type":"array"}},"required":["cutoff","horizon_days","timelines"],"title":"TimelinesFile","type":"object"};
-const schema37 = {"properties":{"customer_id":{"title":"Customer Id","type":"integer"},"days":{"items":{"type":"integer"},"title":"Days","type":"array"},"revenue":{"items":{"type":"number"},"title":"Revenue","type":"array"}},"required":["customer_id","days","revenue"],"title":"Timeline","type":"object"};
+const schema37 = {"$defs":{"Timeline":{"properties":{"customer_id":{"title":"Customer Id","type":"integer"},"days":{"items":{"type":"integer"},"title":"Days","type":"array"},"revenue":{"items":{"type":"number"},"title":"Revenue","type":"array"}},"required":["customer_id","days","revenue"],"title":"Timeline","type":"object"}},"properties":{"cutoff":{"format":"date","title":"Cutoff","type":"string"},"horizon_days":{"title":"Horizon Days","type":"integer"},"timelines":{"items":{"$ref":"#/$defs/Timeline"},"title":"Timelines","type":"array"}},"required":["cutoff","horizon_days","timelines"],"title":"TimelinesFile","type":"object"};
+const schema38 = {"properties":{"customer_id":{"title":"Customer Id","type":"integer"},"days":{"items":{"type":"integer"},"title":"Days","type":"array"},"revenue":{"items":{"type":"number"},"title":"Revenue","type":"array"}},"required":["customer_id","days","revenue"],"title":"Timeline","type":"object"};
 
 function validate24(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
@@ -859,23 +1045,23 @@ return errors === 0;
 validate24.evaluated = {"props":{"cutoff":true,"horizon_days":true,"timelines":true},"dynamicProps":false,"dynamicItems":false};
 
 export const validate_evaluation = validate25;
-const schema38 = {"$defs":{"Curves":{"properties":{"gains":{"$ref":"#/$defs/GainsCurve"},"pr":{"$ref":"#/$defs/PRCurve"},"reliability":{"items":{"$ref":"#/$defs/ReliabilityBin"},"title":"Reliability","type":"array"},"roc":{"$ref":"#/$defs/ROCCurve"}},"required":["pr","roc","gains","reliability"],"title":"Curves","type":"object"},"DriftRow":{"properties":{"cutoff":{"format":"date","title":"Cutoff","type":"string"},"feature":{"title":"Feature","type":"string"},"psi":{"title":"Psi","type":"number"}},"required":["cutoff","feature","psi"],"title":"DriftRow","type":"object"},"EconomicParams":{"description":"User-configurable business assumptions. Defaults live in configs/default.yaml.","properties":{"contact_cost":{"minimum":0,"title":"Contact Cost","type":"number"},"gamma":{"maximum":1,"minimum":0,"title":"Gamma","type":"number"},"lambda_a":{"minimum":1,"title":"Lambda A","type":"number"},"lambda_c":{"maximum":1,"minimum":0,"title":"Lambda C","type":"number"},"margin":{"exclusiveMinimum":0,"maximum":1,"title":"Margin","type":"number"},"value_horizon_days":{"exclusiveMinimum":0,"title":"Value Horizon Days","type":"number"}},"required":["margin","lambda_c","lambda_a","gamma","contact_cost","value_horizon_days"],"title":"EconomicParams","type":"object"},"Estimate":{"properties":{"ci_high":{"title":"Ci High","type":"number"},"ci_low":{"title":"Ci Low","type":"number"},"value":{"title":"Value","type":"number"}},"required":["value","ci_low","ci_high"],"title":"Estimate","type":"object"},"GainsCurve":{"properties":{"captured":{"items":{"type":"number"},"title":"Captured","type":"array"},"fraction":{"items":{"type":"number"},"title":"Fraction","type":"array"}},"required":["fraction","captured"],"title":"GainsCurve","type":"object"},"IsotonicSpec":{"properties":{"method":{"const":"isotonic","title":"Method","type":"string"},"x":{"items":{"type":"number"},"minItems":1,"title":"X","type":"array"},"y":{"items":{"maximum":1,"minimum":0,"type":"number"},"minItems":1,"title":"Y","type":"array"}},"required":["method","x","y"],"title":"IsotonicSpec","type":"object"},"ModelEvaluation":{"properties":{"calibrator":{"oneOf":[{"$ref":"#/$defs/IsotonicSpec"},{"$ref":"#/$defs/PlattSpec"}],"title":"Calibrator"},"curves":{"$ref":"#/$defs/Curves"},"emp_per_customer":{"$ref":"#/$defs/Estimate"},"mean_p":{"title":"Mean P","type":"number"},"metrics":{"additionalProperties":{"$ref":"#/$defs/Estimate"},"title":"Metrics","type":"object"}},"required":["calibrator","mean_p","metrics","emp_per_customer","curves"],"title":"ModelEvaluation","type":"object"},"PRCurve":{"properties":{"precision":{"items":{"type":"number"},"title":"Precision","type":"array"},"recall":{"items":{"type":"number"},"title":"Recall","type":"array"}},"required":["recall","precision"],"title":"PRCurve","type":"object"},"PlattSpec":{"properties":{"intercept":{"title":"Intercept","type":"number"},"method":{"const":"platt","title":"Method","type":"string"},"slope":{"title":"Slope","type":"number"}},"required":["method","slope","intercept"],"title":"PlattSpec","type":"object"},"PolicyRow":{"properties":{"expected_profit":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Expected Profit"},"n_contacted":{"title":"N Contacted","type":"integer"},"policy":{"title":"Policy","type":"string"},"random_same_k_profit":{"title":"Random Same K Profit","type":"number"},"realized_profit":{"title":"Realized Profit","type":"number"},"realized_profit_ci_high":{"title":"Realized Profit Ci High","type":"number"},"realized_profit_ci_low":{"title":"Realized Profit Ci Low","type":"number"},"share_of_oracle":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Share Of Oracle"}},"required":["policy","n_contacted","expected_profit","realized_profit","share_of_oracle","random_same_k_profit","realized_profit_ci_low","realized_profit_ci_high"],"title":"PolicyRow","type":"object"},"Population":{"properties":{"churn_rate":{"title":"Churn Rate","type":"number"},"n_customers":{"title":"N Customers","type":"integer"}},"required":["n_customers","churn_rate"],"title":"Population","type":"object"},"ROCCurve":{"properties":{"fpr":{"items":{"type":"number"},"title":"Fpr","type":"array"},"tpr":{"items":{"type":"number"},"title":"Tpr","type":"array"}},"required":["fpr","tpr"],"title":"ROCCurve","type":"object"},"ReliabilityBin":{"properties":{"bin_high":{"title":"Bin High","type":"number"},"bin_low":{"title":"Bin Low","type":"number"},"churn_rate":{"title":"Churn Rate","type":"number"},"mean_p":{"title":"Mean P","type":"number"},"n":{"title":"N","type":"integer"}},"required":["bin_low","bin_high","mean_p","churn_rate","n"],"title":"ReliabilityBin","type":"object"},"Split":{"properties":{"calibration":{"format":"date","title":"Calibration","type":"string"},"test":{"format":"date","title":"Test","type":"string"},"train":{"items":{"format":"date","type":"string"},"title":"Train","type":"array"}},"required":["train","calibration","test"],"title":"Split","type":"object"},"StabilityRow":{"properties":{"brier":{"title":"Brier","type":"number"},"churn_rate":{"title":"Churn Rate","type":"number"},"cutoff":{"format":"date","title":"Cutoff","type":"string"},"expected_profit":{"title":"Expected Profit","type":"number"},"mean_p":{"title":"Mean P","type":"number"},"model":{"title":"Model","type":"string"},"n_contacted":{"title":"N Contacted","type":"integer"},"n_customers":{"title":"N Customers","type":"integer"},"pr_auc":{"title":"Pr Auc","type":"number"},"realized_profit":{"title":"Realized Profit","type":"number"},"roc_auc":{"title":"Roc Auc","type":"number"},"role":{"enum":["calibration","test","out_of_time"],"title":"Role","type":"string"}},"required":["cutoff","role","model","n_customers","churn_rate","mean_p","roc_auc","pr_auc","brier","n_contacted","expected_profit","realized_profit"],"title":"StabilityRow","type":"object"},"ValueCheckRow":{"description":"Customers who stayed: revenue the value formula predicted for the label window vs actual.","properties":{"actual_revenue":{"title":"Actual Revenue","type":"number"},"bucket":{"title":"Bucket","type":"string"},"max_purchase_days":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Max Purchase Days"},"min_purchase_days":{"title":"Min Purchase Days","type":"integer"},"n":{"title":"N","type":"integer"},"predicted_revenue":{"title":"Predicted Revenue","type":"number"},"ratio":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Ratio"}},"required":["bucket","min_purchase_days","max_purchase_days","n","predicted_revenue","actual_revenue","ratio"],"title":"ValueCheckRow","type":"object"}},"properties":{"calibration_population":{"$ref":"#/$defs/Population"},"drift":{"items":{"$ref":"#/$defs/DriftRow"},"title":"Drift","type":"array"},"economics":{"$ref":"#/$defs/EconomicParams"},"models":{"additionalProperties":{"$ref":"#/$defs/ModelEvaluation"},"title":"Models","type":"object"},"models_sha256":{"anyOf":[{"type":"string"},{"type":"null"}],"default":null,"title":"Models Sha256"},"policies":{"items":{"$ref":"#/$defs/PolicyRow"},"title":"Policies","type":"array"},"split":{"$ref":"#/$defs/Split"},"stability":{"items":{"$ref":"#/$defs/StabilityRow"},"title":"Stability","type":"array"},"test_population":{"$ref":"#/$defs/Population"},"value_check":{"anyOf":[{"items":{"$ref":"#/$defs/ValueCheckRow"},"type":"array"},{"type":"null"}],"default":null,"title":"Value Check"}},"required":["split","test_population","calibration_population","economics","models","policies","stability","drift"],"title":"EvaluationFile","type":"object"};
-const schema39 = {"properties":{"churn_rate":{"title":"Churn Rate","type":"number"},"n_customers":{"title":"N Customers","type":"integer"}},"required":["n_customers","churn_rate"],"title":"Population","type":"object"};
-const schema40 = {"properties":{"cutoff":{"format":"date","title":"Cutoff","type":"string"},"feature":{"title":"Feature","type":"string"},"psi":{"title":"Psi","type":"number"}},"required":["cutoff","feature","psi"],"title":"DriftRow","type":"object"};
-const schema41 = {"description":"User-configurable business assumptions. Defaults live in configs/default.yaml.","properties":{"contact_cost":{"minimum":0,"title":"Contact Cost","type":"number"},"gamma":{"maximum":1,"minimum":0,"title":"Gamma","type":"number"},"lambda_a":{"minimum":1,"title":"Lambda A","type":"number"},"lambda_c":{"maximum":1,"minimum":0,"title":"Lambda C","type":"number"},"margin":{"exclusiveMinimum":0,"maximum":1,"title":"Margin","type":"number"},"value_horizon_days":{"exclusiveMinimum":0,"title":"Value Horizon Days","type":"number"}},"required":["margin","lambda_c","lambda_a","gamma","contact_cost","value_horizon_days"],"title":"EconomicParams","type":"object"};
-const schema52 = {"properties":{"expected_profit":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Expected Profit"},"n_contacted":{"title":"N Contacted","type":"integer"},"policy":{"title":"Policy","type":"string"},"random_same_k_profit":{"title":"Random Same K Profit","type":"number"},"realized_profit":{"title":"Realized Profit","type":"number"},"realized_profit_ci_high":{"title":"Realized Profit Ci High","type":"number"},"realized_profit_ci_low":{"title":"Realized Profit Ci Low","type":"number"},"share_of_oracle":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Share Of Oracle"}},"required":["policy","n_contacted","expected_profit","realized_profit","share_of_oracle","random_same_k_profit","realized_profit_ci_low","realized_profit_ci_high"],"title":"PolicyRow","type":"object"};
-const schema53 = {"properties":{"calibration":{"format":"date","title":"Calibration","type":"string"},"test":{"format":"date","title":"Test","type":"string"},"train":{"items":{"format":"date","type":"string"},"title":"Train","type":"array"}},"required":["train","calibration","test"],"title":"Split","type":"object"};
-const schema54 = {"properties":{"brier":{"title":"Brier","type":"number"},"churn_rate":{"title":"Churn Rate","type":"number"},"cutoff":{"format":"date","title":"Cutoff","type":"string"},"expected_profit":{"title":"Expected Profit","type":"number"},"mean_p":{"title":"Mean P","type":"number"},"model":{"title":"Model","type":"string"},"n_contacted":{"title":"N Contacted","type":"integer"},"n_customers":{"title":"N Customers","type":"integer"},"pr_auc":{"title":"Pr Auc","type":"number"},"realized_profit":{"title":"Realized Profit","type":"number"},"roc_auc":{"title":"Roc Auc","type":"number"},"role":{"enum":["calibration","test","out_of_time"],"title":"Role","type":"string"}},"required":["cutoff","role","model","n_customers","churn_rate","mean_p","roc_auc","pr_auc","brier","n_contacted","expected_profit","realized_profit"],"title":"StabilityRow","type":"object"};
-const schema56 = {"description":"Customers who stayed: revenue the value formula predicted for the label window vs actual.","properties":{"actual_revenue":{"title":"Actual Revenue","type":"number"},"bucket":{"title":"Bucket","type":"string"},"max_purchase_days":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Max Purchase Days"},"min_purchase_days":{"title":"Min Purchase Days","type":"integer"},"n":{"title":"N","type":"integer"},"predicted_revenue":{"title":"Predicted Revenue","type":"number"},"ratio":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Ratio"}},"required":["bucket","min_purchase_days","max_purchase_days","n","predicted_revenue","actual_revenue","ratio"],"title":"ValueCheckRow","type":"object"};
-const schema42 = {"properties":{"calibrator":{"oneOf":[{"$ref":"#/$defs/IsotonicSpec"},{"$ref":"#/$defs/PlattSpec"}],"title":"Calibrator"},"curves":{"$ref":"#/$defs/Curves"},"emp_per_customer":{"$ref":"#/$defs/Estimate"},"mean_p":{"title":"Mean P","type":"number"},"metrics":{"additionalProperties":{"$ref":"#/$defs/Estimate"},"title":"Metrics","type":"object"}},"required":["calibrator","mean_p","metrics","emp_per_customer","curves"],"title":"ModelEvaluation","type":"object"};
-const schema43 = {"properties":{"method":{"const":"isotonic","title":"Method","type":"string"},"x":{"items":{"type":"number"},"minItems":1,"title":"X","type":"array"},"y":{"items":{"maximum":1,"minimum":0,"type":"number"},"minItems":1,"title":"Y","type":"array"}},"required":["method","x","y"],"title":"IsotonicSpec","type":"object"};
-const schema44 = {"properties":{"intercept":{"title":"Intercept","type":"number"},"method":{"const":"platt","title":"Method","type":"string"},"slope":{"title":"Slope","type":"number"}},"required":["method","slope","intercept"],"title":"PlattSpec","type":"object"};
-const schema50 = {"properties":{"ci_high":{"title":"Ci High","type":"number"},"ci_low":{"title":"Ci Low","type":"number"},"value":{"title":"Value","type":"number"}},"required":["value","ci_low","ci_high"],"title":"Estimate","type":"object"};
-const schema45 = {"properties":{"gains":{"$ref":"#/$defs/GainsCurve"},"pr":{"$ref":"#/$defs/PRCurve"},"reliability":{"items":{"$ref":"#/$defs/ReliabilityBin"},"title":"Reliability","type":"array"},"roc":{"$ref":"#/$defs/ROCCurve"}},"required":["pr","roc","gains","reliability"],"title":"Curves","type":"object"};
-const schema46 = {"properties":{"captured":{"items":{"type":"number"},"title":"Captured","type":"array"},"fraction":{"items":{"type":"number"},"title":"Fraction","type":"array"}},"required":["fraction","captured"],"title":"GainsCurve","type":"object"};
-const schema47 = {"properties":{"precision":{"items":{"type":"number"},"title":"Precision","type":"array"},"recall":{"items":{"type":"number"},"title":"Recall","type":"array"}},"required":["recall","precision"],"title":"PRCurve","type":"object"};
-const schema48 = {"properties":{"bin_high":{"title":"Bin High","type":"number"},"bin_low":{"title":"Bin Low","type":"number"},"churn_rate":{"title":"Churn Rate","type":"number"},"mean_p":{"title":"Mean P","type":"number"},"n":{"title":"N","type":"integer"}},"required":["bin_low","bin_high","mean_p","churn_rate","n"],"title":"ReliabilityBin","type":"object"};
-const schema49 = {"properties":{"fpr":{"items":{"type":"number"},"title":"Fpr","type":"array"},"tpr":{"items":{"type":"number"},"title":"Tpr","type":"array"}},"required":["fpr","tpr"],"title":"ROCCurve","type":"object"};
+const schema39 = {"$defs":{"Curves":{"properties":{"gains":{"$ref":"#/$defs/GainsCurve"},"pr":{"$ref":"#/$defs/PRCurve"},"reliability":{"items":{"$ref":"#/$defs/ReliabilityBin"},"title":"Reliability","type":"array"},"roc":{"$ref":"#/$defs/ROCCurve"}},"required":["pr","roc","gains","reliability"],"title":"Curves","type":"object"},"DriftRow":{"properties":{"cutoff":{"format":"date","title":"Cutoff","type":"string"},"feature":{"title":"Feature","type":"string"},"psi":{"title":"Psi","type":"number"}},"required":["cutoff","feature","psi"],"title":"DriftRow","type":"object"},"EconomicParams":{"description":"User-configurable business assumptions. Defaults live in configs/default.yaml.","properties":{"contact_cost":{"minimum":0,"title":"Contact Cost","type":"number"},"gamma":{"maximum":1,"minimum":0,"title":"Gamma","type":"number"},"lambda_a":{"minimum":1,"title":"Lambda A","type":"number"},"lambda_c":{"maximum":1,"minimum":0,"title":"Lambda C","type":"number"},"margin":{"exclusiveMinimum":0,"maximum":1,"title":"Margin","type":"number"},"value_horizon_days":{"exclusiveMinimum":0,"title":"Value Horizon Days","type":"number"}},"required":["margin","lambda_c","lambda_a","gamma","contact_cost","value_horizon_days"],"title":"EconomicParams","type":"object"},"Estimate":{"properties":{"ci_high":{"title":"Ci High","type":"number"},"ci_low":{"title":"Ci Low","type":"number"},"value":{"title":"Value","type":"number"}},"required":["value","ci_low","ci_high"],"title":"Estimate","type":"object"},"GainsCurve":{"properties":{"captured":{"items":{"type":"number"},"title":"Captured","type":"array"},"fraction":{"items":{"type":"number"},"title":"Fraction","type":"array"}},"required":["fraction","captured"],"title":"GainsCurve","type":"object"},"IsotonicSpec":{"properties":{"method":{"const":"isotonic","title":"Method","type":"string"},"x":{"items":{"type":"number"},"minItems":1,"title":"X","type":"array"},"y":{"items":{"maximum":1,"minimum":0,"type":"number"},"minItems":1,"title":"Y","type":"array"}},"required":["method","x","y"],"title":"IsotonicSpec","type":"object"},"ModelEvaluation":{"properties":{"calibrator":{"oneOf":[{"$ref":"#/$defs/IsotonicSpec"},{"$ref":"#/$defs/PlattSpec"}],"title":"Calibrator"},"curves":{"$ref":"#/$defs/Curves"},"emp_per_customer":{"$ref":"#/$defs/Estimate"},"mean_p":{"title":"Mean P","type":"number"},"metrics":{"additionalProperties":{"$ref":"#/$defs/Estimate"},"title":"Metrics","type":"object"}},"required":["calibrator","mean_p","metrics","emp_per_customer","curves"],"title":"ModelEvaluation","type":"object"},"PRCurve":{"properties":{"precision":{"items":{"type":"number"},"title":"Precision","type":"array"},"recall":{"items":{"type":"number"},"title":"Recall","type":"array"}},"required":["recall","precision"],"title":"PRCurve","type":"object"},"PlattSpec":{"properties":{"intercept":{"title":"Intercept","type":"number"},"method":{"const":"platt","title":"Method","type":"string"},"slope":{"title":"Slope","type":"number"}},"required":["method","slope","intercept"],"title":"PlattSpec","type":"object"},"PolicyRow":{"properties":{"expected_profit":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Expected Profit"},"n_contacted":{"title":"N Contacted","type":"integer"},"policy":{"title":"Policy","type":"string"},"random_same_k_profit":{"title":"Random Same K Profit","type":"number"},"realized_profit":{"title":"Realized Profit","type":"number"},"realized_profit_ci_high":{"title":"Realized Profit Ci High","type":"number"},"realized_profit_ci_low":{"title":"Realized Profit Ci Low","type":"number"},"share_of_oracle":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Share Of Oracle"}},"required":["policy","n_contacted","expected_profit","realized_profit","share_of_oracle","random_same_k_profit","realized_profit_ci_low","realized_profit_ci_high"],"title":"PolicyRow","type":"object"},"Population":{"properties":{"churn_rate":{"title":"Churn Rate","type":"number"},"n_customers":{"title":"N Customers","type":"integer"}},"required":["n_customers","churn_rate"],"title":"Population","type":"object"},"ROCCurve":{"properties":{"fpr":{"items":{"type":"number"},"title":"Fpr","type":"array"},"tpr":{"items":{"type":"number"},"title":"Tpr","type":"array"}},"required":["fpr","tpr"],"title":"ROCCurve","type":"object"},"ReliabilityBin":{"properties":{"bin_high":{"title":"Bin High","type":"number"},"bin_low":{"title":"Bin Low","type":"number"},"churn_rate":{"title":"Churn Rate","type":"number"},"mean_p":{"title":"Mean P","type":"number"},"n":{"title":"N","type":"integer"}},"required":["bin_low","bin_high","mean_p","churn_rate","n"],"title":"ReliabilityBin","type":"object"},"Split":{"properties":{"calibration":{"format":"date","title":"Calibration","type":"string"},"test":{"format":"date","title":"Test","type":"string"},"train":{"items":{"format":"date","type":"string"},"title":"Train","type":"array"}},"required":["train","calibration","test"],"title":"Split","type":"object"},"StabilityRow":{"properties":{"brier":{"title":"Brier","type":"number"},"churn_rate":{"title":"Churn Rate","type":"number"},"cutoff":{"format":"date","title":"Cutoff","type":"string"},"expected_profit":{"title":"Expected Profit","type":"number"},"mean_p":{"title":"Mean P","type":"number"},"model":{"title":"Model","type":"string"},"n_contacted":{"title":"N Contacted","type":"integer"},"n_customers":{"title":"N Customers","type":"integer"},"pr_auc":{"title":"Pr Auc","type":"number"},"realized_profit":{"title":"Realized Profit","type":"number"},"roc_auc":{"title":"Roc Auc","type":"number"},"role":{"enum":["calibration","test","out_of_time"],"title":"Role","type":"string"}},"required":["cutoff","role","model","n_customers","churn_rate","mean_p","roc_auc","pr_auc","brier","n_contacted","expected_profit","realized_profit"],"title":"StabilityRow","type":"object"},"ValueCheckRow":{"description":"Customers who stayed: revenue the value formula predicted for the label window vs actual.","properties":{"actual_revenue":{"title":"Actual Revenue","type":"number"},"bucket":{"title":"Bucket","type":"string"},"max_purchase_days":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Max Purchase Days"},"min_purchase_days":{"title":"Min Purchase Days","type":"integer"},"n":{"title":"N","type":"integer"},"predicted_revenue":{"title":"Predicted Revenue","type":"number"},"ratio":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Ratio"}},"required":["bucket","min_purchase_days","max_purchase_days","n","predicted_revenue","actual_revenue","ratio"],"title":"ValueCheckRow","type":"object"}},"properties":{"calibration_population":{"$ref":"#/$defs/Population"},"drift":{"items":{"$ref":"#/$defs/DriftRow"},"title":"Drift","type":"array"},"economics":{"$ref":"#/$defs/EconomicParams"},"models":{"additionalProperties":{"$ref":"#/$defs/ModelEvaluation"},"title":"Models","type":"object"},"models_sha256":{"anyOf":[{"type":"string"},{"type":"null"}],"default":null,"title":"Models Sha256"},"policies":{"items":{"$ref":"#/$defs/PolicyRow"},"title":"Policies","type":"array"},"split":{"$ref":"#/$defs/Split"},"stability":{"items":{"$ref":"#/$defs/StabilityRow"},"title":"Stability","type":"array"},"test_population":{"$ref":"#/$defs/Population"},"value_check":{"anyOf":[{"items":{"$ref":"#/$defs/ValueCheckRow"},"type":"array"},{"type":"null"}],"default":null,"title":"Value Check"}},"required":["split","test_population","calibration_population","economics","models","policies","stability","drift"],"title":"EvaluationFile","type":"object"};
+const schema40 = {"properties":{"churn_rate":{"title":"Churn Rate","type":"number"},"n_customers":{"title":"N Customers","type":"integer"}},"required":["n_customers","churn_rate"],"title":"Population","type":"object"};
+const schema41 = {"properties":{"cutoff":{"format":"date","title":"Cutoff","type":"string"},"feature":{"title":"Feature","type":"string"},"psi":{"title":"Psi","type":"number"}},"required":["cutoff","feature","psi"],"title":"DriftRow","type":"object"};
+const schema42 = {"description":"User-configurable business assumptions. Defaults live in configs/default.yaml.","properties":{"contact_cost":{"minimum":0,"title":"Contact Cost","type":"number"},"gamma":{"maximum":1,"minimum":0,"title":"Gamma","type":"number"},"lambda_a":{"minimum":1,"title":"Lambda A","type":"number"},"lambda_c":{"maximum":1,"minimum":0,"title":"Lambda C","type":"number"},"margin":{"exclusiveMinimum":0,"maximum":1,"title":"Margin","type":"number"},"value_horizon_days":{"exclusiveMinimum":0,"title":"Value Horizon Days","type":"number"}},"required":["margin","lambda_c","lambda_a","gamma","contact_cost","value_horizon_days"],"title":"EconomicParams","type":"object"};
+const schema53 = {"properties":{"expected_profit":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Expected Profit"},"n_contacted":{"title":"N Contacted","type":"integer"},"policy":{"title":"Policy","type":"string"},"random_same_k_profit":{"title":"Random Same K Profit","type":"number"},"realized_profit":{"title":"Realized Profit","type":"number"},"realized_profit_ci_high":{"title":"Realized Profit Ci High","type":"number"},"realized_profit_ci_low":{"title":"Realized Profit Ci Low","type":"number"},"share_of_oracle":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Share Of Oracle"}},"required":["policy","n_contacted","expected_profit","realized_profit","share_of_oracle","random_same_k_profit","realized_profit_ci_low","realized_profit_ci_high"],"title":"PolicyRow","type":"object"};
+const schema54 = {"properties":{"calibration":{"format":"date","title":"Calibration","type":"string"},"test":{"format":"date","title":"Test","type":"string"},"train":{"items":{"format":"date","type":"string"},"title":"Train","type":"array"}},"required":["train","calibration","test"],"title":"Split","type":"object"};
+const schema55 = {"properties":{"brier":{"title":"Brier","type":"number"},"churn_rate":{"title":"Churn Rate","type":"number"},"cutoff":{"format":"date","title":"Cutoff","type":"string"},"expected_profit":{"title":"Expected Profit","type":"number"},"mean_p":{"title":"Mean P","type":"number"},"model":{"title":"Model","type":"string"},"n_contacted":{"title":"N Contacted","type":"integer"},"n_customers":{"title":"N Customers","type":"integer"},"pr_auc":{"title":"Pr Auc","type":"number"},"realized_profit":{"title":"Realized Profit","type":"number"},"roc_auc":{"title":"Roc Auc","type":"number"},"role":{"enum":["calibration","test","out_of_time"],"title":"Role","type":"string"}},"required":["cutoff","role","model","n_customers","churn_rate","mean_p","roc_auc","pr_auc","brier","n_contacted","expected_profit","realized_profit"],"title":"StabilityRow","type":"object"};
+const schema57 = {"description":"Customers who stayed: revenue the value formula predicted for the label window vs actual.","properties":{"actual_revenue":{"title":"Actual Revenue","type":"number"},"bucket":{"title":"Bucket","type":"string"},"max_purchase_days":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Max Purchase Days"},"min_purchase_days":{"title":"Min Purchase Days","type":"integer"},"n":{"title":"N","type":"integer"},"predicted_revenue":{"title":"Predicted Revenue","type":"number"},"ratio":{"anyOf":[{"type":"number"},{"type":"null"}],"title":"Ratio"}},"required":["bucket","min_purchase_days","max_purchase_days","n","predicted_revenue","actual_revenue","ratio"],"title":"ValueCheckRow","type":"object"};
+const schema43 = {"properties":{"calibrator":{"oneOf":[{"$ref":"#/$defs/IsotonicSpec"},{"$ref":"#/$defs/PlattSpec"}],"title":"Calibrator"},"curves":{"$ref":"#/$defs/Curves"},"emp_per_customer":{"$ref":"#/$defs/Estimate"},"mean_p":{"title":"Mean P","type":"number"},"metrics":{"additionalProperties":{"$ref":"#/$defs/Estimate"},"title":"Metrics","type":"object"}},"required":["calibrator","mean_p","metrics","emp_per_customer","curves"],"title":"ModelEvaluation","type":"object"};
+const schema44 = {"properties":{"method":{"const":"isotonic","title":"Method","type":"string"},"x":{"items":{"type":"number"},"minItems":1,"title":"X","type":"array"},"y":{"items":{"maximum":1,"minimum":0,"type":"number"},"minItems":1,"title":"Y","type":"array"}},"required":["method","x","y"],"title":"IsotonicSpec","type":"object"};
+const schema45 = {"properties":{"intercept":{"title":"Intercept","type":"number"},"method":{"const":"platt","title":"Method","type":"string"},"slope":{"title":"Slope","type":"number"}},"required":["method","slope","intercept"],"title":"PlattSpec","type":"object"};
+const schema51 = {"properties":{"ci_high":{"title":"Ci High","type":"number"},"ci_low":{"title":"Ci Low","type":"number"},"value":{"title":"Value","type":"number"}},"required":["value","ci_low","ci_high"],"title":"Estimate","type":"object"};
+const schema46 = {"properties":{"gains":{"$ref":"#/$defs/GainsCurve"},"pr":{"$ref":"#/$defs/PRCurve"},"reliability":{"items":{"$ref":"#/$defs/ReliabilityBin"},"title":"Reliability","type":"array"},"roc":{"$ref":"#/$defs/ROCCurve"}},"required":["pr","roc","gains","reliability"],"title":"Curves","type":"object"};
+const schema47 = {"properties":{"captured":{"items":{"type":"number"},"title":"Captured","type":"array"},"fraction":{"items":{"type":"number"},"title":"Fraction","type":"array"}},"required":["fraction","captured"],"title":"GainsCurve","type":"object"};
+const schema48 = {"properties":{"precision":{"items":{"type":"number"},"title":"Precision","type":"array"},"recall":{"items":{"type":"number"},"title":"Recall","type":"array"}},"required":["recall","precision"],"title":"PRCurve","type":"object"};
+const schema49 = {"properties":{"bin_high":{"title":"Bin High","type":"number"},"bin_low":{"title":"Bin Low","type":"number"},"churn_rate":{"title":"Churn Rate","type":"number"},"mean_p":{"title":"Mean P","type":"number"},"n":{"title":"N","type":"integer"}},"required":["bin_low","bin_high","mean_p","churn_rate","n"],"title":"ReliabilityBin","type":"object"};
+const schema50 = {"properties":{"fpr":{"items":{"type":"number"},"title":"Fpr","type":"array"},"tpr":{"items":{"type":"number"},"title":"Tpr","type":"array"}},"required":["fpr","tpr"],"title":"ROCCurve","type":"object"};
 
 function validate27(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
@@ -2765,7 +2951,7 @@ validate25.errors = [{instancePath:instancePath+"/stability/" + i3+"/role",schem
 return false;
 }
 if(!(((data46 === "calibration") || (data46 === "test")) || (data46 === "out_of_time"))){
-validate25.errors = [{instancePath:instancePath+"/stability/" + i3+"/role",schemaPath:"#/$defs/StabilityRow/properties/role/enum",keyword:"enum",params:{allowedValues: schema54.properties.role.enum},message:"must be equal to one of the allowed values"}];
+validate25.errors = [{instancePath:instancePath+"/stability/" + i3+"/role",schemaPath:"#/$defs/StabilityRow/properties/role/enum",keyword:"enum",params:{allowedValues: schema55.properties.role.enum},message:"must be equal to one of the allowed values"}];
 return false;
 }
 var valid20 = _errs111 === errors;
@@ -3197,8 +3383,8 @@ return errors === 0;
 validate25.evaluated = {"props":{"calibration_population":true,"drift":true,"economics":true,"models":true,"models_sha256":true,"policies":true,"split":true,"stability":true,"test_population":true,"value_check":true},"dynamicProps":false,"dynamicItems":false};
 
 export const validate_experiments = validate30;
-const schema57 = {"$defs":{"RunSummary":{"properties":{"metrics":{"additionalProperties":{"type":"number"},"title":"Metrics","type":"object"},"model":{"title":"Model","type":"string"},"params":{"additionalProperties":{"type":"string"},"title":"Params","type":"object"},"run_id":{"title":"Run Id","type":"string"},"started_at":{"format":"date-time","title":"Started At","type":"string"},"tags":{"additionalProperties":{"type":"string"},"title":"Tags","type":"object"},"trial_cv_log_loss":{"items":{"type":"number"},"title":"Trial Cv Log Loss","type":"array"}},"required":["run_id","model","started_at","tags","params","metrics","trial_cv_log_loss"],"title":"RunSummary","type":"object"}},"properties":{"experiment":{"title":"Experiment","type":"string"},"runs":{"items":{"$ref":"#/$defs/RunSummary"},"title":"Runs","type":"array"}},"required":["experiment","runs"],"title":"ExperimentsFile","type":"object"};
-const schema58 = {"properties":{"metrics":{"additionalProperties":{"type":"number"},"title":"Metrics","type":"object"},"model":{"title":"Model","type":"string"},"params":{"additionalProperties":{"type":"string"},"title":"Params","type":"object"},"run_id":{"title":"Run Id","type":"string"},"started_at":{"format":"date-time","title":"Started At","type":"string"},"tags":{"additionalProperties":{"type":"string"},"title":"Tags","type":"object"},"trial_cv_log_loss":{"items":{"type":"number"},"title":"Trial Cv Log Loss","type":"array"}},"required":["run_id","model","started_at","tags","params","metrics","trial_cv_log_loss"],"title":"RunSummary","type":"object"};
+const schema58 = {"$defs":{"RunSummary":{"properties":{"metrics":{"additionalProperties":{"type":"number"},"title":"Metrics","type":"object"},"model":{"title":"Model","type":"string"},"params":{"additionalProperties":{"type":"string"},"title":"Params","type":"object"},"run_id":{"title":"Run Id","type":"string"},"started_at":{"format":"date-time","title":"Started At","type":"string"},"tags":{"additionalProperties":{"type":"string"},"title":"Tags","type":"object"},"trial_cv_log_loss":{"items":{"type":"number"},"title":"Trial Cv Log Loss","type":"array"}},"required":["run_id","model","started_at","tags","params","metrics","trial_cv_log_loss"],"title":"RunSummary","type":"object"}},"properties":{"experiment":{"title":"Experiment","type":"string"},"runs":{"items":{"$ref":"#/$defs/RunSummary"},"title":"Runs","type":"array"}},"required":["experiment","runs"],"title":"ExperimentsFile","type":"object"};
+const schema59 = {"properties":{"metrics":{"additionalProperties":{"type":"number"},"title":"Metrics","type":"object"},"model":{"title":"Model","type":"string"},"params":{"additionalProperties":{"type":"string"},"title":"Params","type":"object"},"run_id":{"title":"Run Id","type":"string"},"started_at":{"format":"date-time","title":"Started At","type":"string"},"tags":{"additionalProperties":{"type":"string"},"title":"Tags","type":"object"},"trial_cv_log_loss":{"items":{"type":"number"},"title":"Trial Cv Log Loss","type":"array"}},"required":["run_id","model","started_at","tags","params","metrics","trial_cv_log_loss"],"title":"RunSummary","type":"object"};
 
 function validate30(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
@@ -3447,9 +3633,9 @@ return errors === 0;
 validate30.evaluated = {"props":{"experiment":true,"runs":true},"dynamicProps":false,"dynamicItems":false};
 
 export const validate_feature_spec = validate31;
-const schema59 = {"$defs":{"FeatureEntry":{"properties":{"description":{"title":"Description","type":"string"},"dtype":{"enum":["int","float"],"title":"Dtype","type":"string"},"editable":{"title":"Editable","type":"boolean"},"group":{"enum":["base","derived","context"],"title":"Group","type":"string"},"max":{"title":"Max","type":"number"},"min":{"title":"Min","type":"number"},"name":{"title":"Name","type":"string"},"unit":{"title":"Unit","type":"string"}},"required":["name","group","unit","description","editable","dtype","min","max"],"title":"FeatureEntry","type":"object"},"GammaGammaSpec":{"description":"Gamma-Gamma parameters of the served cutoff: AOV^GG = p(v + x m) / (p x + q - 1).","properties":{"p":{"exclusiveMinimum":0,"title":"P","type":"number"},"q":{"exclusiveMinimum":1,"title":"Q","type":"number"},"v":{"exclusiveMinimum":0,"title":"V","type":"number"}},"required":["p","q","v"],"title":"GammaGammaSpec","type":"object"}},"properties":{"cadence_floor_days":{"title":"Cadence Floor Days","type":"number"},"context":{"additionalProperties":{"type":"number"},"title":"Context","type":"object"},"features":{"items":{"$ref":"#/$defs/FeatureEntry"},"title":"Features","type":"array"},"gamma_gamma":{"$ref":"#/$defs/GammaGammaSpec"},"horizon_days":{"title":"Horizon Days","type":"integer"},"onnx_input":{"title":"Onnx Input","type":"string"},"onnx_output":{"title":"Onnx Output","type":"string"},"order":{"items":{"type":"string"},"title":"Order","type":"array"},"spend_trend_eps":{"title":"Spend Trend Eps","type":"number"}},"required":["order","features","horizon_days","cadence_floor_days","spend_trend_eps","context","onnx_input","onnx_output","gamma_gamma"],"title":"FeatureSpec","type":"object"};
-const schema60 = {"properties":{"description":{"title":"Description","type":"string"},"dtype":{"enum":["int","float"],"title":"Dtype","type":"string"},"editable":{"title":"Editable","type":"boolean"},"group":{"enum":["base","derived","context"],"title":"Group","type":"string"},"max":{"title":"Max","type":"number"},"min":{"title":"Min","type":"number"},"name":{"title":"Name","type":"string"},"unit":{"title":"Unit","type":"string"}},"required":["name","group","unit","description","editable","dtype","min","max"],"title":"FeatureEntry","type":"object"};
-const schema61 = {"description":"Gamma-Gamma parameters of the served cutoff: AOV^GG = p(v + x m) / (p x + q - 1).","properties":{"p":{"exclusiveMinimum":0,"title":"P","type":"number"},"q":{"exclusiveMinimum":1,"title":"Q","type":"number"},"v":{"exclusiveMinimum":0,"title":"V","type":"number"}},"required":["p","q","v"],"title":"GammaGammaSpec","type":"object"};
+const schema60 = {"$defs":{"FeatureEntry":{"properties":{"description":{"title":"Description","type":"string"},"dtype":{"enum":["int","float"],"title":"Dtype","type":"string"},"editable":{"title":"Editable","type":"boolean"},"group":{"enum":["base","derived","context"],"title":"Group","type":"string"},"max":{"title":"Max","type":"number"},"min":{"title":"Min","type":"number"},"name":{"title":"Name","type":"string"},"unit":{"title":"Unit","type":"string"}},"required":["name","group","unit","description","editable","dtype","min","max"],"title":"FeatureEntry","type":"object"},"GammaGammaSpec":{"description":"Gamma-Gamma parameters of the served cutoff: AOV^GG = p(v + x m) / (p x + q - 1).","properties":{"p":{"exclusiveMinimum":0,"title":"P","type":"number"},"q":{"exclusiveMinimum":1,"title":"Q","type":"number"},"v":{"exclusiveMinimum":0,"title":"V","type":"number"}},"required":["p","q","v"],"title":"GammaGammaSpec","type":"object"}},"properties":{"cadence_floor_days":{"title":"Cadence Floor Days","type":"number"},"context":{"additionalProperties":{"type":"number"},"title":"Context","type":"object"},"features":{"items":{"$ref":"#/$defs/FeatureEntry"},"title":"Features","type":"array"},"gamma_gamma":{"$ref":"#/$defs/GammaGammaSpec"},"horizon_days":{"title":"Horizon Days","type":"integer"},"onnx_input":{"title":"Onnx Input","type":"string"},"onnx_output":{"title":"Onnx Output","type":"string"},"order":{"items":{"type":"string"},"title":"Order","type":"array"},"spend_trend_eps":{"title":"Spend Trend Eps","type":"number"}},"required":["order","features","horizon_days","cadence_floor_days","spend_trend_eps","context","onnx_input","onnx_output","gamma_gamma"],"title":"FeatureSpec","type":"object"};
+const schema61 = {"properties":{"description":{"title":"Description","type":"string"},"dtype":{"enum":["int","float"],"title":"Dtype","type":"string"},"editable":{"title":"Editable","type":"boolean"},"group":{"enum":["base","derived","context"],"title":"Group","type":"string"},"max":{"title":"Max","type":"number"},"min":{"title":"Min","type":"number"},"name":{"title":"Name","type":"string"},"unit":{"title":"Unit","type":"string"}},"required":["name","group","unit","description","editable","dtype","min","max"],"title":"FeatureEntry","type":"object"};
+const schema62 = {"description":"Gamma-Gamma parameters of the served cutoff: AOV^GG = p(v + x m) / (p x + q - 1).","properties":{"p":{"exclusiveMinimum":0,"title":"P","type":"number"},"q":{"exclusiveMinimum":1,"title":"Q","type":"number"},"v":{"exclusiveMinimum":0,"title":"V","type":"number"}},"required":["p","q","v"],"title":"GammaGammaSpec","type":"object"};
 
 function validate31(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
@@ -3550,7 +3736,7 @@ validate31.errors = [{instancePath:instancePath+"/features/" + i0+"/dtype",schem
 return false;
 }
 if(!((data6 === "int") || (data6 === "float"))){
-validate31.errors = [{instancePath:instancePath+"/features/" + i0+"/dtype",schemaPath:"#/$defs/FeatureEntry/properties/dtype/enum",keyword:"enum",params:{allowedValues: schema60.properties.dtype.enum},message:"must be equal to one of the allowed values"}];
+validate31.errors = [{instancePath:instancePath+"/features/" + i0+"/dtype",schemaPath:"#/$defs/FeatureEntry/properties/dtype/enum",keyword:"enum",params:{allowedValues: schema61.properties.dtype.enum},message:"must be equal to one of the allowed values"}];
 return false;
 }
 var valid4 = _errs15 === errors;
@@ -3579,7 +3765,7 @@ validate31.errors = [{instancePath:instancePath+"/features/" + i0+"/group",schem
 return false;
 }
 if(!(((data8 === "base") || (data8 === "derived")) || (data8 === "context"))){
-validate31.errors = [{instancePath:instancePath+"/features/" + i0+"/group",schemaPath:"#/$defs/FeatureEntry/properties/group/enum",keyword:"enum",params:{allowedValues: schema60.properties.group.enum},message:"must be equal to one of the allowed values"}];
+validate31.errors = [{instancePath:instancePath+"/features/" + i0+"/group",schemaPath:"#/$defs/FeatureEntry/properties/group/enum",keyword:"enum",params:{allowedValues: schema61.properties.group.enum},message:"must be equal to one of the allowed values"}];
 return false;
 }
 var valid4 = _errs19 === errors;
@@ -3857,9 +4043,9 @@ return errors === 0;
 validate31.evaluated = {"props":{"cadence_floor_days":true,"context":true,"features":true,"gamma_gamma":true,"horizon_days":true,"onnx_input":true,"onnx_output":true,"order":true,"spend_trend_eps":true},"dynamicProps":false,"dynamicItems":false};
 
 export const validate_calibrator = validate32;
-const schema62 = {"$defs":{"IsotonicSpec":{"properties":{"method":{"const":"isotonic","title":"Method","type":"string"},"x":{"items":{"type":"number"},"minItems":1,"title":"X","type":"array"},"y":{"items":{"maximum":1,"minimum":0,"type":"number"},"minItems":1,"title":"Y","type":"array"}},"required":["method","x","y"],"title":"IsotonicSpec","type":"object"},"PlattSpec":{"properties":{"intercept":{"title":"Intercept","type":"number"},"method":{"const":"platt","title":"Method","type":"string"},"slope":{"title":"Slope","type":"number"}},"required":["method","slope","intercept"],"title":"PlattSpec","type":"object"}},"properties":{"calibrator":{"oneOf":[{"$ref":"#/$defs/IsotonicSpec"},{"$ref":"#/$defs/PlattSpec"}],"title":"Calibrator"},"model":{"title":"Model","type":"string"}},"required":["model","calibrator"],"title":"CalibratorFile","type":"object"};
-const schema63 = {"properties":{"method":{"const":"isotonic","title":"Method","type":"string"},"x":{"items":{"type":"number"},"minItems":1,"title":"X","type":"array"},"y":{"items":{"maximum":1,"minimum":0,"type":"number"},"minItems":1,"title":"Y","type":"array"}},"required":["method","x","y"],"title":"IsotonicSpec","type":"object"};
-const schema64 = {"properties":{"intercept":{"title":"Intercept","type":"number"},"method":{"const":"platt","title":"Method","type":"string"},"slope":{"title":"Slope","type":"number"}},"required":["method","slope","intercept"],"title":"PlattSpec","type":"object"};
+const schema63 = {"$defs":{"IsotonicSpec":{"properties":{"method":{"const":"isotonic","title":"Method","type":"string"},"x":{"items":{"type":"number"},"minItems":1,"title":"X","type":"array"},"y":{"items":{"maximum":1,"minimum":0,"type":"number"},"minItems":1,"title":"Y","type":"array"}},"required":["method","x","y"],"title":"IsotonicSpec","type":"object"},"PlattSpec":{"properties":{"intercept":{"title":"Intercept","type":"number"},"method":{"const":"platt","title":"Method","type":"string"},"slope":{"title":"Slope","type":"number"}},"required":["method","slope","intercept"],"title":"PlattSpec","type":"object"}},"properties":{"calibrator":{"oneOf":[{"$ref":"#/$defs/IsotonicSpec"},{"$ref":"#/$defs/PlattSpec"}],"title":"Calibrator"},"model":{"title":"Model","type":"string"}},"required":["model","calibrator"],"title":"CalibratorFile","type":"object"};
+const schema64 = {"properties":{"method":{"const":"isotonic","title":"Method","type":"string"},"x":{"items":{"type":"number"},"minItems":1,"title":"X","type":"array"},"y":{"items":{"maximum":1,"minimum":0,"type":"number"},"minItems":1,"title":"Y","type":"array"}},"required":["method","x","y"],"title":"IsotonicSpec","type":"object"};
+const schema65 = {"properties":{"intercept":{"title":"Intercept","type":"number"},"method":{"const":"platt","title":"Method","type":"string"},"slope":{"title":"Slope","type":"number"}},"required":["method","slope","intercept"],"title":"PlattSpec","type":"object"};
 
 function validate32(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
