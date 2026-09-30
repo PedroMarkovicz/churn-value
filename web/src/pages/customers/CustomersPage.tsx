@@ -15,12 +15,13 @@ import {
   listView,
   nextSort,
 } from "@/domain/customerList.ts";
-import { shortHistoryHint, shortHistoryNote } from "@/domain/customerText.ts";
+import { monthName, shortHistoryHint, shortHistoryNote } from "@/domain/customerText.ts";
 import { count } from "@/domain/format.ts";
 import { customersHeadline } from "@/domain/headlines.ts";
 import { indexTimelines } from "@/domain/history.ts";
 import { useScenario } from "@/scenario/ScenarioProvider.tsx";
 
+import { CustomerDrawer } from "./CustomerDrawer.tsx";
 import { CustomerTable } from "./CustomerTable.tsx";
 import { downloadText } from "./download.ts";
 import { Toolbar } from "./Toolbar.tsx";
@@ -47,7 +48,7 @@ function EmptyView({ options, onShowAll }: { options: ListOptions; onShowAll: ()
 }
 
 export function CustomersPage({ timelines }: { timelines: TimelinesFile }) {
-  const { table, evaluation } = useAppData();
+  const { table, evaluation, customers, featureSpec } = useAppData();
   const { scenario } = useScenario();
   const campaign = useMemo(() => runCampaign(table, scenario), [table, scenario]);
   const rows = useMemo(() => customerRows(table, campaign, scenario), [table, campaign, scenario]);
@@ -57,6 +58,11 @@ export function CustomersPage({ timelines }: { timelines: TimelinesFile }) {
   const view = useMemo(() => listView(rows, options), [rows, options]);
   const customer = useCustomerParam(table.indexById);
   const note = shortHistoryNote(rows);
+  const openRow =
+    customer.index === undefined ? undefined : rows.find((row) => row.index === customer.index);
+  const openCustomer =
+    customer.index === undefined ? undefined : customers.customers[customer.index];
+  const holdout = `${monthName(customers.cutoff)} ${customers.cutoff.slice(0, 4)}`;
 
   return (
     <>
@@ -64,6 +70,20 @@ export function CustomersPage({ timelines }: { timelines: TimelinesFile }) {
         title={customersHeadline(campaign.k, campaign.expected, halfValueCount(campaign))}
         lede={note ? `${LEDE} ${note}` : LEDE}
       />
+      {customer.unknown !== null && (
+        <div
+          role="status"
+          className="mb-4 flex items-start justify-between gap-4 rounded-lg bg-accent-tint px-4 py-3 text-sm"
+        >
+          <p>
+            Customer {customer.unknown.slice(0, 24)} is not among the holdout customers of {holdout}
+            .
+          </p>
+          <button type="button" className="font-semibold text-accent" onClick={customer.close}>
+            Dismiss
+          </button>
+        </div>
+      )}
       <Toolbar
         options={options}
         counts={decisionCounts(rows)}
@@ -100,6 +120,20 @@ export function CustomersPage({ timelines }: { timelines: TimelinesFile }) {
       <p className="mt-2 text-xs text-muted">
         {count(view.length)} {view.length === 1 ? "customer" : "customers"} in this view.
       </p>
+      {openRow && openCustomer && (
+        <CustomerDrawer
+          row={openRow}
+          customer={openCustomer}
+          timeline={history.get(openRow.id)}
+          scenario={scenario}
+          featureSpec={featureSpec}
+          total={table.n}
+          cutoff={customers.cutoff}
+          horizonDays={customers.horizon_days}
+          revealed={revealed}
+          onClose={customer.close}
+        />
+      )}
     </>
   );
 }

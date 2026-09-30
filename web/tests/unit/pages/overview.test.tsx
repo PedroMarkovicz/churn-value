@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import { OverviewPage } from "@/pages/overview/OverviewPage.tsx";
@@ -51,4 +51,19 @@ test("the field can be read as a table", async () => {
     "churned, not called117%",
     "stayed, not called233%",
   ]);
+});
+
+test("clicking a square opens that customer on the Customers page", async () => {
+  const router = await renderPage(OverviewPage);
+  const field = screen.getByRole("img", { name: /customers called/ });
+  fireEvent.click(field, { clientX: 1, clientY: 1 }); // the first square: rank 1, customer 1
+  await waitFor(() => {
+    expect(router.state.location.pathname).toBe("/customers");
+  });
+  expect(router.state.location.search).toMatchObject({ customer: "1" });
+});
+
+test("the next questions include who exactly, and why", async () => {
+  await renderPage(OverviewPage);
+  expect(screen.getByRole("link", { name: /Who exactly, and why\?/ })).toBeInTheDocument();
 });
