@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from "@testing-library/react";
 
-import { useCompute } from "@/workers/useCompute.ts";
+import { runWithFallback, useCompute } from "@/workers/useCompute.ts";
 
 // jsdom has no Worker, so these run the main-thread path: the one used when a worker fails.
 
@@ -41,4 +41,15 @@ test("keys that change faster than the debounce compute only the last one", asyn
     expect(result.current.value).toBe("3");
   });
   expect(calls).toEqual(["3"]);
+});
+
+test("a worker that never answers falls back to the main thread after a timeout", async () => {
+  const api = {} as Parameters<typeof runWithFallback>[0];
+  const never = () => new Promise<string>(() => {});
+  const started = Date.now();
+  await expect(runWithFallback(api, never, () => "main thread", 50)).resolves.toBe("main thread");
+  expect(Date.now() - started).toBeGreaterThanOrEqual(45);
+  // once the worker has hung, later calls go straight to the main thread
+  const later = await runWithFallback(api, never, () => "again", 10_000);
+  expect(later).toBe("again");
 });

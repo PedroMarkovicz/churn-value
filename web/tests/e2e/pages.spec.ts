@@ -67,3 +67,17 @@ for (const path of ["/", "/simulator", "/sensitivity"]) {
     expect(overflow).toBeLessThanOrEqual(0);
   });
 }
+
+test("charts still render when the compute worker cannot load", async ({ page }) => {
+  await page.route("**/compute.worker*", (route) => route.fulfill({ status: 404 }));
+  await page.goto("/sensitivity");
+  // the tornado and the rebuilt stress line come from the worker; the main thread takes over
+  await expect(
+    page.getByRole("heading", { name: /matters more than|moves the result more/ }),
+  ).toBeVisible({
+    timeout: 15_000,
+  });
+  await page.goto("/simulator");
+  const frame = page.getByRole("region", { name: /perfect foresight/ });
+  await expect(frame.getByText("Updating intervals…")).toBeHidden({ timeout: 15_000 });
+});
