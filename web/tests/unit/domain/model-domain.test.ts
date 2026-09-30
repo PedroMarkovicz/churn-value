@@ -2,7 +2,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import type { ModelInfo } from "@/contract/index.ts";
 import { validateArtifact } from "@/contract/load.ts";
 import { featureName } from "@/domain/featureNames.ts";
 import {
@@ -32,7 +31,6 @@ import {
 } from "../fixtures/artifacts.ts";
 
 const evaluation = evaluationFixture();
-const GBDT = MODELS[1] as ModelInfo;
 
 test("every model input has plain words, and an unknown one reads as its name", () => {
   for (const name of featureSpecFixture().order) expect(featureName(name)).not.toContain("_");
@@ -55,9 +53,11 @@ test("the headline compares the promise with the outcome, and credits it only wh
 test("calibration gaps are series per model, in cutoff order, with roles", () => {
   const { series, missing } = calibrationSeries(evaluation, MODELS);
   expect(series.map((s) => s.model.name)).toEqual(["rule_a", "gbdt_b"]);
-  expect(series[1]?.points.map((p) => p.gap)).toEqual(
-    [0.02, 0.03, 0, -0.018, -0.025, 0.008].map((g) => expect.closeTo(g, 12)),
-  );
+  const gaps = [0.02, 0.03, 0, -0.018, -0.025, 0.008];
+  expect(series[1]?.points).toHaveLength(gaps.length);
+  series[1]?.points.forEach((p, i) => {
+    expect(p.gap).toBeCloseTo(gaps[i] ?? Number.NaN, 12);
+  });
   expect(series[1]?.points.map((p) => p.role)).toEqual([
     "out_of_time",
     "out_of_time",
