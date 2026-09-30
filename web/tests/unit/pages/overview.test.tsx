@@ -1,4 +1,5 @@
 import { fireEvent, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 import { OverviewPage } from "@/pages/overview/OverviewPage.tsx";
 
@@ -34,4 +35,20 @@ test("the field describes itself for screen readers", async () => {
   expect(screen.getByRole("img", { name: /customers called/ })).toHaveAccessibleName(
     "3 of 6 customers called: 2 would have churned, 1 would have stayed; 1 churner missed.",
   );
+});
+
+test("the field can be read as a table", async () => {
+  await renderPage(OverviewPage);
+  await userEvent.click(screen.getByRole("button", { name: "Show the field as a table" }));
+  const table = screen.getByRole("table", { name: "Customers by outcome" });
+  const rows = within(table)
+    .getAllByRole("row")
+    .map((row) => row.textContent);
+  expect(rows).toEqual([
+    "OutcomeCustomersShare",
+    "called, would have churned233%",
+    "called, would have stayed117%",
+    "churned, not called117%",
+    "stayed, not called233%",
+  ]);
 });
