@@ -32,6 +32,7 @@
     "@visx/scale": "4.0.0",
     "@visx/shape": "4.0.0",
     "comlink": "4.4.2",
+    "onnxruntime-web": "1.30.0",
     "radix-ui": "1.6.7",
     "react": "19.3.0",
     "react-dom": "19.3.0"
