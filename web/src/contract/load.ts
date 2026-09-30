@@ -112,7 +112,7 @@ export function loadArtifact<K extends ArtifactName>(
 export function assertCompatibleVersion(data: unknown): void {
   const version =
     data !== null && typeof data === "object" && "contract_version" in data
-      ? (data).contract_version
+      ? data.contract_version
       : undefined;
   if (typeof version !== "string") return; // the schema check reports the missing field
   if (!isCompatible(version)) {
