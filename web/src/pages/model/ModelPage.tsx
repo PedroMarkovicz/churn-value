@@ -2,15 +2,18 @@
 import { FixedScenario } from "@/components/layout/FixedScenario.tsx";
 import { useAppData } from "@/components/layout/Layout.tsx";
 import { PageHeading } from "@/components/layout/PageHeading.tsx";
+import type { ExperimentsFile } from "@/contract/index.ts";
 import { monthName } from "@/domain/customerText.ts";
 import { calibrationSeries, modelHeadline, promiseRows } from "@/domain/model.ts";
 
 import { CalibrationOverTime } from "./CalibrationOverTime.tsx";
+import { DriftMap } from "./DriftMap.tsx";
 import { PromiseReality } from "./PromiseReality.tsx";
 import { RankAlike } from "./RankAlike.tsx";
 import { Reliability } from "./Reliability.tsx";
+import { RunStrip } from "./RunStrip.tsx";
 
-export function ModelPage() {
+export function ModelPage({ experiments }: { experiments: ExperimentsFile }) {
   const { evaluation, manifest } = useAppData();
   const { series, missing } = calibrationSeries(evaluation, manifest.models);
   const { test, calibration } = evaluation.split;
@@ -38,6 +41,8 @@ export function ModelPage() {
             testCutoff={test}
           />
         </div>
+        <DriftMap drift={evaluation.drift} />
+        <RunStrip manifest={manifest} experiments={experiments} />
       </div>
     </>
   );

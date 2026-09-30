@@ -4,11 +4,18 @@ import userEvent from "@testing-library/user-event";
 import type { ModelInfo } from "@/contract/index.ts";
 import { ModelPage } from "@/pages/model/ModelPage.tsx";
 
-import { evaluationFixture, manifestFixture, MODELS } from "../fixtures/artifacts.ts";
+import {
+  evaluationFixture,
+  experimentsFixture,
+  manifestFixture,
+  MODELS,
+} from "../fixtures/artifacts.ts";
 import { fixtureData, renderPage } from "../render.tsx";
 
+const page = () => <ModelPage experiments={experimentsFixture()} />;
+
 test("the model page answers first, and says which scenario its numbers are fixed at", async () => {
-  await renderPage(ModelPage);
+  await renderPage(page);
   expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
     "The model promised 32% would leave and 31% did. That is why its profit held up.",
   );
@@ -18,7 +25,7 @@ test("the model page answers first, and says which scenario its numbers are fixe
 });
 
 test("calibration over time names who stays calibrated, and reads as a table", async () => {
-  await renderPage(ModelPage);
+  await renderPage(page);
   const chart = screen.getByRole("region", { name: "Only GBDT B stays calibrated after June" });
   await userEvent.click(within(chart).getByRole("button", { name: "Show as table" }));
   const rows = within(chart)
@@ -35,7 +42,7 @@ test("a model without calibration history is named under the chart, not drawn", 
     family: "gbdt",
     deployable: false,
   };
-  await renderPage(ModelPage, {
+  await renderPage(page, {
     data: { ...fixtureData(), manifest: manifestFixture({ models: [...MODELS, extra] }) },
   });
   expect(screen.getByText(/No calibration history for New model\./)).toBeInTheDocument();
@@ -56,7 +63,7 @@ test("a ninth model is listed in the table, never given a generated colour", asy
         .map((r) => ({ ...r, model: m.name })),
     ),
   );
-  await renderPage(ModelPage, {
+  await renderPage(page, {
     data: {
       ...fixtureData(),
       evaluation,
@@ -67,14 +74,14 @@ test("a ninth model is listed in the table, never given a generated colour", asy
 });
 
 test("promise against reality annotates what each model promised beyond what it made", async () => {
-  await renderPage(ModelPage);
+  await renderPage(page);
   const chart = screen.getByRole("region", { name: "Only GBDT B made close to what it promised" });
   expect(chart).toHaveTextContent("promised £2,482 more than it made");
   expect(chart).toHaveTextContent("promised £70,000 more than it made");
 });
 
 test("the ranking chart shows intervals, and the metric toggle re-titles it", async () => {
-  await renderPage(ModelPage);
+  await renderPage(page);
   expect(screen.getByRole("region", { name: "GBDT B is best on ROC-AUC" })).toBeInTheDocument();
   await userEvent.click(screen.getByRole("radio", { name: "Brier score" }));
   const chart = screen.getByRole("region", {
@@ -86,7 +93,7 @@ test("the ranking chart shows intervals, and the metric toggle re-titles it", as
 });
 
 test("reliability starts on the served model and can switch", async () => {
-  await renderPage(ModelPage);
+  await renderPage(page);
   expect(
     screen.getByRole("region", {
       name: "GBDT B: predicted matches observed, 2.0 points apart on average",
@@ -98,4 +105,29 @@ test("reliability starts on the served model and can switch", async () => {
       name: "Rule A: predicted matches observed, 2.0 points apart on average",
     }),
   ).toBeInTheDocument();
+});
+
+test("the drift map puts the most shifted feature first and reads as a table", async () => {
+  await renderPage(page);
+  const chart = screen.getByRole("region", {
+    name: "2 of 3 features hold; the largest shift is in days since first purchase",
+  });
+  await userEvent.click(within(chart).getByRole("button", { name: "Show as table" }));
+  const rows = within(chart)
+    .getAllByRole("row")
+    .map((row) => row.textContent);
+  expect(rows[0]).toBe("FeatureJun 2010Sept 2011");
+  expect(rows[1]).toBe("Days since first purchase4.700.30");
+});
+
+test("the run strip names the run, and the experiment runs open in a dialog", async () => {
+  await renderPage(page);
+  const strip = screen.getByRole("region", { name: "Reproducible run" });
+  expect(strip).toHaveTextContent("40 Optuna trials per model, seed 42, 5 rolling-origin folds");
+  expect(strip).toHaveTextContent("Code0123456");
+  expect(strip).toHaveTextContent("Contract1.2.0");
+  await userEvent.click(within(strip).getByRole("button", { name: "Experiment runs" }));
+  const dialog = await screen.findByRole("dialog", { name: "Experiment runs" });
+  expect(dialog).toHaveTextContent("GBDT B");
+  expect(dialog).toHaveTextContent("learning_rate 0.01357");
 });

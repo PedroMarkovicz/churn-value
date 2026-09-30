@@ -58,7 +58,10 @@ const customersRoute = createRoute({
 const modelRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/model",
-  component: lazyRouteComponent(() => import("@/pages/model/ModelPage.tsx"), "ModelPage"),
+  loader: () => loadArtifact("experiments"), // spec §6.1: experiments only on this page
+  staleTime: Infinity,
+  pendingComponent: LoadingPage,
+  component: lazyRouteComponent(() => import("@/pages/model/ModelRoute.tsx"), "ModelRoute"),
 });
 
 export const routeTree = rootRoute.addChildren([

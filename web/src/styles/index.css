@@ -36,6 +36,16 @@
   /* explanations */
   --color-raise: #4b5578;
   --color-lower: #aeb4cb;
+  /* magnitude ramp (charts/palette.ts MAGNITUDE; a test keeps them in step) */
+  --color-magnitude-1: #eef2fc;
+  --color-magnitude-2: #d6e0f8;
+  --color-magnitude-3: #b5c7f2;
+  --color-magnitude-4: #8ea8ea;
+  --color-magnitude-5: #6688e0;
+  --color-magnitude-6: #4169d6;
+  --color-magnitude-7: #2f5bd3;
+  --color-magnitude-8: #23459f;
+  --color-no-data: #e7e8ee;
 
   /* type scale (spec §3.3): 12, 14, 16, 24, 36, 48 */
   --text-xs: 0.75rem;

@@ -3,7 +3,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { MODEL_SLOTS, MONEY, modelColor, OUTCOME } from "@/charts/palette.ts";
+import { MAGNITUDE, MODEL_SLOTS, MONEY, modelColor, OUTCOME } from "@/charts/palette.ts";
 
 import { checkPalette, contrast, deltaE } from "../../../scripts/palette-lib.ts";
 
@@ -55,4 +55,20 @@ test("no model name is written in the app's source (models come from the manifes
     .filter((path) => !path.includes(".gen."))
     .filter((path) => names.some((name) => readFileSync(path, "utf8").includes(name)));
   expect(offenders).toEqual([]);
+});
+
+test("the magnitude ramp is one hue getting steadily darker, with its tokens in step", () => {
+  const css = readFileSync(
+    fileURLToPath(new URL("../../../src/styles/index.css", import.meta.url)),
+    "utf8",
+  );
+  const token = (name: string) => new RegExp(`--color-${name}: *(#[0-9a-f]{6})`).exec(css)?.[1];
+  MAGNITUDE.ramp.forEach((hex, i) => {
+    expect(token(`magnitude-${i + 1}`)).toBe(hex);
+  });
+  expect(token("no-data")).toBe(MAGNITUDE.none);
+  const darkness = MAGNITUDE.ramp.map((hex) => contrast(hex, "#ffffff"));
+  darkness.slice(1).forEach((value, i) => {
+    expect(value).toBeGreaterThan(darkness[i] as number);
+  });
 });
