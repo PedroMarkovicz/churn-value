@@ -7,6 +7,8 @@ import { calibrationSeries, modelHeadline, promiseRows } from "@/domain/model.ts
 
 import { CalibrationOverTime } from "./CalibrationOverTime.tsx";
 import { PromiseReality } from "./PromiseReality.tsx";
+import { RankAlike } from "./RankAlike.tsx";
+import { Reliability } from "./Reliability.tsx";
 
 export function ModelPage() {
   const { evaluation, manifest } = useAppData();
@@ -27,6 +29,15 @@ export function ModelPage() {
           testCutoff={test}
         />
         <PromiseReality rows={promiseRows(evaluation, manifest.models)} testCutoff={test} />
+        <div className="grid items-start gap-7 lg:grid-cols-2">
+          <RankAlike evaluation={evaluation} models={manifest.models} testCutoff={test} />
+          <Reliability
+            evaluation={evaluation}
+            models={manifest.models}
+            deployed={manifest.deployed_model}
+            testCutoff={test}
+          />
+        </div>
       </div>
     </>
   );

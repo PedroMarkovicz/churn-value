@@ -72,3 +72,30 @@ test("promise against reality annotates what each model promised beyond what it 
   expect(chart).toHaveTextContent("promised £2,482 more than it made");
   expect(chart).toHaveTextContent("promised £70,000 more than it made");
 });
+
+test("the ranking chart shows intervals, and the metric toggle re-titles it", async () => {
+  await renderPage(ModelPage);
+  expect(screen.getByRole("region", { name: "GBDT B is best on ROC-AUC" })).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("radio", { name: "Brier score" }));
+  const chart = screen.getByRole("region", {
+    name: "The top 2 are alike on the Brier score: their intervals overlap",
+  });
+  expect(chart).toHaveTextContent("Lower is better.");
+  await userEvent.click(within(chart).getByRole("button", { name: "Show as table" }));
+  expect(within(chart).getAllByRole("row")[2]?.textContent).toBe("GBDT B0.2000.190 to 0.210");
+});
+
+test("reliability starts on the served model and can switch", async () => {
+  await renderPage(ModelPage);
+  expect(
+    screen.getByRole("region", {
+      name: "GBDT B: predicted matches observed, 2.0 points apart on average",
+    }),
+  ).toBeInTheDocument();
+  await userEvent.selectOptions(screen.getByLabelText("Model"), "Rule A");
+  expect(
+    screen.getByRole("region", {
+      name: "Rule A: predicted matches observed, 2.0 points apart on average",
+    }),
+  ).toBeInTheDocument();
+});
