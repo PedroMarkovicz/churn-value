@@ -30,6 +30,7 @@ from churnvalue.contract import (
     GammaGammaSpec,
     Manifest,
     ModelInfo,
+    PipelineInfo,
     Timeline,
     TimelinesFile,
 )
@@ -43,8 +44,10 @@ from churnvalue.explain import (
 )
 from churnvalue.features import CONTEXT_FEATURES, FEATURE_CATALOGUE, SPEND_TREND_EPS, purchase_days
 from churnvalue.golden import model_golden
+from churnvalue.model_card import render_model_card
 from churnvalue.models import LADDER, SUPERVISED, ModelSpec, feature_matrix
 from churnvalue.provenance import config_sha256, git_sha
+from churnvalue.training import load_training
 from churnvalue.value_check import value_backtest
 
 ONNX_INPUT = "features"
@@ -231,6 +234,21 @@ class ExportResult:
     manifest: Manifest
     importance: pd.Series  # mean |SHAP| on the test cutoff, for the model card
     evaluation: dict[str, Any]  # as served: the evaluation report plus the value backtest
+    model_card: str  # as served in model_card.md
+
+
+MODEL_CARD_FILE = "model_card.md"
+
+
+def pipeline_info(cfg: Config, trained: dict[str, Any]) -> PipelineInfo:
+    """The settings of the run that produced the deployed model, from its training record."""
+    return PipelineInfo(
+        seed=cfg.training.seed,
+        n_trials=len(trained["trial_values"]),
+        n_folds=len(trained["folds"]),
+        horizon_days=cfg.snapshots.horizon_days,
+        eligibility_f=cfg.snapshots.eligibility_f,
+    )
 
 
 def export_artifacts(
@@ -241,6 +259,7 @@ def export_artifacts(
     estimator: Any,
     evaluation: dict[str, Any],
     experiments: dict[str, Any],
+    training: dict[str, dict[str, Any]] | None = None,
 ) -> ExportResult:
     """Write every artifact to ``cfg.artifacts_dir`` and a manifest with their checksums."""
     spec = deployed_spec(cfg)
@@ -285,21 +304,32 @@ def export_artifacts(
             model_golden(estimator, spec, calibrators[spec.name], test)
         ),
     }
+    if training is None:
+        training = load_training(cfg.models_dir)
+    metadata: dict[str, Any] = {
+        "contract_version": CONTRACT_VERSION,
+        "created_at": datetime.now(UTC),
+        "git_sha": git_sha(),
+        "data_sha256": cfg.data.sha256,
+        "config_sha256": config_sha256(cfg),
+        "deployed_model": spec.name,
+        "test_cutoff": split.test.date(),
+        "models": ladder_info(list(scorers), spec.name),
+        "pipeline": pipeline_info(cfg, training[spec.name]),
+    }
+    importance = global_importance(explanation)
+    # The card reads the manifest's metadata, never its checksums, so it can be listed in them.
+    card = render_model_card(Manifest(**metadata, files={}), served, training, importance)
+    payloads[MODEL_CARD_FILE] = card.encode("utf-8")
+
     out_dir = cfg.artifacts_dir
     for relative, data in payloads.items():
         path = out_dir / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
     manifest = Manifest(
-        contract_version=CONTRACT_VERSION,
-        created_at=datetime.now(UTC),
-        git_sha=git_sha(),
-        data_sha256=cfg.data.sha256,
-        config_sha256=config_sha256(cfg),
-        deployed_model=spec.name,
-        test_cutoff=split.test.date(),
-        models=ladder_info(list(scorers), spec.name),
+        **metadata,
         files={relative: sha256_bytes(data) for relative, data in payloads.items()},
     )
     (out_dir / "manifest.json").write_text(manifest.model_dump_json(indent=2) + "\n", "utf-8")
-    return ExportResult(manifest, global_importance(explanation), served)
+    return ExportResult(manifest, importance, served, card)

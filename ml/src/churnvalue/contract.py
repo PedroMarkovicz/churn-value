@@ -16,7 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from churnvalue.economics import EconomicParams
 
-CONTRACT_VERSION = "1.1.0"
+CONTRACT_VERSION = "1.2.0"
 Probability = Annotated[float, Field(ge=0.0, le=1.0)]
 
 
@@ -339,6 +339,16 @@ class ModelInfo(_Strict):
     deployable: bool  # True only for the model served as ONNX
 
 
+class PipelineInfo(_Strict):
+    """How the served run was built (contract 1.2.0): the Model and Method pages quote it."""
+
+    seed: int
+    n_trials: int  # Optuna trials run for the deployed model
+    n_folds: int  # rolling-origin validation folds of the deployed model
+    horizon_days: int  # H: the label window after the cutoff
+    eligibility_f: float  # f: eligible when last purchase + cadence is in [t - f*H, t + H + f*H]
+
+
 class Manifest(_Strict):
     contract_version: str
     created_at: datetime
@@ -349,6 +359,7 @@ class Manifest(_Strict):
     test_cutoff: date
     models: list[ModelInfo]  # the ladder, in order
     files: dict[str, str]  # artifact path -> SHA-256
+    pipeline: PipelineInfo | None = None  # 1.2.0; absent in 1.1 manifests
 
 
 SCHEMAS: dict[str, type[BaseModel]] = {

@@ -23,7 +23,6 @@ from churnvalue.evaluate import (
     temporal_split,
 )
 from churnvalue.golden import golden_documents
-from churnvalue.model_card import render_model_card
 from churnvalue.models import SUPERVISED
 from churnvalue.notebooks import HTML_DIR, NOTEBOOKS_DIR, discover, execute_notebook, export_html
 from churnvalue.provenance import run_tags
@@ -212,11 +211,8 @@ def export(config: Path = ConfigOption) -> None:
     for name, digest in result.manifest.files.items():
         typer.echo(f"{name:>20}  {digest[:12]}")
     typer.echo(f"artifacts -> {cfg.artifacts_dir}")
-    card = render_model_card(
-        result.manifest, result.evaluation, load_training(cfg.models_dir), result.importance
-    )
     cfg.model_card_path.parent.mkdir(parents=True, exist_ok=True)
-    cfg.model_card_path.write_text(card, encoding="utf-8", newline="\n")
+    cfg.model_card_path.write_text(result.model_card, encoding="utf-8", newline="\n")
     typer.echo(f"model card -> {cfg.model_card_path}")
 
 
