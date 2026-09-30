@@ -188,6 +188,8 @@ def export(config: Path = ConfigOption) -> None:
     cfg = load_config(config)
     evaluation_path = require(cfg.reports_dir / EVALUATION_FILE, "evaluate")
     snapshots = pd.read_parquet(require(snapshots_path(cfg), "build-snapshots"))
+    if "gg_p" not in snapshots.columns:
+        fail(f"{snapshots_path(cfg)} predates contract 1.1.0: run `churnvalue build-snapshots`")
     transactions = pd.read_parquet(require(transactions_path(cfg), "build-snapshots"))
     evaluation = json.loads(evaluation_path.read_text(encoding="utf-8"))
     try:
@@ -211,7 +213,7 @@ def export(config: Path = ConfigOption) -> None:
         typer.echo(f"{name:>20}  {digest[:12]}")
     typer.echo(f"artifacts -> {cfg.artifacts_dir}")
     card = render_model_card(
-        result.manifest, evaluation, load_training(cfg.models_dir), result.importance
+        result.manifest, result.evaluation, load_training(cfg.models_dir), result.importance
     )
     cfg.model_card_path.parent.mkdir(parents=True, exist_ok=True)
     cfg.model_card_path.write_text(card, encoding="utf-8", newline="\n")

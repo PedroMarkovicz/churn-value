@@ -28,6 +28,8 @@ from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.figure import Figure
 from matplotlib.ticker import FuncFormatter
 
+from churnvalue.models import LADDER
+
 ACCENT = "#4A3AA7"
 CHURN = "#E34948"
 RETAINED = "#9AA1AD"
@@ -37,7 +39,7 @@ MUTED = "#8A94A3"
 GRID = "#E6E8EC"
 SURFACE = "#FFFFFF"
 
-MODEL_ORDER = ["cadence_rule", "bgnbd", "logreg", "lightgbm", "lightgbm_seasonal"]
+MODEL_ORDER = list(LADDER)
 MODEL_COLORS = dict(
     zip(MODEL_ORDER, ["#2A78D6", "#EB6834", "#1BAF7A", "#EDA100", "#E87BA4"], strict=True)
 )

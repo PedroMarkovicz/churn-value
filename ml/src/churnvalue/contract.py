@@ -16,7 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from churnvalue.economics import EconomicParams
 
-CONTRACT_VERSION = "1.0.0"
+CONTRACT_VERSION = "1.1.0"
 Probability = Annotated[float, Field(ge=0.0, le=1.0)]
 
 
@@ -61,6 +61,14 @@ class FeatureEntry(_Strict):
     max: float
 
 
+class GammaGammaSpec(_Strict):
+    """Gamma-Gamma parameters of the served cutoff: AOV^GG = p(v + x m) / (p x + q - 1)."""
+
+    p: float = Field(gt=0)
+    q: float = Field(gt=1)
+    v: float = Field(gt=0)
+
+
 class FeatureSpec(_Strict):
     order: list[str]  # model input order (the ONNX input columns)
     features: list[FeatureEntry]
@@ -70,6 +78,7 @@ class FeatureSpec(_Strict):
     context: dict[str, float]  # fixed context values at the test cutoff
     onnx_input: str
     onnx_output: str
+    gamma_gamma: GammaGammaSpec  # lets the what-if recompute AOV^GG when spend is edited
 
 
 # --- customers.json -----------------------------------------------------------------------
@@ -205,6 +214,18 @@ class Population(_Strict):
     churn_rate: float
 
 
+class ValueCheckRow(_Strict):
+    """Customers who stayed: revenue the value formula predicted for the label window vs actual."""
+
+    bucket: str
+    min_purchase_days: int
+    max_purchase_days: int | None  # None: no upper bound
+    n: int
+    predicted_revenue: float
+    actual_revenue: float
+    ratio: float | None  # predicted / actual; None when the bucket is empty
+
+
 class EvaluationFile(_Strict):
     split: Split
     test_population: Population
@@ -215,6 +236,7 @@ class EvaluationFile(_Strict):
     stability: list[StabilityRow]
     drift: list[DriftRow]
     models_sha256: str | None = None  # fingerprint of the evaluated models (None for baselines)
+    value_check: list[ValueCheckRow] | None = None  # added by `export`; absent in reports/
 
 
 # --- experiments.json ---------------------------------------------------------------------
@@ -295,7 +317,26 @@ class ModelGolden(_Strict):
     cases: list[ModelCase]
 
 
+class GammaGammaCase(_Strict):
+    params: GammaGammaSpec
+    n_purchase_days: float
+    avg_order_value: float
+    aov_gg: float
+
+
+class GammaGammaGolden(_Strict):
+    tolerance: float
+    cases: list[GammaGammaCase]
+
+
 # --- manifest.json ------------------------------------------------------------------------
+
+
+class ModelInfo(_Strict):
+    name: str
+    label: str
+    family: Literal["rule", "probabilistic", "linear", "gbdt"]
+    deployable: bool  # True only for the model served as ONNX
 
 
 class Manifest(_Strict):
@@ -306,6 +347,7 @@ class Manifest(_Strict):
     config_sha256: str
     deployed_model: str
     test_cutoff: date
+    models: list[ModelInfo]  # the ladder, in order
     files: dict[str, str]  # artifact path -> SHA-256
 
 
@@ -320,6 +362,7 @@ SCHEMAS: dict[str, type[BaseModel]] = {
     "golden_economics": EconomicsGolden,
     "golden_derived_features": DerivedGolden,
     "golden_model": ModelGolden,
+    "golden_gamma_gamma": GammaGammaGolden,
 }
 
 

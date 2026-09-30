@@ -28,6 +28,10 @@ def _gbp(value: float | None) -> str:
     return f"{sign}£{abs(value):,.0f}"
 
 
+def _ratio(value: float | None) -> str:
+    return "n/a" if value is None else f"{value:.2f}×"
+
+
 def _share(value: float | None) -> str:
     if value is None:
         return "–"
@@ -136,6 +140,19 @@ def render_model_card(
             f"{_gbp(row['realized_profit'])} |"
         )
     top = importance.head(8)
+    value_rows = evaluation.get("value_check") or []
+    if value_rows:
+        lines += [
+            "",
+            "## Value estimate",
+            "",
+            "Customers who stayed on the test cutoff: revenue the value formula predicted for the "
+            "label window, divided by what they actually spent in it.",
+            "",
+            "| Purchase days | Customers | Predicted / actual |",
+            "|---|---|---|",
+            *[f"| {row['bucket']} | {row['n']:,} | {_ratio(row['ratio'])} |" for row in value_rows],
+        ]
     lines += [
         "",
         "## What drives the score",

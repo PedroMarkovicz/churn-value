@@ -68,8 +68,9 @@ def test_full_pipeline_from_raw_parquet_to_artifacts(tmp_path: Path, raw_synthet
     assert "churnvalue evaluate" in stale.output
 
     run("contracts")
-    assert len(list((tmp_path / "contracts" / "schemas").glob("*.schema.json"))) == 10
+    assert len(list((tmp_path / "contracts" / "schemas").glob("*.schema.json"))) == 11
     assert (tmp_path / "contracts" / "golden" / "economics.json").exists()
+    assert (tmp_path / "contracts" / "golden" / "gamma_gamma.json").exists()
 
 
 def test_export_explains_the_missing_evaluation(tmp_path: Path):
@@ -100,3 +101,17 @@ def test_stages_run_too_early_say_which_command_to_run(
     assert no_models.exit_code == 1
     assert "churnvalue train" in no_models.output
     assert not isinstance(no_models.exception, FileNotFoundError)
+
+
+def test_export_refuses_snapshots_built_before_contract_1_1(
+    tmp_path: Path, snapshots_synthetic: pd.DataFrame
+):
+    config_path = _config(tmp_path)
+    (tmp_path / "interim").mkdir()
+    old = snapshots_synthetic.drop(columns=["gg_p", "gg_q", "gg_v"])
+    old.to_parquet(tmp_path / "interim" / "snapshots.parquet", index=False)
+    (tmp_path / "reports").mkdir()
+    (tmp_path / "reports" / "evaluation.json").write_text("{}", encoding="utf-8")
+    result = CliRunner().invoke(app, ["export", "--config", str(config_path)])
+    assert result.exit_code == 1
+    assert "churnvalue build-snapshots" in result.output

@@ -57,6 +57,34 @@
       ],
       "title": "FeatureEntry",
       "type": "object"
+    },
+    "GammaGammaSpec": {
+      "additionalProperties": false,
+      "description": "Gamma-Gamma parameters of the served cutoff: AOV^GG = p(v + x m) / (p x + q - 1).",
+      "properties": {
+        "p": {
+          "exclusiveMinimum": 0,
+          "title": "P",
+          "type": "number"
+        },
+        "q": {
+          "exclusiveMinimum": 1,
+          "title": "Q",
+          "type": "number"
+        },
+        "v": {
+          "exclusiveMinimum": 0,
+          "title": "V",
+          "type": "number"
+        }
+      },
+      "required": [
+        "p",
+        "q",
+        "v"
+      ],
+      "title": "GammaGammaSpec",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -78,6 +106,9 @@
       },
       "title": "Features",
       "type": "array"
+    },
+    "gamma_gamma": {
+      "$ref": "#/$defs/GammaGammaSpec"
     },
     "horizon_days": {
       "title": "Horizon Days",
@@ -111,7 +142,8 @@
     "spend_trend_eps",
     "context",
     "onnx_input",
-    "onnx_output"
+    "onnx_output",
+    "gamma_gamma"
   ],
   "title": "FeatureSpec",
   "type": "object"

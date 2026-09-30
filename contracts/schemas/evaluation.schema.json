@@ -531,6 +531,65 @@
       ],
       "title": "StabilityRow",
       "type": "object"
+    },
+    "ValueCheckRow": {
+      "additionalProperties": false,
+      "description": "Customers who stayed: revenue the value formula predicted for the label window vs actual.",
+      "properties": {
+        "actual_revenue": {
+          "title": "Actual Revenue",
+          "type": "number"
+        },
+        "bucket": {
+          "title": "Bucket",
+          "type": "string"
+        },
+        "max_purchase_days": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Max Purchase Days"
+        },
+        "min_purchase_days": {
+          "title": "Min Purchase Days",
+          "type": "integer"
+        },
+        "n": {
+          "title": "N",
+          "type": "integer"
+        },
+        "predicted_revenue": {
+          "title": "Predicted Revenue",
+          "type": "number"
+        },
+        "ratio": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Ratio"
+        }
+      },
+      "required": [
+        "bucket",
+        "min_purchase_days",
+        "max_purchase_days",
+        "n",
+        "predicted_revenue",
+        "actual_revenue",
+        "ratio"
+      ],
+      "title": "ValueCheckRow",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -586,6 +645,21 @@
     },
     "test_population": {
       "$ref": "#/$defs/Population"
+    },
+    "value_check": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/ValueCheckRow"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Value Check"
     }
   },
   "required": [

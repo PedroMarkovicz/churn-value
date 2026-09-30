@@ -9,6 +9,7 @@ from churnvalue.features import BASE_FEATURES, CONTEXT_FEATURES, DERIVED_FEATURE
 from churnvalue.models import (
     ALL_FEATURES,
     CUSTOMER_FEATURES,
+    LADDER,
     SUPERVISED,
     feature_matrix,
     log1p_selected,
@@ -24,6 +25,14 @@ def test_ladder_feature_sets_differ_only_by_context():
     assert SUPERVISED["lightgbm_seasonal"].features == ALL_FEATURES
     assert SUPERVISED["logreg"].features == ALL_FEATURES
     assert list(SUPERVISED) == ["logreg", "lightgbm", "lightgbm_seasonal"]
+
+
+def test_ladder_lists_every_rung_once_in_evaluation_order():
+    from churnvalue.evaluate import BASELINE_SCORERS
+
+    assert list(LADDER) == [*BASELINE_SCORERS, *SUPERVISED]
+    assert all(name == entry.name for name, entry in LADDER.items())
+    assert all(entry.label[:1].isupper() for entry in LADDER.values())
 
 
 def test_log1p_selected_transforms_a_copy_and_clips_negatives():

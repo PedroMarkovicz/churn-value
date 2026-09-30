@@ -1,0 +1,155 @@
+{
+  "tolerance": 1e-9,
+  "cases": [
+    {
+      "params": {
+        "p": 3.2,
+        "q": 4.1,
+        "v": 180.0
+      },
+      "n_purchase_days": 1.0,
+      "avg_order_value": 25.0,
+      "aov_gg": 104.12698412698413
+    },
+    {
+      "params": {
+        "p": 3.2,
+        "q": 4.1,
+        "v": 180.0
+      },
+      "n_purchase_days": 2.0,
+      "avg_order_value": 300.9,
+      "aov_gg": 263.34315789473686
+    },
+    {
+      "params": {
+        "p": 3.2,
+        "q": 4.1,
+        "v": 180.0
+      },
+      "n_purchase_days": 6.0,
+      "avg_order_value": 499.9,
+      "aov_gg": 456.23677130044837
+    },
+    {
+      "params": {
+        "p": 3.2,
+        "q": 4.1,
+        "v": 180.0
+      },
+      "n_purchase_days": 40.0,
+      "avg_order_value": 88.8,
+      "aov_gg": 91.0938215102975
+    },
+    {
+      "params": {
+        "p": 3.2,
+        "q": 4.1,
+        "v": 180.0
+      },
+      "n_purchase_days": 150.0,
+      "avg_order_value": 12345.6,
+      "aov_gg": 12267.571931277167
+    },
+    {
+      "params": {
+        "p": 0.8,
+        "q": 2.5,
+        "v": 40.0
+      },
+      "n_purchase_days": 1.0,
+      "avg_order_value": 25.0,
+      "aov_gg": 22.608695652173914
+    },
+    {
+      "params": {
+        "p": 0.8,
+        "q": 2.5,
+        "v": 40.0
+      },
+      "n_purchase_days": 2.0,
+      "avg_order_value": 300.9,
+      "aov_gg": 165.6258064516129
+    },
+    {
+      "params": {
+        "p": 0.8,
+        "q": 2.5,
+        "v": 40.0
+      },
+      "n_purchase_days": 6.0,
+      "avg_order_value": 499.9,
+      "aov_gg": 385.9555555555555
+    },
+    {
+      "params": {
+        "p": 0.8,
+        "q": 2.5,
+        "v": 40.0
+      },
+      "n_purchase_days": 40.0,
+      "avg_order_value": 88.8,
+      "aov_gg": 85.77910447761195
+    },
+    {
+      "params": {
+        "p": 0.8,
+        "q": 2.5,
+        "v": 40.0
+      },
+      "n_purchase_days": 150.0,
+      "avg_order_value": 12345.6,
+      "aov_gg": 12193.448559670782
+    },
+    {
+      "params": {
+        "p": 12.0,
+        "q": 1.05,
+        "v": 2500.0
+      },
+      "n_purchase_days": 1.0,
+      "avg_order_value": 25.0,
+      "aov_gg": 2514.5228215767634
+    },
+    {
+      "params": {
+        "p": 12.0,
+        "q": 1.05,
+        "v": 2500.0
+      },
+      "n_purchase_days": 2.0,
+      "avg_order_value": 300.9,
+      "aov_gg": 1547.6756756756758
+    },
+    {
+      "params": {
+        "p": 12.0,
+        "q": 1.05,
+        "v": 2500.0
+      },
+      "n_purchase_days": 6.0,
+      "avg_order_value": 499.9,
+      "aov_gg": 915.9306037473975
+    },
+    {
+      "params": {
+        "p": 12.0,
+        "q": 1.05,
+        "v": 2500.0
+      },
+      "n_purchase_days": 40.0,
+      "avg_order_value": 88.8,
+      "aov_gg": 151.2842412248724
+    },
+    {
+      "params": {
+        "p": 12.0,
+        "q": 1.05,
+        "v": 2500.0
+      },
+      "n_purchase_days": 150.0,
+      "avg_order_value": 12345.6,
+      "aov_gg": 12361.923279908891
+    }
+  ]
+}
