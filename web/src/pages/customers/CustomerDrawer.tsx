@@ -15,6 +15,7 @@ import { Gauge } from "./Gauge.tsx";
 import { MoneyBlock } from "./MoneyBlock.tsx";
 import { PurchaseHistory } from "./PurchaseHistory.tsx";
 import { Reasons } from "./Reasons.tsx";
+import { WhatIf } from "./WhatIf.tsx";
 
 export interface DrawerProps {
   row: CustomerRow;
@@ -34,6 +35,7 @@ export function CustomerDrawer({
   customer,
   timeline,
   scenario,
+  featureSpec,
   total,
   cutoff,
   horizonDays,
@@ -85,6 +87,13 @@ export function CustomerDrawer({
             contributions={customer.top_contributions}
             horizonDays={horizonDays}
             month={monthName(cutoff)}
+          />
+          <WhatIf
+            key={row.id}
+            customer={customer}
+            row={row}
+            spec={featureSpec}
+            scenario={scenario}
           />
         </Dialog.Content>
       </Dialog.Portal>

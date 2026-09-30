@@ -91,3 +91,17 @@ test("the drawer shows the purchase history and the reasons", async () => {
     }),
   ).toBeInTheDocument();
 });
+
+test("without a model in this browser, the drawer still works around the what-if", async () => {
+  await renderCustomers("/?customer=1"); // jsdom has no Worker
+  const drawer = await screen.findByRole("dialog", { name: "Customer 1" });
+  const input = within(drawer).getByLabelText("Days since last purchase");
+  await userEvent.clear(input);
+  await userEvent.type(input, "60");
+  await waitFor(() => {
+    expect(within(drawer).getByRole("status", { name: "What-if result" })).toHaveTextContent(
+      "The model could not run in this browser",
+    );
+  });
+  expect(within(drawer).getByRole("region", { name: "The money" })).toBeInTheDocument();
+});
