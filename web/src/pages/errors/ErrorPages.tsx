@@ -1,6 +1,8 @@
 /** Failure and emptiness as direction (spec §7): say what went wrong and what to do. */
 import { type ErrorComponentProps, Link, useRouter } from "@tanstack/react-router";
 
+import { ARTIFACTS_TAG } from "@/app/release.ts";
+import { PAGES } from "@/components/layout/Layout.tsx";
 import { ArtifactError } from "@/contract/load.ts";
 
 function Shell({ title, children }: { title: string; children: React.ReactNode }) {
@@ -26,6 +28,9 @@ export function DataErrorPage({ error }: ErrorComponentProps) {
           The site reads the artifacts published by the pipeline; if they were just updated, a retry
           usually fixes it.
         </p>
+      ) : null}
+      {known ? (
+        <p className="text-sm text-muted">Pinned artifacts release: {ARTIFACTS_TAG}.</p>
       ) : (
         <p className="text-base leading-relaxed">
           {error instanceof Error ? error.message : String(error)}
@@ -49,15 +54,65 @@ export function DataErrorPage({ error }: ErrorComponentProps) {
 export function NotFoundPage() {
   return (
     <Shell title="There is no page at this address.">
-      <p className="text-base">
-        Start from the{" "}
-        <Link to="/" className="text-accent underline underline-offset-2">
-          overview
-        </Link>
-        .
-      </p>
+      <p className="text-base">These are the pages of the site:</p>
+      <nav aria-label="Pages">
+        <ul className="flex flex-wrap gap-x-5 gap-y-2">
+          {PAGES.map((page) => (
+            <li key={page.to}>
+              <Link to={page.to} className="text-accent underline underline-offset-2">
+                {page.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </Shell>
   );
+}
+
+/**
+ * A page that failed to render (spec §7): name it, say why, and offer a retry and the way back.
+ * It renders inside the layout, so the navigation and the other pages keep working.
+ */
+export function PageErrorPage({
+  page,
+  error,
+  reset,
+}: {
+  page: string;
+  error: unknown;
+  reset: () => void;
+}) {
+  const reason =
+    error instanceof ArtifactError
+      ? `${error.artifact}: ${error.reason}. Pinned artifacts release: ${ARTIFACTS_TAG}.`
+      : error instanceof Error
+        ? error.message
+        : String(error);
+  return (
+    <div className="grid max-w-[720px] gap-4 py-16">
+      <h1 className="font-serif text-4xl leading-tight">The {page} page could not be shown.</h1>
+      <p className="text-base leading-relaxed">{reason}</p>
+      <div className="flex flex-wrap items-center gap-5">
+        <button
+          type="button"
+          className="rounded-md bg-ink px-4 py-2 text-sm font-semibold text-panel"
+          onClick={reset}
+        >
+          Try again
+        </button>
+        <Link to="/" className="text-accent underline underline-offset-2">
+          Back to the Overview
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+export function pageError(page: string) {
+  return function PageError({ error, reset }: ErrorComponentProps) {
+    return <PageErrorPage page={page} error={error} reset={reset} />;
+  };
 }
 
 export function LoadingPage() {

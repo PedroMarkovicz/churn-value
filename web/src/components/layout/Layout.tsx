@@ -1,7 +1,8 @@
-import { Link, Outlet, useLoaderData } from "@tanstack/react-router";
+import { Link, Outlet, useLoaderData, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 
 import type { AppData } from "@/app/data.ts";
+import { ARTIFACTS_TAG } from "@/app/release.ts";
 import { ScenarioStrip } from "@/components/scenario/ScenarioStrip.tsx";
 import { ScenarioProvider, useScenario } from "@/scenario/ScenarioProvider.tsx";
 import { PARAMETER_ORDER, PARAMETERS } from "@/scenario/schema.ts";
@@ -15,6 +16,9 @@ export const PAGES = [
   { to: "/model", label: "Model" },
   { to: "/method", label: "Method" },
 ] as const;
+
+/** Pages with results fixed at the default scenario (spec §3.4): they say so instead of a strip. */
+export const FIXED_SCENARIO_ROUTES = new Set(["/model", "/method"]);
 
 export function useAppData(): AppData {
   return useLoaderData({ from: "__root__" });
@@ -66,8 +70,8 @@ function Footer({ data }: { data: AppData }) {
       </p>
       <p>
         Scored by {deployed?.label ?? data.manifest.deployed_model} on the{" "}
-        {data.manifest.test_cutoff} holdout. Contract {data.manifest.contract_version}, built from
-        commit {data.manifest.git_sha.slice(0, 7)}.{" "}
+        {data.manifest.test_cutoff} holdout. Contract {data.manifest.contract_version}, artifacts
+        release {ARTIFACTS_TAG}, built from commit {data.manifest.git_sha.slice(0, 7)}.{" "}
         <a
           className="text-accent underline underline-offset-2"
           href="https://github.com/PedroMarkovicz/churn-value"
@@ -81,6 +85,9 @@ function Footer({ data }: { data: AppData }) {
 
 export function Layout() {
   const data = useAppData();
+  const fixed = useRouterState({
+    select: (s) => s.matches.some((m) => FIXED_SCENARIO_ROUTES.has(m.routeId)),
+  });
   return (
     <ScenarioProvider>
       <a
@@ -117,7 +124,7 @@ export function Layout() {
               </ul>
             </nav>
           </div>
-          <ScenarioStrip />
+          {!fixed && <ScenarioStrip />}
         </header>
         <InvalidNotice />
         <main id="main" tabIndex={-1} className="outline-none">

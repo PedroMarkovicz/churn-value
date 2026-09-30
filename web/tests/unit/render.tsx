@@ -47,7 +47,8 @@ export async function renderPage(
     url = "/",
     data = fixtureData(),
     layout,
-  }: { url?: string; data?: AppData; layout?: () => ReactNode } = {},
+    path = "/",
+  }: { url?: string; data?: AppData; layout?: () => ReactNode; path?: string } = {},
 ) {
   const root = createRootRoute({
     validateSearch: (search: Record<string, unknown>) => search,
@@ -60,7 +61,7 @@ export async function renderPage(
         </ScenarioProvider>
       )),
   });
-  const child = createRoute({ getParentRoute: () => root, path: "/", component: page });
+  const child = createRoute({ getParentRoute: () => root, path, component: page });
   const router = createRouter({
     routeTree: root.addChildren([child]),
     history: createMemoryHistory({ initialEntries: [url] }),

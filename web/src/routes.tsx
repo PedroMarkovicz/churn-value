@@ -9,7 +9,7 @@ import { loadAppData } from "@/app/data.ts";
 import { parseSearch, stringifySearch } from "@/app/search.ts";
 import { Layout } from "@/components/layout/Layout.tsx";
 import { ArtifactError, loadArtifact, loadModelCard } from "@/contract/load.ts";
-import { DataErrorPage, LoadingPage, NotFoundPage } from "@/pages/errors/ErrorPages.tsx";
+import { DataErrorPage, LoadingPage, NotFoundPage, pageError } from "@/pages/errors/ErrorPages.tsx";
 import type { CardResult } from "@/pages/method/ModelCard.tsx";
 import { OverviewPage } from "@/pages/overview/OverviewPage.tsx";
 import { SensitivityPage } from "@/pages/sensitivity/SensitivityPage.tsx";
@@ -29,22 +29,26 @@ const rootRoute = createRootRoute({
 // Literal paths (not a helper taking `path: string`) so links are type-checked against them.
 const overviewRoute = createRoute({
   getParentRoute: () => rootRoute,
+  errorComponent: pageError("Overview"),
   path: "/",
   component: OverviewPage,
 });
 const simulatorRoute = createRoute({
   getParentRoute: () => rootRoute,
+  errorComponent: pageError("Simulator"),
   path: "/simulator",
   component: SimulatorPage,
 });
 const sensitivityRoute = createRoute({
   getParentRoute: () => rootRoute,
+  errorComponent: pageError("Sensitivity"),
   path: "/sensitivity",
   component: SensitivityPage,
 });
 
 const customersRoute = createRoute({
   getParentRoute: () => rootRoute,
+  errorComponent: pageError("Customers"),
   path: "/customers",
   loader: () => loadArtifact("timelines"), // spec §6.1: timelines only on this page
   staleTime: Infinity,
@@ -58,6 +62,7 @@ const customersRoute = createRoute({
 
 const modelRoute = createRoute({
   getParentRoute: () => rootRoute,
+  errorComponent: pageError("Model"),
   path: "/model",
   loader: () => loadArtifact("experiments"), // spec §6.1: experiments only on this page
   staleTime: Infinity,
@@ -67,6 +72,7 @@ const modelRoute = createRoute({
 
 const methodRoute = createRoute({
   getParentRoute: () => rootRoute,
+  errorComponent: pageError("Method"),
   path: "/method",
   // A missing or altered card must not take the page down (spec §7): report it in its place.
   loader: (): Promise<CardResult> =>
