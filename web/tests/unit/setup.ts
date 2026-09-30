@@ -17,6 +17,7 @@ if (!("ResizeObserver" in globalThis)) {
 }
 
 // jsdom does not implement element scrolling; TanStack Virtual scrolls a row into view with it.
-if (!("scrollTo" in Element.prototype)) {
+// (Node-environment test files have no Element at all.)
+if (typeof Element !== "undefined" && !("scrollTo" in Element.prototype)) {
   Object.assign(Element.prototype, { scrollTo: () => undefined });
 }
