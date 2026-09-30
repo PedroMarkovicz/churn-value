@@ -12,6 +12,7 @@ export const PAGES = [
   { to: "/simulator", label: "Simulator" },
   { to: "/sensitivity", label: "Sensitivity" },
   { to: "/customers", label: "Customers" },
+  { to: "/model", label: "Model" },
 ] as const;
 
 export function useAppData(): AppData {

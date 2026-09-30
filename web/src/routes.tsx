@@ -55,11 +55,18 @@ const customersRoute = createRoute({
   ),
 });
 
+const modelRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/model",
+  component: lazyRouteComponent(() => import("@/pages/model/ModelPage.tsx"), "ModelPage"),
+});
+
 export const routeTree = rootRoute.addChildren([
   overviewRoute,
   simulatorRoute,
   sensitivityRoute,
   customersRoute,
+  modelRoute,
 ]);
 
 export function makeRouter() {
