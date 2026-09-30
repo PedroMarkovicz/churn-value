@@ -38,11 +38,37 @@ GITHUB_TOKEN=... npm run artifacts -- --pin artifacts-20260928-abc1234
 
 This downloads the release, verifies it, installs it in `public/data` and rewrites `artifacts.lock.json`. Commit the lock file.
 
+## Customers and the in-browser what-if
+
+The Customers page ranks every holdout customer by the expected profit of a call under the
+current scenario. Filters, search and the CSV work on the rows in view. `?customer=ID` opens a
+customer's drawer: verdict, break-even gauge, the money, purchase history, the model's reasons
+(SHAP, from `customers.json`) and a what-if.
+
+The what-if runs the served `model.onnx` in a module worker with onnxruntime-web (WebAssembly,
+one thread):
+
+- The runtime's wasm, about 3.7 MB gzip, is fetched only when a what-if first runs, and is not
+  part of the first-load budget.
+- The worker checks `model.onnx` against its SHA-256 in `manifest.json` before using it, then
+  applies the served calibrator.
+- If the model cannot run, the what-if says so and the rest of the drawer keeps working.
+
+Parity with Python is tested twice:
+
+- `tests/unit/domain/onnx-parity.test.ts` (onnxruntime-node) reproduces `golden/model.json`.
+  It also shows that the what-if's rebuilt input gives back every customer's served
+  probability.
+- `tests/e2e/customers.spec.ts` compares the browser's answer with the same computation in
+  Node.
+
+Both need the artifacts installed (`npm run artifacts`).
+
 ## Layout
 
 - `src/contract`: generated types and validators, the loader.
 - `src/domain`: pure TypeScript (economics, campaign, policies, stress, formatting, headlines).
 - `src/scenario`: the URL scenario.
-- `src/workers`: the compute worker.
+- `src/workers`: the compute worker, and the inference worker (onnxruntime-web) with its client.
 - `src/charts`: chart primitives and the palette.
 - `src/pages`: one folder per page.

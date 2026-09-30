@@ -25,3 +25,8 @@
 - The artifacts are validated at load time by Ajv standalone validators generated from the JSON Schemas at build time: no `eval`, no runtime Ajv.
 - Fonts are self-hosted with `@fontsource`; the site makes no third-party requests.
 - Toolchain pins: TypeScript 6.0 (typescript-eslint does not support 7 yet) and ESLint 9 (eslint-plugin-jsx-a11y does not support 10 yet).
+
+**Amendments after Plan 3b (Customers page).**
+- Tables: TanStack Virtual renders the 1,920-row list and TanStack Table is not used. Filtering, search and sorting are three pure functions (`web/src/domain/customerList.ts`), tested in Node: one function does the work, and TanStack Table 9 is a new major with a new API (the same reasoning that dropped zod).
+- Inference: onnxruntime-web 1.30 (`onnxruntime-web/wasm`, one thread) runs in a module worker, loaded on the first what-if. npm publishes no minimal-operator build, so the full wasm (about 3.7 MB gzip) is used, outside the first-load budget. `model.onnx` is checked against its SHA-256 in the manifest before use, and the calibrator is loaded by that worker, not app-wide.
+- What-if consistency: eight rules, each true for every holdout customer, keep edited inputs describing a possible purchase history. Spend per purchase day is derived from total spend and purchase days, never edited on its own.
