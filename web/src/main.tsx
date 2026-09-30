@@ -1,16 +1,15 @@
+import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
-import "@/styles/index.css";
+import { makeRouter } from "@/routes.tsx";
 
-function App() {
-  return <h1 className="font-serif text-4xl">churn-value</h1>;
-}
+import "@/styles/index.css";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("index.html has no #root element");
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <RouterProvider router={makeRouter()} />
   </StrictMode>,
 );
