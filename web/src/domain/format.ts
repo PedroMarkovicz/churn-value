@@ -64,3 +64,9 @@ export function points(fraction: number, digits = 1): string {
 export function count(value: number): string {
   return whole.format(Math.round(finite(value)));
 }
+
+/** "1 day", "34 days": durations in whole days. */
+export function days(value: number): string {
+  const rounded = Math.round(finite(value));
+  return rounded === 1 ? "1 day" : `${count(rounded)} days`;
+}

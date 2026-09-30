@@ -1,4 +1,12 @@
-import { count, money, moneyCompact, moneyPrecise, percent, points } from "@/domain/format.ts";
+import {
+  count,
+  days,
+  money,
+  moneyCompact,
+  moneyPrecise,
+  percent,
+  points,
+} from "@/domain/format.ts";
 import {
   customersHeadline,
   overviewHeadline,
@@ -114,4 +122,12 @@ test("an empty list blames the budget only when the budget is what empties it", 
   expect(sensitivityHeadline({ kind: "empty" }, false)).toBe(
     "No customer is worth a call under these assumptions.",
   );
+});
+test.each([
+  [1, "1 day"],
+  [0, "0 days"],
+  [33.6, "34 days"],
+  [1234, "1,234 days"],
+])("days(%s) = %s", (value, text) => {
+  expect(days(value)).toBe(text);
 });

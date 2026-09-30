@@ -6,7 +6,8 @@
       "url": [
         "http://localhost:4173/",
         "http://localhost:4173/simulator",
-        "http://localhost:4173/sensitivity"
+        "http://localhost:4173/sensitivity",
+        "http://localhost:4173/customers"
       ],
       "numberOfRuns": 1,
       "settings": { "preset": "desktop" }

@@ -1,5 +1,5 @@
 /** Overview (spec §5.1): is the model worth money? The field and the account. */
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
 import { useAppData } from "@/components/layout/Layout.tsx";
@@ -23,6 +23,11 @@ const NEXT = [
     question: "When does it stop paying?",
     text: "The acceptance rate this list needs, and which assumption matters most.",
   },
+  {
+    to: "/customers",
+    question: "Who exactly, and why?",
+    text: "The ranked list, each customer's reasons, and what would change the decision.",
+  },
 ] as const;
 
 export function OverviewPage() {
@@ -31,6 +36,7 @@ export function OverviewPage() {
   const [highlight, setHighlight] = useState<Outcome | null>(null);
   const [asTable, setAsTable] = useState(false);
   const campaign = useMemo(() => runCampaign(table, scenario), [table, scenario]);
+  const navigate = useNavigate();
 
   return (
     <>
@@ -71,7 +77,20 @@ export function OverviewPage() {
               </tbody>
             </table>
           ) : (
-            <CustomerField table={table} campaign={campaign} highlight={highlight} />
+            <CustomerField
+              table={table}
+              campaign={campaign}
+              highlight={highlight}
+              onOpen={(id) => {
+                void navigate({
+                  to: "/customers",
+                  search: (previous: Record<string, unknown>) => ({
+                    ...previous,
+                    customer: String(id),
+                  }),
+                });
+              }}
+            />
           )}
           <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-muted">
             {OUTCOMES.map((outcome) => (
@@ -103,7 +122,7 @@ export function OverviewPage() {
           onHighlight={setHighlight}
         />
       </div>
-      <nav aria-label="Next questions" className="mt-12 grid gap-4 sm:grid-cols-2">
+      <nav aria-label="Next questions" className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {NEXT.map((item) => (
           <Link
             key={item.to}

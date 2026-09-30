@@ -5,9 +5,11 @@
 import type {
   Customer,
   CustomersFile,
+  FeatureEntry,
   FeatureSpec,
   Manifest,
   ModelInfo,
+  TimelinesFile,
 } from "@/contract/index.ts";
 
 export const MODELS: ModelInfo[] = [
@@ -30,6 +32,36 @@ export function manifestFixture(overrides: Partial<Manifest> = {}): Manifest {
   };
 }
 
+/**
+ * The 19 model inputs of a customer who buys every `cadenceDays` and last bought 20 days before
+ * the cutoff: every what-if consistency rule holds and the derived features match their formulas.
+ */
+export function fixtureFeatures(aov: number, cadenceDays: number): Record<string, number> {
+  const recency = 20;
+  const n = 5;
+  return {
+    recency_days: recency,
+    n_purchase_days: n,
+    tenure_days: recency + cadenceDays * (n - 1),
+    total_spend: aov * n,
+    avg_order_value: aov,
+    n_distinct_products: 40,
+    return_rate: 0,
+    spend_90d: aov,
+    spend_prev_90d: aov,
+    purchases_90d: 1,
+    cadence_cv: 0.3,
+    bought_same_window_last_year: 1,
+    is_uk: 1,
+    cadence_days: cadenceDays,
+    overdue_ratio: recency / cadenceDays,
+    expected_purchases_h: 90 / cadenceDays,
+    spend_trend: aov / (aov + 1),
+    cutoff_month_sin: -1,
+    cutoff_month_cos: 0,
+  };
+}
+
 /** One customer; `p` gives the deployed model's probability, the rule gets its complement. */
 export function customerFixture(
   id: number,
@@ -43,11 +75,15 @@ export function customerFixture(
     customer_id: id,
     churn,
     p: { rule_a: 1 - p, gbdt_b: p },
-    features: { n_purchase_days: 5, avg_order_value: aovGG, is_uk: 1 },
+    features: fixtureFeatures(aovGG, cadenceDays),
     aov_gg: aovGG,
     cadence_days: cadenceDays,
     shap_baseline: -0.9,
-    top_contributions: [{ feature: "n_purchase_days", value: 5, shap: 0.1 }],
+    top_contributions: [
+      { feature: "recency_days", value: 20, shap: -0.3 },
+      { feature: "n_purchase_days", value: 5, shap: 0.2 },
+      { feature: "spend_90d", value: aovGG, shap: -0.1 },
+    ],
     ...extra,
   };
 }
@@ -62,41 +98,51 @@ export function customersFixture(customers: Customer[]): CustomersFile {
   };
 }
 
+type FeatureRow = [
+  name: string,
+  group: FeatureEntry["group"],
+  unit: string,
+  dtype: FeatureEntry["dtype"],
+  min: number,
+  max: number,
+];
+
+/** The served feature spec's inputs, in model order, with its ranges (rounded). */
+const FEATURES: FeatureRow[] = [
+  ["recency_days", "base", "days", "int", 0, 344],
+  ["n_purchase_days", "base", "days", "int", 2, 197],
+  ["tenure_days", "base", "days", "int", 3, 648],
+  ["total_spend", "base", "£", "float", 24.35, 455498.09],
+  ["avg_order_value", "base", "£", "float", 11.16, 19920.69],
+  ["n_distinct_products", "base", "count", "int", 1, 2178],
+  ["return_rate", "base", "share", "float", 0, 1],
+  ["spend_90d", "base", "£", "float", 0, 105867.81],
+  ["spend_prev_90d", "base", "£", "float", 0, 111745.85],
+  ["purchases_90d", "base", "days", "int", 0, 47],
+  ["cadence_cv", "base", "ratio", "float", 0, 2.31],
+  ["bought_same_window_last_year", "base", "0/1", "int", 0, 1],
+  ["is_uk", "base", "0/1", "int", 0, 1],
+  ["cadence_days", "derived", "days", "float", 7, 364],
+  ["overdue_ratio", "derived", "ratio", "float", 0, 7.43],
+  ["expected_purchases_h", "derived", "count", "float", 0.25, 12.86],
+  ["spend_trend", "derived", "ratio", "float", 0, 46097.22],
+  ["cutoff_month_sin", "context", "-", "float", -1, 1],
+  ["cutoff_month_cos", "context", "-", "float", -1, 1],
+];
+
 export function featureSpecFixture(): FeatureSpec {
   return {
-    order: ["n_purchase_days", "avg_order_value", "is_uk"],
-    features: [
-      {
-        name: "n_purchase_days",
-        group: "base",
-        unit: "days",
-        description: "distinct days with a purchase",
-        editable: true,
-        dtype: "int",
-        min: 2,
-        max: 197,
-      },
-      {
-        name: "avg_order_value",
-        group: "base",
-        unit: "£",
-        description: "gross spend per purchase day",
-        editable: true,
-        dtype: "float",
-        min: 1,
-        max: 10000,
-      },
-      {
-        name: "is_uk",
-        group: "base",
-        unit: "flag",
-        description: "customer is in the United Kingdom",
-        editable: true,
-        dtype: "int",
-        min: 0,
-        max: 1,
-      },
-    ],
+    order: FEATURES.map(([name]) => name),
+    features: FEATURES.map(([name, group, unit, dtype, min, max]) => ({
+      name,
+      group,
+      unit,
+      dtype,
+      min,
+      max,
+      editable: group === "base",
+      description: name.replaceAll("_", " "),
+    })),
     horizon_days: 90,
     cadence_floor_days: 7,
     spend_trend_eps: 1,
@@ -104,5 +150,27 @@ export function featureSpecFixture(): FeatureSpec {
     onnx_input: "features",
     onnx_output: "probabilities",
     gamma_gamma: { p: 2.18, q: 3.6, v: 476.5 },
+  };
+}
+
+/**
+ * Purchase days every `cadence_days` up to `recency_days` before the cutoff, each of `aov_gg`;
+ * customers who stayed also bought 30 days after the cutoff (as in the data: churn = no purchase
+ * in the 90 days after it).
+ */
+export function timelinesFixture(customers: Customer[]): TimelinesFile {
+  return {
+    cutoff: "2011-09-10",
+    horizon_days: 90,
+    timelines: customers.map((c) => {
+      const n = c.features.n_purchase_days ?? 0;
+      const recency = c.features.recency_days ?? 0;
+      const days = Array.from(
+        { length: n },
+        (_, i) => -Math.round(recency + c.cadence_days * (n - 1 - i)),
+      );
+      if (c.churn === 0) days.push(30);
+      return { customer_id: c.customer_id, days, revenue: days.map(() => c.aov_gg) };
+    }),
   };
 }

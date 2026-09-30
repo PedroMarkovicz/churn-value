@@ -46,10 +46,19 @@ export interface ChartFrameProps {
   legend?: ReactNode;
   table: ReactNode; // the same data as a table (spec §4.6)
   note?: ReactNode;
+  level?: 2 | 3; // 3 inside the drawer, under its h2
   children: ReactNode;
 }
 
-export function ChartFrame({ title, subtitle, legend, table, note, children }: ChartFrameProps) {
+export function ChartFrame({
+  title,
+  subtitle,
+  legend,
+  table,
+  note,
+  level = 2,
+  children,
+}: ChartFrameProps) {
   const [asTable, setAsTable] = useState(false);
   const titleId = useId();
   return (
@@ -57,9 +66,15 @@ export function ChartFrame({ title, subtitle, legend, table, note, children }: C
       aria-labelledby={titleId}
       className="min-w-0 rounded-[10px] bg-panel p-5 shadow-[0_0_0_1px_var(--color-rule)]"
     >
-      <h2 id={titleId} className="font-serif text-2xl leading-tight">
-        {title}
-      </h2>
+      {level === 3 ? (
+        <h3 id={titleId} className="font-serif text-2xl leading-tight">
+          {title}
+        </h3>
+      ) : (
+        <h2 id={titleId} className="font-serif text-2xl leading-tight">
+          {title}
+        </h2>
+      )}
       <p className="mt-1 max-w-[72ch] text-sm leading-snug text-muted">{subtitle}</p>
       {legend && <div className="mt-3">{legend}</div>}
       <div className="mt-3">{asTable ? table : children}</div>
