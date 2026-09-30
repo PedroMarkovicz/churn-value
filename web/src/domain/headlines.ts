@@ -7,6 +7,8 @@ import type { Scenario } from "@/scenario/schema.ts";
 import { count, money, percent } from "./format.ts";
 import type { BreakEven, TornadoBar } from "./stress.ts";
 
+const BUDGET_EMPTY = "The budget does not cover a single call worth making.";
+
 export function overviewHeadline(n: number, k: number, realized: number): string {
   if (k === 0) return "Under these assumptions no customer is worth a call.";
   const verb = realized < 0 ? "would have lost" : "earned";
@@ -18,10 +20,9 @@ export function simulatorHeadline(
   k: number,
   expected: number,
   realized: number,
+  kWithoutBudget = k, // how many would be called with no budget: tells the two empty lists apart
 ): string {
-  if (k === 0 && scenario.budget_mode !== "none") {
-    return "The budget does not cover a single call worth making.";
-  }
+  if (k === 0 && scenario.budget_mode !== "none" && kWithoutBudget > 0) return BUDGET_EMPTY;
   if (k === 0) return "Under these assumptions no customer is worth a call.";
   const outcome = `${money(expected)} expected, ${money(realized)} on the holdout.`;
   if (scenario.budget_mode === "spend") {
@@ -33,10 +34,12 @@ export function simulatorHeadline(
   return `Call the ${count(k)} customers worth calling: ${outcome}`;
 }
 
-export function sensitivityHeadline(breakEven: BreakEven): string {
+export function sensitivityHeadline(breakEven: BreakEven, budgetIsTheLimit = false): string {
   switch (breakEven.kind) {
     case "empty":
-      return "No customer is worth a call under these assumptions.";
+      return budgetIsTheLimit
+        ? BUDGET_EMPTY
+        : "No customer is worth a call under these assumptions.";
     case "never":
       return "This list loses money at any acceptance rate.";
     case "always":

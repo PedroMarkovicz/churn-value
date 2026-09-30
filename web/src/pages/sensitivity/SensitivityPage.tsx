@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 
 import { useAppData } from "@/components/layout/Layout.tsx";
 import { PageHeading } from "@/components/layout/PageHeading.tsx";
-import { runCampaign } from "@/domain/campaign.ts";
+import { runCampaign, summarizeList } from "@/domain/campaign.ts";
 import { sensitivityHeadline } from "@/domain/headlines.ts";
 import { acceptanceLine, breakEvenAcceptance } from "@/domain/stress.ts";
 import { useScenario } from "@/scenario/ScenarioProvider.tsx";
@@ -48,7 +48,11 @@ export function SensitivityPage() {
   return (
     <>
       <PageHeading
-        title={sensitivityHeadline(breakEven)}
+        title={sensitivityHeadline(
+          breakEven,
+          scenario.budget_mode !== "none" &&
+            summarizeList(table, { ...scenario, budget_mode: "none" }).k > 0,
+        )}
         lede="Acceptance is the one number nobody can measure before a campaign runs. The list was built for the assumed rate; here is what it earns if the truth is different, and which assumption moves the result most."
       />
       <div className="grid gap-5">

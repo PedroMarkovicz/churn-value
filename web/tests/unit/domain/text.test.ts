@@ -61,7 +61,13 @@ test("headlines state the answer, and empty states say so plainly", () => {
     ),
   ).toBe("With a £5,000 budget, call the best 400: £9,000 expected, £8,000 on the holdout.");
   expect(
-    simulatorHeadline({ ...DEFAULT_SCENARIO, budget_mode: "spend", budget_value: 100 }, 0, 0, 0),
+    simulatorHeadline(
+      { ...DEFAULT_SCENARIO, budget_mode: "spend", budget_value: 100 },
+      0,
+      0,
+      0,
+      12,
+    ),
   ).toBe("The budget does not cover a single call worth making.");
   expect(sensitivityHeadline({ kind: "rate", gamma: 0.1723 })).toBe(
     "This list keeps paying as long as at least 17.2% of churners accept the offer.",
@@ -89,5 +95,23 @@ test("the tornado title only claims 'combined' when the widest bar outweighs the
   );
   expect(tornadoTitle([bar("gamma", 10), bar("margin", 9), bar("lambda_c", 9)], labels)).toBe(
     "Acceptance moves the result more than any other assumption",
+  );
+});
+
+test("an empty list blames the budget only when the budget is what empties it", () => {
+  const budget = { ...DEFAULT_SCENARIO, budget_mode: "calls" as const, budget_value: 5 };
+  // acceptance 0: nobody is worth a call, whatever the budget
+  expect(simulatorHeadline(budget, 0, 0, 0, 0)).toBe(
+    "Under these assumptions no customer is worth a call.",
+  );
+  // customers are worth a call, but the budget covers none of them
+  expect(simulatorHeadline(budget, 0, 0, 0, 12)).toBe(
+    "The budget does not cover a single call worth making.",
+  );
+  expect(sensitivityHeadline({ kind: "empty" }, true)).toBe(
+    "The budget does not cover a single call worth making.",
+  );
+  expect(sensitivityHeadline({ kind: "empty" }, false)).toBe(
+    "No customer is worth a call under these assumptions.",
   );
 });

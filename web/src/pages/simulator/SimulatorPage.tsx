@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useAppData } from "@/components/layout/Layout.tsx";
 import { PageHeading } from "@/components/layout/PageHeading.tsx";
 import { Controls } from "@/components/scenario/Controls.tsx";
-import { runCampaign } from "@/domain/campaign.ts";
+import { runCampaign, summarizeList } from "@/domain/campaign.ts";
 import { simulatorHeadline } from "@/domain/headlines.ts";
 import { comparePolicies } from "@/domain/policies.ts";
 import { useScenario } from "@/scenario/ScenarioProvider.tsx";
@@ -32,7 +32,13 @@ export function SimulatorPage() {
   return (
     <>
       <PageHeading
-        title={simulatorHeadline(scenario, campaign.k, campaign.expected, campaign.realizedTotal)}
+        title={simulatorHeadline(
+          scenario,
+          campaign.k,
+          campaign.expected,
+          campaign.realizedTotal,
+          summarizeList(table, { ...scenario, budget_mode: "none" }).k,
+        )}
         lede="Customers are ranked by what a call is expected to earn. The list stops where the next call is expected to lose money, or where the budget runs out."
       />
       <div className="grid items-start gap-5 lg:grid-cols-[280px_1fr]">
