@@ -1,8 +1,14 @@
-import { createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
+import {
+  createRootRoute,
+  createRoute,
+  createRouter,
+  lazyRouteComponent,
+} from "@tanstack/react-router";
 
 import { loadAppData } from "@/app/data.ts";
 import { parseSearch, stringifySearch } from "@/app/search.ts";
 import { Layout } from "@/components/layout/Layout.tsx";
+import { loadArtifact } from "@/contract/load.ts";
 import { DataErrorPage, LoadingPage, NotFoundPage } from "@/pages/errors/ErrorPages.tsx";
 import { OverviewPage } from "@/pages/overview/OverviewPage.tsx";
 import { SensitivityPage } from "@/pages/sensitivity/SensitivityPage.tsx";
@@ -36,7 +42,25 @@ const sensitivityRoute = createRoute({
   component: SensitivityPage,
 });
 
-export const routeTree = rootRoute.addChildren([overviewRoute, simulatorRoute, sensitivityRoute]);
+const customersRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/customers",
+  loader: () => loadArtifact("timelines"), // spec §6.1: timelines only on this page
+  staleTime: Infinity,
+  pendingComponent: LoadingPage,
+  // Code-split: the table, the drawer and the what-if stay out of the Overview's first load.
+  component: lazyRouteComponent(
+    () => import("@/pages/customers/CustomersRoute.tsx"),
+    "CustomersRoute",
+  ),
+});
+
+export const routeTree = rootRoute.addChildren([
+  overviewRoute,
+  simulatorRoute,
+  sensitivityRoute,
+  customersRoute,
+]);
 
 export function makeRouter() {
   return createRouter({
