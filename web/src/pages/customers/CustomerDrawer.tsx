@@ -7,12 +7,14 @@ import { Dialog } from "radix-ui";
 
 import type { Customer, FeatureSpec, Timeline } from "@/contract/index.ts";
 import type { CustomerRow } from "@/domain/customerList.ts";
-import { customerStory, verdict } from "@/domain/customerText.ts";
+import { customerStory, monthName, verdict } from "@/domain/customerText.ts";
 import { count } from "@/domain/format.ts";
 import type { Scenario } from "@/scenario/schema.ts";
 
 import { Gauge } from "./Gauge.tsx";
 import { MoneyBlock } from "./MoneyBlock.tsx";
+import { PurchaseHistory } from "./PurchaseHistory.tsx";
+import { Reasons } from "./Reasons.tsx";
 
 export interface DrawerProps {
   row: CustomerRow;
@@ -27,7 +29,17 @@ export interface DrawerProps {
   onClose: () => void;
 }
 
-export function CustomerDrawer({ row, customer, scenario, total, onClose }: DrawerProps) {
+export function CustomerDrawer({
+  row,
+  customer,
+  timeline,
+  scenario,
+  total,
+  cutoff,
+  horizonDays,
+  revealed,
+  onClose,
+}: DrawerProps) {
   const cadenceCv = customer.features.cadence_cv ?? 0;
   return (
     <Dialog.Root
@@ -59,6 +71,21 @@ export function CustomerDrawer({ row, customer, scenario, total, onClose }: Draw
           </Dialog.Description>
           <Gauge p={row.p} breakEven={row.breakEven} />
           <MoneyBlock row={row} scenario={scenario} />
+          {timeline && (
+            <PurchaseHistory
+              timeline={timeline}
+              recencyDays={row.recencyDays}
+              cadenceDays={row.cadenceDays}
+              horizonDays={horizonDays}
+              churned={row.churned}
+              revealed={revealed}
+            />
+          )}
+          <Reasons
+            contributions={customer.top_contributions}
+            horizonDays={horizonDays}
+            month={monthName(cutoff)}
+          />
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

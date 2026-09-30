@@ -76,3 +76,18 @@ test("assumptions that leave break-even undefined read as words, never NaN", asy
   );
   expect(drawer.textContent).not.toMatch(/NaN|Infinity/);
 });
+
+test("the drawer shows the purchase history and the reasons", async () => {
+  await renderCustomers("/?customer=1");
+  const drawer = await screen.findByRole("dialog", { name: "Customer 1" });
+  expect(
+    within(drawer).getByRole("heading", {
+      name: "Their next purchase was due 10 days after the cutoff.",
+    }),
+  ).toBeInTheDocument();
+  expect(
+    within(drawer).getByRole("heading", {
+      name: "The strongest reason for risk: 5 purchase days so far.",
+    }),
+  ).toBeInTheDocument();
+});
