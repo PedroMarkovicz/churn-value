@@ -16,3 +16,4 @@ Short MADR-style records (Context · Decision · Alternatives · Consequences). 
 | [0010](0010-english-gbp.md) | Language: English; currency: £ |
 | [0011](0011-monorepo-no-origin-data.md) | Monorepo, typed artifact contract, no data or code from the origin project |
 | [0012](0012-notebooks-as-narrative.md) | Analysis notebooks as a narrative layer over the package |
+| [0013](0013-visual-design-system.md) | Visual design system: one bold element, answer-first headlines, blue not green |
