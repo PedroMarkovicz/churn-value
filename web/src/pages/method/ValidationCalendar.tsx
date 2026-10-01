@@ -102,7 +102,13 @@ export function ValidationCalendar({
                       rx={3}
                       fill="var(--color-rule)"
                     />
-                    <text x={cx} y={y - 10} fontSize={11} fill="var(--color-ink)">
+                    <text
+                      x={cx > width / 2 ? Math.min(width - 16, x(date(r.outcomeEnd))) : cx}
+                      y={y - 10}
+                      textAnchor={cx > width / 2 ? "end" : "start"}
+                      fontSize={11}
+                      fill="var(--color-ink)"
+                    >
                       {WORD[r.stage]}, {MONTH.format(date(r.cutoff))}
                     </text>
                   </>

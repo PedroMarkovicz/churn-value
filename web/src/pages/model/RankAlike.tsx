@@ -30,7 +30,9 @@ export function RankAlike({ evaluation, models, testCutoff }: Props) {
   const metric = METRICS[key];
   const rows = metricRows(evaluation, models, key);
   const drawn = rows.filter((r) => modelColor(r.position) !== null);
-  const left = width < 480 ? 104 : M.left;
+  const stacked = width < 480; // on a phone the name goes above the row, not beside it
+  const left = stacked ? 28 : M.left; // room for the first axis label
+  const row = stacked ? ROW + 14 : ROW;
   const lo = Math.min(...drawn.map((r) => r.low));
   const hi = Math.max(...drawn.map((r) => r.high));
   const pad = (hi - lo) * 0.1 || 0.01;
@@ -39,7 +41,7 @@ export function RankAlike({ evaluation, models, testCutoff }: Props) {
     range: [left, width - M.right],
     nice: true,
   });
-  const height = M.top + drawn.length * ROW + M.bottom;
+  const height = M.top + drawn.length * row + M.bottom;
   const fixed = (v: number) => v.toFixed(metric.digits);
   const hovered = hover === null ? null : (drawn[hover] ?? null);
 
@@ -108,7 +110,7 @@ export function RankAlike({ evaluation, models, testCutoff }: Props) {
           ))}
           {drawn.map((r, i) => {
             const color = modelColor(r.position) ?? "var(--color-muted)";
-            const cy = M.top + i * ROW + ROW / 2;
+            const cy = M.top + i * row + row / 2 + (stacked ? 6 : 0);
             return (
               <g
                 key={r.model.name}
@@ -116,12 +118,12 @@ export function RankAlike({ evaluation, models, testCutoff }: Props) {
                   setHover(i);
                 }}
               >
-                <rect x={0} y={cy - ROW / 2} width={width} height={ROW} fill="transparent" />
+                <rect x={0} y={M.top + i * row} width={width} height={row} fill="transparent" />
                 <text
-                  x={left - 12}
-                  y={cy}
+                  x={stacked ? left : left - 12}
+                  y={stacked ? cy - 14 : cy}
                   dy="0.32em"
-                  textAnchor="end"
+                  textAnchor={stacked ? "start" : "end"}
                   fontSize={12}
                   fill="var(--color-ink)"
                 >
@@ -153,7 +155,7 @@ export function RankAlike({ evaluation, models, testCutoff }: Props) {
           })}
         </svg>
         {hovered && hover !== null && (
-          <Tooltip x={x(hovered.value)} y={M.top + hover * ROW} width={width}>
+          <Tooltip x={x(hovered.value)} y={M.top + hover * row} width={width}>
             <b>{hovered.model.label}</b>
             <br />
             {metric.label} {fixed(hovered.value)} ({fixed(hovered.low)} to {fixed(hovered.high)})

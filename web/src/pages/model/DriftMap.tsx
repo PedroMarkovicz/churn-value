@@ -26,9 +26,14 @@ export function DriftMap({ drift }: { drift: EvaluationFile["drift"] }) {
   const [ref, width] = useWidth<HTMLDivElement>(720);
   const [hover, setHover] = useState<{ f: number; c: number } | null>(null);
   const matrix = driftMatrix(drift);
-  const labels = width < 560 ? 112 : 196;
+  // On a phone each feature's name sits on its own line above its cells; on wider screens, beside.
+  const stacked = width < 560;
+  const labels = stacked ? 0 : 196;
+  const row = stacked ? 34 : ROW;
+  const top = (f: number) => TOP + f * row + (stacked ? 14 : 0); // y of a feature's cells
+  const cellHeight = stacked ? 16 : ROW - 2;
   const cell = matrix.cutoffs.length > 0 ? (width - labels) / matrix.cutoffs.length : 0;
-  const height = TOP + matrix.features.length * ROW + 36;
+  const height = TOP + matrix.features.length * row + 36;
   const every = Math.max(1, Math.ceil(56 / Math.max(cell, 1))); // one axis label per ~56 px
   const cellValue = hover === null ? null : (matrix.psi[hover.f]?.[hover.c] ?? null);
   const legend = [
@@ -89,10 +94,10 @@ export function DriftMap({ drift }: { drift: EvaluationFile["drift"] }) {
           {matrix.features.map((feature, f) => (
             <g key={feature}>
               <text
-                x={labels - 8}
-                y={TOP + f * ROW + ROW / 2}
+                x={stacked ? 0 : labels - 8}
+                y={stacked ? TOP + f * row + 6 : TOP + f * ROW + ROW / 2}
                 dy="0.32em"
-                textAnchor="end"
+                textAnchor={stacked ? "start" : "end"}
                 fontSize={11}
                 fill="var(--color-ink)"
               >
@@ -104,9 +109,9 @@ export function DriftMap({ drift }: { drift: EvaluationFile["drift"] }) {
                   <rect
                     key={cutoff}
                     x={labels + c * cell + 1}
-                    y={TOP + f * ROW + 1}
+                    y={top(f) + 1}
                     width={Math.max(0, cell - 2)}
-                    height={ROW - 2}
+                    height={cellHeight}
                     rx={2}
                     fill={value === null ? MAGNITUDE.none : LEVEL_COLOR[psiLevel(value)]}
                     onPointerEnter={() => {
@@ -122,7 +127,7 @@ export function DriftMap({ drift }: { drift: EvaluationFile["drift"] }) {
               <text
                 key={cutoff}
                 x={labels + c * cell + cell / 2}
-                y={TOP + matrix.features.length * ROW + 16}
+                y={TOP + matrix.features.length * row + 16}
                 textAnchor="middle"
                 fontSize={11}
                 fill="var(--color-muted)"
@@ -133,7 +138,7 @@ export function DriftMap({ drift }: { drift: EvaluationFile["drift"] }) {
           )}
         </svg>
         {hover && (
-          <Tooltip x={labels + hover.c * cell + cell / 2} y={TOP + hover.f * ROW} width={width}>
+          <Tooltip x={labels + hover.c * cell + cell / 2} y={top(hover.f)} width={width}>
             <b>{featureName(matrix.features[hover.f] ?? "")}</b>
             <br />
             {month(matrix.cutoffs[hover.c] ?? "")}

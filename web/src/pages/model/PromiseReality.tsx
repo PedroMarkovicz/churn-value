@@ -38,14 +38,16 @@ export function PromiseReality({ rows, testCutoff }: { rows: PromiseRow[]; testC
   const [ref, width] = useWidth<HTMLDivElement>(720);
   const [hover, setHover] = useState<number | null>(null);
   const drawn = rows.filter((r) => modelColor(r.position) !== null);
-  const left = width < 480 ? 104 : M.left;
+  const stacked = width < 480; // on a phone the name goes above the row, not beside it
+  const left = stacked ? 28 : M.left; // room for the first axis label
+  const row = stacked ? ROW + 16 : ROW;
   const values = drawn.flatMap((r) => [r.expected, r.low, r.high, 0]);
   const x = scaleLinear<number>({
     domain: [Math.min(0, ...values), Math.max(0, ...values)],
     range: [left, width - M.right],
     nice: true,
   });
-  const height = M.top + drawn.length * ROW + M.bottom;
+  const height = M.top + drawn.length * row + M.bottom;
   const hovered = hover === null ? null : (drawn[hover] ?? null);
   const hidden = rows.filter((r) => !drawn.includes(r));
 
@@ -110,7 +112,7 @@ export function PromiseReality({ rows, testCutoff }: { rows: PromiseRow[]; testC
           ))}
           {drawn.map((r, i) => {
             const color = modelColor(r.position) ?? "var(--color-muted)";
-            const cy = M.top + i * ROW + ROW / 2 - 8;
+            const cy = M.top + i * row + row / 2 - (stacked ? 0 : 8);
             return (
               <g
                 key={r.model.name}
@@ -118,12 +120,12 @@ export function PromiseReality({ rows, testCutoff }: { rows: PromiseRow[]; testC
                   setHover(i);
                 }}
               >
-                <rect x={0} y={cy - ROW / 2 + 8} width={width} height={ROW} fill="transparent" />
+                <rect x={0} y={M.top + i * row} width={width} height={row} fill="transparent" />
                 <text
-                  x={left - 12}
-                  y={cy}
+                  x={stacked ? left : left - 12}
+                  y={stacked ? cy - 16 : cy}
                   dy="0.32em"
-                  textAnchor="end"
+                  textAnchor={stacked ? "start" : "end"}
                   fontSize={12}
                   fill="var(--color-ink)"
                 >
@@ -178,7 +180,7 @@ export function PromiseReality({ rows, testCutoff }: { rows: PromiseRow[]; testC
           })}
         </svg>
         {hovered && hover !== null && (
-          <Tooltip x={x(hovered.realized)} y={M.top + hover * ROW} width={width}>
+          <Tooltip x={x(hovered.realized)} y={M.top + hover * row} width={width}>
             <b>{hovered.model.label}</b>
             <br />
             Expected {money(hovered.expected)}

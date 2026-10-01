@@ -59,10 +59,7 @@ export function LabelDiagram({
             opacity={0.6}
           />
           <text x={x(0) + 6} y={50} fontSize={11} fill="var(--color-ink)">
-            label window, H = {count(h)} days
-          </text>
-          <text x={x(0) + 6} y={64} fontSize={11} fill="var(--color-muted)">
-            nothing bought here: churned
+            H = {count(h)} days
           </text>
           <line x1={16} x2={width - 16} y1={AXIS} y2={AXIS} stroke="var(--color-ink)" />
           <line
@@ -123,12 +120,26 @@ export function LabelDiagram({
                 stroke="var(--color-muted)"
               />
               <text x={x(-f * h)} y={AXIS + 60} fontSize={11} fill="var(--color-muted)">
-                eligible if E falls here: from t − f·H to t + H + f·H, f = {f}
+                eligible window, f = {f}
               </text>
             </g>
           )}
         </svg>
       </div>
+      <ul className="mt-3 grid gap-1 text-sm text-muted">
+        <li>
+          The shaded window is the {count(h)} days after the cutoff t: a customer who buys nothing
+          there is labelled churned.
+        </li>
+        <li>
+          E is the expected next purchase, the last purchase plus the usual gap (the cadence).
+        </li>
+        {f !== null && (
+          <li>
+            Only customers whose E falls between t − f·H and t + H + f·H are labelled (f = {f}).
+          </li>
+        )}
+      </ul>
       {f === null && (
         <p className="mt-2 text-sm text-muted">
           The eligibility factor is not in this release (contract 1.2.0 adds it), so the window
