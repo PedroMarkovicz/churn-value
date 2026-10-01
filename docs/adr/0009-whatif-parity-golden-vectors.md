@@ -26,3 +26,8 @@
 - `feature_spec.json` carries the served cutoff's Gamma-Gamma parameters, so the what-if recomputes AOV^GG, and with it V, when spend is edited. `build-snapshots` keeps the fit of every cutoff on its rows; `export` refuses to write when the parameters do not reproduce every served `aov_gg` to 1e-9. Golden vectors in `contracts/golden/gamma_gamma.json` pin the formula for the TypeScript twin.
 - `evaluation.json` carries a value backtest: for customers who stayed, the revenue the value formula predicted for the label window against what they spent. On the test cutoff the formula is conservative overall (0.68×) and overstates only two-purchase customers (1.33×).
 - `manifest.json` lists every model with its label, family and whether it is served, so the web app writes no model name in its code.
+
+**Amendments in contract 1.2.0 (Plan 3c).**
+- The release ships the model card as `model_card.md`, rendered by `export` from the same run and listed in `manifest.files`; the site renders it only after its SHA-256 matches. `docs/model-card.md` is a copy of it.
+- `manifest.pipeline` records the run's seed, the Optuna trials and rolling-origin folds of the deployed model, and the label's `H` and eligibility `f`, which the Model and Method pages quote.
+- Both are optional for a 1.1 reader.

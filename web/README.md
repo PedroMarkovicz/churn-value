@@ -64,6 +64,25 @@ Parity with Python is tested twice:
 
 Both need the artifacts installed (`npm run artifacts`).
 
+## Model and Method
+
+Both pages show results at the default scenario and say so.
+
+- **Model** reads `evaluation.json` and, on its own route, `experiments.json`.
+- **Method** reads the release's `model_card.md` (contract 1.2.0) after checking its SHA-256 against the manifest. A missing or altered card is reported in its place; the rest of the page still renders. The Markdown renderer is a lazy chunk.
+
+## Visual baselines
+
+`tests/e2e/visual.spec.ts` screenshots the six pages at the default scenario. It runs only in the pinned Linux container (`mcr.microsoft.com/playwright:v1.63.0-noble`), where the CI `visual` job compares against `tests/e2e/__screenshots__/`. `npm run e2e` never runs it; fonts and anti-aliasing differ on other platforms.
+
+To change the baselines after an intended visual change:
+
+1. run the `visual-baselines` workflow on your branch (Actions → visual-baselines → Run workflow);
+2. download its `visual-baselines` artifact into `web/tests/e2e/__screenshots__/`;
+3. look at every image, then commit them with the change that caused them.
+
+GitHub only runs a manual workflow once it is on the default branch. On a branch that adds or first needs baselines, the CI `visual` job fails without them and uploads the screenshots it took, as `*-actual.png` in its `visual-diffs` artifact. They come from the same container, so after review they are the baselines.
+
 ## Layout
 
 - `src/contract`: generated types and validators, the loader.
