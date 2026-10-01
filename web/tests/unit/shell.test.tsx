@@ -117,3 +117,23 @@ test("on a phone the scenario editor opens as a bottom sheet", async () => {
     vi.unstubAllGlobals();
   }
 });
+
+test("Try again on a page error reloads the page's data, not just the boundary", async () => {
+  let resets = 0;
+  const router = await renderPage(
+    () => (
+      <PageErrorPage
+        page="Model"
+        error={new Error("experiments.json: HTTP 503")}
+        reset={() => {
+          resets += 1;
+        }}
+      />
+    ),
+    { layout: Layout },
+  );
+  const invalidate = vi.spyOn(router, "invalidate");
+  await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+  expect(invalidate).toHaveBeenCalled();
+  expect(resets).toBe(1);
+});

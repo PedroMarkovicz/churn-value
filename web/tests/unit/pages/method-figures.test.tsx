@@ -46,3 +46,10 @@ test("the value backtest shows each bucket's ratio and the note", () => {
     "Only customers with 2 purchase days are overstated, by 33%; the list marks them.",
   );
 });
+
+test("a value backtest with no measured bucket says so instead of drawing an empty axis", () => {
+  const bars = valueBars(evaluation.value_check).map((b) => ({ ...b, ratio: null }));
+  render(<ValueBacktest bars={bars} />);
+  expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  expect(screen.getAllByText("No bucket was measured.").length).toBeGreaterThan(0);
+});

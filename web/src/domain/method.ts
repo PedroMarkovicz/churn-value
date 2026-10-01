@@ -93,15 +93,24 @@ export function valueTitle(bars: readonly ValueBar[]): string {
 }
 
 export function valueNote(bars: readonly ValueBar[]): string {
-  const over = bars.filter((b) => b.ratio !== null && b.ratio > 1);
-  if (over.length === 0) return "No bucket is overstated.";
-  if (over.length === bars.length) return "Every bucket is overstated.";
+  const measured = bars.filter((b) => b.ratio !== null);
+  if (measured.length === 0) return "No bucket was measured.";
+  const unmeasured = bars.filter((b) => b.ratio === null);
+  const tail =
+    unmeasured.length > 0 ? ` Not measured: ${unmeasured.map((b) => b.label).join(", ")}.` : "";
+  const over = measured.filter((b) => (b.ratio ?? 0) > 1);
+  if (over.length === 0) return `No bucket is overstated.${tail}`;
+  if (over.length === measured.length) {
+    return unmeasured.length > 0
+      ? `Every measured bucket is overstated.${tail}`
+      : "Every bucket is overstated.";
+  }
   if (over.length === 1) {
     const bar = over[0] as ValueBar;
     const marked = bar.bucket === "2" ? "; the list marks them" : ""; // the "2 buys" marker (3b)
-    return `Only customers with ${bar.label} are overstated, by ${percent((bar.ratio ?? 1) - 1)}${marked}.`;
+    return `Only customers with ${bar.label} are overstated, by ${percent((bar.ratio ?? 1) - 1)}${marked}.${tail}`;
   }
-  return `${count(over.length)} of ${count(bars.length)} buckets are overstated: ${over.map((b) => b.label).join(", ")}.`;
+  return `${count(over.length)} of ${count(measured.length)} buckets are overstated: ${over.map((b) => b.label).join(", ")}.${tail}`;
 }
 
 // --- assumptions ------------------------------------------------------------------------------

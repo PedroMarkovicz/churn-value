@@ -79,10 +79,12 @@ export function calibrationSeries(
 export function calibrationTitle(series: readonly GapSeries[], calibrationCutoff: string): string {
   if (series.length === 0) return "This release has no calibration history";
   const month = monthName(calibrationCutoff);
-  const kept = series.filter((s) =>
-    s.points
-      .filter((p) => p.cutoff > calibrationCutoff)
-      .every((p) => Math.abs(p.gap) <= CALIBRATION_BAND),
+  const after = (s: GapSeries) => s.points.filter((p) => p.cutoff > calibrationCutoff);
+  if (series.every((s) => after(s).length === 0))
+    return `This release has no cutoffs after ${month}`;
+  // A model with nothing measured after calibration has kept nothing.
+  const kept = series.filter(
+    (s) => after(s).length > 0 && after(s).every((p) => Math.abs(p.gap) <= CALIBRATION_BAND),
   );
   if (kept.length === series.length) return `Every model stays within 3.5 points after ${month}`;
   if (kept.length === 0) return `No model stays within 3.5 points after ${month}`;

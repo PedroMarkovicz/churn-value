@@ -31,7 +31,11 @@ export function ModelPage({ experiments }: { experiments: ExperimentsFile }) {
           calibrationCutoff={calibration}
           testCutoff={test}
         />
-        <PromiseReality rows={promiseRows(evaluation, manifest.models)} testCutoff={test} />
+        <PromiseReality
+          rows={promiseRows(evaluation, manifest.models)}
+          models={manifest.models}
+          testCutoff={test}
+        />
         <div className="grid items-start gap-7 lg:grid-cols-2">
           <RankAlike evaluation={evaluation} models={manifest.models} testCutoff={test} />
           <Reliability

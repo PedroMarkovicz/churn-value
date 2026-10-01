@@ -44,6 +44,7 @@ export function Reliability({ evaluation, models, deployed, testCutoff }: Props)
   });
   const hovered = hover === null ? null : (points[hover] ?? null);
   const options = models.filter((m) => evaluation.models[m.name] !== undefined);
+  const missing = models.filter((m) => evaluation.models[m.name] === undefined);
 
   return (
     <ChartFrame
@@ -79,6 +80,11 @@ export function Reliability({ evaluation, models, deployed, testCutoff }: Props)
             percent(p.observed, 1),
           ])}
         />
+      }
+      note={
+        missing.length > 0
+          ? `No reliability data for ${missing.map((m) => m.label).join(", ")}.`
+          : undefined
       }
     >
       <div ref={ref} className="relative">

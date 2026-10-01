@@ -5,13 +5,13 @@
  */
 import { useState } from "react";
 
-import { MAGNITUDE } from "@/charts/palette.ts";
+import { PSI_LEVEL_COLORS } from "@/charts/palette.ts";
 import { ChartFrame, DataTable, Tooltip, useWidth } from "@/charts/primitives.tsx";
 import type { EvaluationFile } from "@/contract/index.ts";
 import { featureName } from "@/domain/featureNames.ts";
 import { driftMatrix, driftTitle, PSI_THRESHOLDS, psiLevel } from "@/domain/model.ts";
 
-const LEVEL_COLOR = [1, 3, 5, 6, 7].map((i) => MAGNITUDE.ramp[i] ?? MAGNITUDE.none);
+const LEVEL_COLOR: readonly string[] = PSI_LEVEL_COLORS;
 const LEVEL_TEXT = ["stable", "slight", "moderate", "large", "severe"];
 const MONTH = new Intl.DateTimeFormat("en-GB", {
   month: "short",
@@ -64,7 +64,7 @@ export function DriftMap({ drift }: { drift: EvaluationFile["drift"] }) {
             <span
               aria-hidden
               className="inline-block size-3 rounded-[2px]"
-              style={{ background: MAGNITUDE.none }}
+              style={{ border: "1px dashed var(--color-muted)" }}
             />
             not measured
           </span>
@@ -113,7 +113,9 @@ export function DriftMap({ drift }: { drift: EvaluationFile["drift"] }) {
                     width={Math.max(0, cell - 2)}
                     height={cellHeight}
                     rx={2}
-                    fill={value === null ? MAGNITUDE.none : LEVEL_COLOR[psiLevel(value)]}
+                    fill={value === null ? "var(--color-panel)" : LEVEL_COLOR[psiLevel(value)]}
+                    stroke={value === null ? "var(--color-muted)" : undefined}
+                    strokeDasharray={value === null ? "2 2" : undefined}
                     onPointerEnter={() => {
                       setHover({ f, c });
                     }}

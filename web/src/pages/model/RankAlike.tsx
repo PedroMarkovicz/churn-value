@@ -29,7 +29,15 @@ export function RankAlike({ evaluation, models, testCutoff }: Props) {
   const [hover, setHover] = useState<number | null>(null);
   const metric = METRICS[key];
   const rows = metricRows(evaluation, models, key);
-  const drawn = rows.filter((r) => modelColor(r.position) !== null);
+  const drawn = rows.filter((r) => modelColor(r.position) !== null); // a ninth model: table only
+  const hidden = rows.filter((r) => !drawn.includes(r));
+  const missing = models.filter((m) => !rows.some((r) => r.model.name === m.name));
+  const note = [
+    missing.length > 0 ? `No ${metric.label} for ${missing.map((m) => m.label).join(", ")}.` : "",
+    hidden.length > 0 ? `In the table only: ${hidden.map((r) => r.model.label).join(", ")}.` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
   const stacked = width < 480; // on a phone the name goes above the row, not beside it
   const left = stacked ? 28 : M.left; // room for the first axis label
   const row = stacked ? ROW + 14 : ROW;
@@ -76,6 +84,7 @@ export function RankAlike({ evaluation, models, testCutoff }: Props) {
           ])}
         />
       }
+      note={note || undefined}
     >
       <div ref={ref} className="relative">
         <svg

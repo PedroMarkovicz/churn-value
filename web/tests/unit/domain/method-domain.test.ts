@@ -76,7 +76,7 @@ test("a value backtest that runs high, or is missing, says so", () => {
       ratio: null,
     },
   ]);
-  expect(valueNote(nullRatio)).toBe("No bucket is overstated.");
+  expect(valueNote(nullRatio)).toBe("No bucket was measured.");
   expect(valueTitle(nullRatio)).toBe("This release has no value backtest");
 });
 
@@ -85,4 +85,19 @@ test("the assumptions table names each parameter with its symbol, value, range a
   expect(rows.map((r) => r.symbol)).toEqual(["γ", "λc", "λa", "m", "c", "T"]);
   expect(rows[0]).toMatchObject({ name: "Acceptance", value: "30%", range: "0% to 100%" });
   for (const row of rows) expect(row.source.length).toBeGreaterThan(10);
+});
+
+test("unmeasured buckets are named, never counted as not overstated", () => {
+  const bars = valueBars(evaluation.value_check).map((b, i) =>
+    i === 0 ? b : { ...b, ratio: null },
+  );
+  expect(valueNote(bars)).toBe(
+    "Every measured bucket is overstated. Not measured: 3 purchase days, 4–5 purchase days, 6–10 purchase days, 11 or more purchase days.",
+  );
+  const two = valueBars(evaluation.value_check).map((b, i) => (i < 2 ? b : { ...b, ratio: null }));
+  expect(valueNote(two)).toBe(
+    "Only customers with 2 purchase days are overstated, by 33%; the list marks them. Not measured: 4–5 purchase days, 6–10 purchase days, 11 or more purchase days.",
+  );
+  const none = valueBars(evaluation.value_check).map((b) => ({ ...b, ratio: null }));
+  expect(valueNote(none)).toBe("No bucket was measured.");
 });

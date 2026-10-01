@@ -83,6 +83,7 @@ export function PageErrorPage({
   error: unknown;
   reset: () => void;
 }) {
+  const router = useRouter();
   const reason =
     error instanceof ArtifactError
       ? `${error.artifact}: ${error.reason}. Pinned artifacts release: ${ARTIFACTS_TAG}.`
@@ -97,7 +98,11 @@ export function PageErrorPage({
         <button
           type="button"
           className="rounded-md bg-ink px-4 py-2 text-sm font-semibold text-panel"
-          onClick={reset}
+          onClick={() => {
+            // A failed loader throws again after a bare reset: reload the data, then the boundary.
+            void router.invalidate();
+            reset();
+          }}
         >
           Try again
         </button>

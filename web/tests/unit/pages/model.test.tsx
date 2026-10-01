@@ -139,3 +139,47 @@ test("the run strip links to the model card on the Method page", async () => {
     "/method#model-card",
   );
 });
+
+test("a model the evaluation does not cover is named in every chart that lacks it", async () => {
+  const extra: ModelInfo = {
+    name: "new_model",
+    label: "New model",
+    family: "gbdt",
+    deployable: false,
+  };
+  await renderPage(page, {
+    data: { ...fixtureData(), manifest: manifestFixture({ models: [...MODELS, extra] }) },
+  });
+  expect(
+    screen.getByRole("region", { name: "Only GBDT B made close to what it promised" }),
+  ).toHaveTextContent("No promise to compare for New model.");
+  expect(screen.getByRole("region", { name: "GBDT B is best on ROC-AUC" })).toHaveTextContent(
+    "No ROC-AUC for New model.",
+  );
+  expect(
+    screen.getByRole("region", { name: /^GBDT B: predicted matches observed/ }),
+  ).toHaveTextContent("No reliability data for New model.");
+});
+
+test("the ranking chart says which models are in its table only", async () => {
+  const extras: ModelInfo[] = Array.from({ length: 7 }, (_, i) => ({
+    name: `extra_${i}`,
+    label: `Extra ${i}`,
+    family: "gbdt",
+    deployable: false,
+  }));
+  const evaluation = evaluationFixture();
+  for (const m of extras) {
+    const gbdt = evaluation.models.gbdt_b;
+    if (gbdt) evaluation.models[m.name] = gbdt;
+  }
+  await renderPage(page, {
+    data: {
+      ...fixtureData(),
+      evaluation,
+      manifest: manifestFixture({ models: [...MODELS, ...extras] }),
+    },
+  });
+  const chart = screen.getByRole("region", { name: /alike on ROC-AUC|best on ROC-AUC/ });
+  expect(chart).toHaveTextContent("In the table only: Extra 6.");
+});

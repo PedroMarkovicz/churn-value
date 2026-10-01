@@ -220,3 +220,12 @@ test.skipIf(!existsSync(`${DATA}evaluation.json`))(
     expect(driftMatrix(real.drift).features[0]).toBe("tenure_days");
   },
 );
+
+test("a release with no cutoffs after calibration does not claim every model stayed calibrated", () => {
+  const { series } = calibrationSeries(evaluationFixture(), MODELS);
+  const early = series.map((s) => ({
+    ...s,
+    points: s.points.filter((p) => p.cutoff <= "2011-06-10"),
+  }));
+  expect(calibrationTitle(early, "2011-06-10")).toBe("This release has no cutoffs after June");
+});

@@ -51,64 +51,68 @@ export function ValueBacktest({ bars }: { bars: ValueBar[] }) {
       note={valueNote(bars)}
     >
       <div ref={ref}>
-        <svg
-          width={width}
-          height={height}
-          role="img"
-          aria-label={`Predicted over actual revenue by purchase days; ${all === null ? "no overall ratio" : `overall ${times(all)}`}.`}
-          className="block max-w-full"
-        >
-          {x.ticks(4).map((t) => (
-            <g key={t}>
-              <line
-                x1={x(t)}
-                x2={x(t)}
-                y1={M.top}
-                y2={height - M.bottom}
-                stroke={t === 1 ? "var(--color-ink)" : "var(--color-rule)"}
-              />
-              <text
-                x={x(t)}
-                y={height - 12}
-                textAnchor="middle"
-                fontSize={11}
-                fill="var(--color-muted)"
-              >
-                {t}×
-              </text>
-            </g>
-          ))}
-          {shown.map((b, i) => {
-            const cy = M.top + i * ROW + ROW / 2;
-            const ratio = b.ratio ?? 0;
-            return (
-              <g key={b.bucket}>
-                <text
-                  x={left - 10}
-                  y={cy}
-                  dy="0.32em"
-                  textAnchor="end"
-                  fontSize={12}
-                  fill="var(--color-ink)"
-                >
-                  {narrow ? `${b.bucket} days` : b.label}
-                </text>
-                <rect
-                  x={left}
-                  y={cy - 8}
-                  width={Math.max(0, x(ratio) - left)}
-                  height={16}
-                  rx={3}
-                  fill="var(--color-ink)"
-                  opacity={ratio > 1 ? 0.85 : 0.35}
+        {shown.length === 0 ? (
+          <p className="text-sm text-muted">{valueNote(bars)}</p>
+        ) : (
+          <svg
+            width={width}
+            height={height}
+            role="img"
+            aria-label={`Predicted over actual revenue by purchase days; ${all === null ? "no overall ratio" : `overall ${times(all)}`}.`}
+            className="block max-w-full"
+          >
+            {x.ticks(4).map((t) => (
+              <g key={t}>
+                <line
+                  x1={x(t)}
+                  x2={x(t)}
+                  y1={M.top}
+                  y2={height - M.bottom}
+                  stroke={t === 1 ? "var(--color-ink)" : "var(--color-rule)"}
                 />
-                <text x={x(ratio) + 6} y={cy} dy="0.32em" fontSize={11} fill="var(--color-ink)">
-                  {times(b.ratio)}
+                <text
+                  x={x(t)}
+                  y={height - 12}
+                  textAnchor="middle"
+                  fontSize={11}
+                  fill="var(--color-muted)"
+                >
+                  {t}×
                 </text>
               </g>
-            );
-          })}
-        </svg>
+            ))}
+            {shown.map((b, i) => {
+              const cy = M.top + i * ROW + ROW / 2;
+              const ratio = b.ratio ?? 0;
+              return (
+                <g key={b.bucket}>
+                  <text
+                    x={left - 10}
+                    y={cy}
+                    dy="0.32em"
+                    textAnchor="end"
+                    fontSize={12}
+                    fill="var(--color-ink)"
+                  >
+                    {narrow ? `${b.bucket} days` : b.label}
+                  </text>
+                  <rect
+                    x={left}
+                    y={cy - 8}
+                    width={Math.max(0, x(ratio) - left)}
+                    height={16}
+                    rx={3}
+                    fill="var(--color-ink)"
+                    opacity={ratio > 1 ? 0.85 : 0.35}
+                  />
+                  <text x={x(ratio) + 6} y={cy} dy="0.32em" fontSize={11} fill="var(--color-ink)">
+                    {times(b.ratio)}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        )}
       </div>
     </ChartFrame>
   );

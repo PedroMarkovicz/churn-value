@@ -3,7 +3,14 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { MAGNITUDE, MODEL_SLOTS, MONEY, modelColor, OUTCOME } from "@/charts/palette.ts";
+import {
+  MAGNITUDE,
+  MODEL_SLOTS,
+  MONEY,
+  modelColor,
+  OUTCOME,
+  PSI_LEVEL_COLORS,
+} from "@/charts/palette.ts";
 
 import { checkPalette, contrast, deltaE } from "../../../scripts/palette-lib.ts";
 
@@ -70,5 +77,14 @@ test("the magnitude ramp is one hue getting steadily darker, with its tokens in 
   const darkness = MAGNITUDE.ramp.map((hex) => contrast(hex, "#ffffff"));
   darkness.slice(1).forEach((value, i) => {
     expect(value).toBeGreaterThan(darkness[i] as number);
+  });
+});
+
+test("the five PSI levels are clearly apart, each a step darker than the last", () => {
+  expect(PSI_LEVEL_COLORS).toHaveLength(5);
+  PSI_LEVEL_COLORS.slice(1).forEach((hex, i) => {
+    const previous = PSI_LEVEL_COLORS[i] as string;
+    expect(deltaE(previous, hex), `${previous} → ${hex}`).toBeGreaterThanOrEqual(9);
+    expect(contrast(hex, "#ffffff")).toBeGreaterThan(contrast(previous, "#ffffff"));
   });
 });

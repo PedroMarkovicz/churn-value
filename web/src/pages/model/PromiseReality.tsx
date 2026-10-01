@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { modelColor } from "@/charts/palette.ts";
 import { ChartFrame, DataTable, LegendItem, Tooltip, useWidth } from "@/charts/primitives.tsx";
+import type { ModelInfo } from "@/contract/index.ts";
 import { monthName } from "@/domain/customerText.ts";
 import { money, moneyCompact } from "@/domain/format.ts";
 import { type PromiseRow, promiseTitle } from "@/domain/model.ts";
@@ -34,7 +35,15 @@ const reading = (row: PromiseRow) =>
     ? `promised ${money(row.shortfall)} more than it made`
     : `made ${money(-row.shortfall)} more than it promised`;
 
-export function PromiseReality({ rows, testCutoff }: { rows: PromiseRow[]; testCutoff: string }) {
+export function PromiseReality({
+  rows,
+  models,
+  testCutoff,
+}: {
+  rows: PromiseRow[];
+  models: ModelInfo[];
+  testCutoff: string;
+}) {
   const [ref, width] = useWidth<HTMLDivElement>(720);
   const [hover, setHover] = useState<number | null>(null);
   const drawn = rows.filter((r) => modelColor(r.position) !== null);
@@ -50,6 +59,15 @@ export function PromiseReality({ rows, testCutoff }: { rows: PromiseRow[]; testC
   const height = M.top + drawn.length * row + M.bottom;
   const hovered = hover === null ? null : (drawn[hover] ?? null);
   const hidden = rows.filter((r) => !drawn.includes(r));
+  const missing = models.filter((m) => !rows.some((r) => r.model.name === m.name));
+  const note = [
+    missing.length > 0
+      ? `No promise to compare for ${missing.map((m) => m.label).join(", ")}.`
+      : "",
+    hidden.length > 0 ? `In the table only: ${hidden.map((r) => r.model.label).join(", ")}.` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <ChartFrame
@@ -73,11 +91,7 @@ export function PromiseReality({ rows, testCutoff }: { rows: PromiseRow[]; testC
           ])}
         />
       }
-      note={
-        hidden.length > 0
-          ? `In the table only: ${hidden.map((r) => r.model.label).join(", ")}.`
-          : undefined
-      }
+      note={note || undefined}
     >
       <div ref={ref} className="relative">
         <svg
