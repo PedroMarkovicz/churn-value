@@ -33,7 +33,10 @@ const COMPONENTS: Components = {
   ),
   table: ({ children }) => (
     <ScrollRegion label="Model card table, scrollable">
-      <table className="w-full border-collapse text-sm">{children}</table>
+      {/* Tables keep their natural width and scroll; only running text wraps long codes. */}
+      <table className="w-full min-w-max border-collapse text-sm [&_code]:[overflow-wrap:normal]">
+        {children}
+      </table>
     </ScrollRegion>
   ),
   th: ({ children }) => (
