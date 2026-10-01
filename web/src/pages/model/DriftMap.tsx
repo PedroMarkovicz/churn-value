@@ -123,12 +123,13 @@ export function DriftMap({ drift }: { drift: EvaluationFile["drift"] }) {
             </g>
           ))}
           {matrix.cutoffs.map((cutoff, c) =>
-            c % every === 0 ? (
+            // On a phone only the first and last months, anchored to the edges, so none is cut off.
+            (stacked ? c === 0 || c === matrix.cutoffs.length - 1 : c % every === 0) ? (
               <text
                 key={cutoff}
-                x={labels + c * cell + cell / 2}
+                x={stacked ? (c === 0 ? labels : width) : labels + c * cell + cell / 2}
                 y={TOP + matrix.features.length * row + 16}
-                textAnchor="middle"
+                textAnchor={stacked ? (c === 0 ? "start" : "end") : "middle"}
                 fontSize={11}
                 fill="var(--color-muted)"
               >

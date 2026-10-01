@@ -15,7 +15,8 @@ const times = (ratio: number | null) => (ratio === null ? "–" : `${ratio.toFix
 
 export function ValueBacktest({ bars }: { bars: ValueBar[] }) {
   const [ref, width] = useWidth<HTMLDivElement>(720);
-  const left = width < 480 ? 128 : M.left;
+  const narrow = width < 480;
+  const left = narrow ? 72 : M.left;
   const shown = bars.filter((b) => b.ratio !== null);
   const top = Math.max(1.5, ...shown.map((b) => b.ratio ?? 0));
   const x = scaleLinear<number>({ domain: [0, top], range: [left, width - M.right], nice: true });
@@ -90,7 +91,7 @@ export function ValueBacktest({ bars }: { bars: ValueBar[] }) {
                   fontSize={12}
                   fill="var(--color-ink)"
                 >
-                  {b.label}
+                  {narrow ? `${b.bucket} days` : b.label}
                 </text>
                 <rect
                   x={left}

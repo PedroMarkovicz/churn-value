@@ -12,11 +12,8 @@ import { ScrollRegion } from "@/components/ScrollRegion.tsx";
 
 // The card's own headings sit one level under the page's section heading.
 const COMPONENTS: Components = {
-  h1: ({ id, children }) => (
-    <h3 id={id} className="mt-2 font-serif text-2xl">
-      {children}
-    </h3>
-  ),
+  // The section is already titled "Model card"; the card's own title would repeat it.
+  h1: () => null,
   h2: ({ id, children }) => (
     <h3 id={id} className="mt-6 font-serif text-xl">
       {children}
@@ -48,7 +45,11 @@ const COMPONENTS: Components = {
     </th>
   ),
   td: ({ children }) => <td className="border-b border-rule px-2 py-1.5">{children}</td>,
-  code: ({ children }) => <code className="rounded bg-surface px-1 text-[0.9em]">{children}</code>,
+  code: ({ children }) => (
+    <code className="rounded bg-surface px-1 text-[0.9em] [overflow-wrap:anywhere]">
+      {children}
+    </code>
+  ),
   a: ({ href, children }) => (
     <a href={href} className="text-accent underline underline-offset-2">
       {children}
