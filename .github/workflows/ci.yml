@@ -68,6 +68,7 @@ jobs:
           path: |
             web/playwright-report
             web/.lighthouseci
+          include-hidden-files: true # .lighthouseci is a dot folder
           retention-days: 7
 
   visual:
