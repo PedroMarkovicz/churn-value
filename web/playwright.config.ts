@@ -10,9 +10,18 @@ export default defineConfig({
   reporter: CI ? [["html", { open: "never" }], ["github"]] : "list",
   use: { baseURL: "http://localhost:4173", trace: "retain-on-failure" },
   snapshotPathTemplate: "{testDir}/__screenshots__/{projectName}/{arg}{ext}",
-  // An absolute limit: a ratio lets thousands of pixels change on a long page (a recoloured chart
-  // passed at 0.2%). The pinned container renders identically from run to run.
-  expect: { toHaveScreenshot: { maxDiffPixels: 100, animations: "disabled", caret: "hide" } },
+  // A strict comparison, possible because the pinned container renders identically from run to
+  // run: `threshold` is the colour difference a pixel may have and still count as equal (the
+  // default 0.2 treats neighbouring steps of a colour ramp as the same pixel), and at most 100
+  // pixels may differ (a ratio would allow thousands on a long page).
+  expect: {
+    toHaveScreenshot: {
+      threshold: 0.02,
+      maxDiffPixels: 100,
+      animations: "disabled",
+      caret: "hide",
+    },
+  },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] }, testIgnore: /visual\.spec\.ts/ },
     { name: "mobile", use: { ...devices["Pixel 7"] }, testIgnore: /visual\.spec\.ts/ },
