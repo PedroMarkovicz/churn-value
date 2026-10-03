@@ -20,6 +20,8 @@ import {
   validate_manifest,
   validate_timelines,
 } from "./validators.gen.js";
+import { sha256Hex } from "@/workers/integrity.ts";
+
 import { APP_CONTRACT_VERSION, isCompatible } from "./version.ts";
 
 export interface ArtifactTypes {
@@ -126,4 +128,40 @@ export function assertCompatibleVersion(data: unknown): void {
 /** Test hook: forget every cached artifact. */
 export function clearArtifactCache(): void {
   cache.clear();
+  card = null;
+}
+
+/** The model card (contract 1.2.0): Markdown rendered by the Method page. */
+export const MODEL_CARD = "model_card.md";
+
+let card: Promise<string> | null = null;
+
+/**
+ * The model card of the pinned release, fetched once and checked against its SHA-256 in the
+ * manifest (the JSON artifacts get a schema; this text gets its checksum).
+ */
+export function loadModelCard(base = DATA_BASE): Promise<string> {
+  card ??= (async () => {
+    const manifest = await loadArtifact("manifest", base);
+    const expected = manifest.files[MODEL_CARD];
+    if (!expected) {
+      throw new ArtifactError(MODEL_CARD, "is not in this release (contract 1.2.0 ships it)");
+    }
+    let response: Response;
+    try {
+      response = await fetch(`${base}${MODEL_CARD}`);
+    } catch {
+      throw new ArtifactError(MODEL_CARD, "the network request failed");
+    }
+    if (!response.ok) throw new ArtifactError(MODEL_CARD, `HTTP ${response.status}`);
+    const bytes = await response.arrayBuffer();
+    if ((await sha256Hex(bytes)) !== expected) {
+      throw new ArtifactError(MODEL_CARD, "does not match its SHA-256 in the manifest");
+    }
+    return new TextDecoder().decode(bytes);
+  })();
+  card.catch(() => {
+    card = null; // a failed load can be retried
+  });
+  return card;
 }

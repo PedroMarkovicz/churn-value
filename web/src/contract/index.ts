@@ -14,5 +14,5 @@ export type {
 } from "./types/evaluation.gen.ts";
 export type { ExperimentsFile, RunSummary } from "./types/experiments.gen.ts";
 export type { FeatureEntry, FeatureSpec, GammaGammaSpec } from "./types/feature_spec.gen.ts";
-export type { Manifest, ModelInfo } from "./types/manifest.gen.ts";
+export type { Manifest, ModelInfo, PipelineInfo } from "./types/manifest.gen.ts";
 export type { Timeline, TimelinesFile } from "./types/timelines.gen.ts";

@@ -10,6 +10,7 @@ export interface Manifest {
   };
   git_sha: string;
   models: ModelInfo[];
+  pipeline?: PipelineInfo | null;
   test_cutoff: string;
 }
 /**
@@ -21,4 +22,17 @@ export interface ModelInfo {
   family: "rule" | "probabilistic" | "linear" | "gbdt";
   label: string;
   name: string;
+}
+/**
+ * How the served run was built (contract 1.2.0): the Model and Method pages quote it.
+ *
+ * This interface was referenced by `Manifest`'s JSON-Schema
+ * via the `definition` "PipelineInfo".
+ */
+export interface PipelineInfo {
+  eligibility_f: number;
+  horizon_days: number;
+  n_folds: number;
+  n_trials: number;
+  seed: number;
 }

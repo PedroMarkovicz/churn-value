@@ -12,13 +12,13 @@ import type { ReactNode } from "react";
 
 import type { AppData } from "@/app/data.ts";
 import { parseSearch, stringifySearch } from "@/app/search.ts";
-import type { EvaluationFile } from "@/contract/index.ts";
 import { buildTable } from "@/domain/table.ts";
 import { ScenarioProvider } from "@/scenario/ScenarioProvider.tsx";
 
 import {
   customerFixture,
   customersFixture,
+  evaluationFixture,
   featureSpecFixture,
   manifestFixture,
 } from "./fixtures/artifacts.ts";
@@ -35,7 +35,7 @@ export function fixtureData(): AppData {
   return {
     manifest: manifestFixture(),
     customers,
-    evaluation: {} as EvaluationFile, // not read by the pages of this release
+    evaluation: evaluationFixture(),
     featureSpec: featureSpecFixture(),
     table: buildTable(customers),
   };
@@ -47,7 +47,8 @@ export async function renderPage(
     url = "/",
     data = fixtureData(),
     layout,
-  }: { url?: string; data?: AppData; layout?: () => ReactNode } = {},
+    path = "/",
+  }: { url?: string; data?: AppData; layout?: () => ReactNode; path?: string } = {},
 ) {
   const root = createRootRoute({
     validateSearch: (search: Record<string, unknown>) => search,
@@ -60,7 +61,7 @@ export async function renderPage(
         </ScenarioProvider>
       )),
   });
-  const child = createRoute({ getParentRoute: () => root, path: "/", component: page });
+  const child = createRoute({ getParentRoute: () => root, path, component: page });
   const router = createRouter({
     routeTree: root.addChildren([child]),
     history: createMemoryHistory({ initialEntries: [url] }),

@@ -67,7 +67,7 @@ export function PolicyBars({
       <div ref={ref} className="relative">
         <svg width={width} height={height} role="img" aria-label={title} className="block">
           <line x1={x(0)} x2={x(0)} y1={0} y2={height - 22} stroke="var(--color-ink)" />
-          {x.ticks(4).map((t) => (
+          {(width < 480 ? x.domain() : x.ticks(4)).map((t) => (
             <text
               key={t}
               x={x(t)}

@@ -303,9 +303,9 @@ Schemas are generated from Pydantic models, and TS types are generated from the 
 1. **Overview** — every holdout customer as a square, ranked by expected profit and coloured by outcome, linked to the campaign account that itemises the realized profit (ADR 0013).
 2. **Retention Simulator** — parameters, profit curve (expected against realized) with the optimum, policy comparison with bootstrap intervals recomputed for the scenario, budget mode.
 3. **Sensitivity / Break-even** — a stress test first: what the list built for the assumed acceptance earns at every true acceptance, with the analytic break-even. The optimal policy adapts to the assumptions and almost never loses (worst cell of the γ × λc map: −£155), so the map alone hides the real risk, a wrong assumption. Then a tornado of the assumptions and the γ × λc map with a λa toggle.
-4. **Action List** — customers ranked by `E[π]`. A drawer shows `p`, `V`, CRC, CAC, B, `E[π]`, the SHAP waterfall, the **cadence timeline** (purchase history, expected-next-purchase window, horizon H) and the **what-if** editor.
-5. **Model** — model ladder with CIs, curves, calibration, SHAP global, per-cutoff stability and drift, experiment summary.
-6. **Methodology / Model card** — label and eligibility diagram, validation scheme, assumptions, limitations, data licence.
+4. **Customers** — customers ranked by `E[π]` with filters, search, a reveal toggle and a CSV. A drawer (`?customer=ID`) shows the verdict, `p` against its break-even, the money itemised, the purchase history with the expected next purchase, the model's SHAP reasons in plain words, and an in-browser **what-if** (onnxruntime-web, checked against the manifest).
+5. **Model** — calibration over time for every model in the ladder (the main chart), expected against realized profit, ranking metrics with intervals, reliability by model, a PSI drift map, and the reproducible run with its experiment runs. Results at the default scenario.
+6. **Method** — the label and eligibility diagram, the validation calendar, the value backtest, the assumptions with their sources, the limits, and the model card from the pinned release.
 
 Out of scope, by decision: CSV upload of new customers (it would require a second feature pipeline in TS), a hosted API, LLM-generated narratives, uplift modelling (no treatment data), and user accounts.
 
@@ -319,7 +319,7 @@ Out of scope, by decision: CSV upload of new customers (it would require a secon
 
 ### 6.6 CI/CD
 
-- **On PR:** ruff, pyright, pytest; in `web/`: contract drift check (regenerated TS types and validators must match), palette check, eslint, prettier, tsc, vitest, a bundle budget, Playwright with axe on desktop and mobile, and Lighthouse CI budgets, all against the pinned artifacts release; Cloudflare preview deploy (Plan 4).
+- **On PR:** ruff, pyright, pytest; in `web/`: contract drift check (regenerated TS types and validators must match), palette check, eslint, prettier, tsc, vitest, a bundle budget, Playwright with axe on desktop and mobile, visual regression of the six pages in the pinned Playwright container (baselines made by the manual `visual-baselines` workflow in that same container), and Lighthouse CI budgets, all against the pinned artifacts release; Cloudflare preview deploy (Plan 4).
 - **On `main`:** deploy to **Cloudflare Workers (static assets)** via GitHub Actions.
 - **`train` workflow (manual):** runs the pipeline and publishes the artifacts as a **GitHub Release** (a tarball of `artifacts/` plus `manifest.json`, with the model card as release notes). The site build pins a release tag. Training never runs on every push.
 
@@ -424,7 +424,8 @@ Out of scope, by decision: CSV upload of new customers (it would require a secon
 2. **Leakage (property-based)** — mutating any transaction after `t` must leave all features at `t` unchanged. Temporal folds must never overlap label windows.
 3. **Economics parity** — Python generates golden vectors (inputs → `V`, CRC, CAC, B, `E[π]`, decision, budget selection, derived features). Vitest asserts TS equality within tolerance.
 4. **ONNX parity** — ONNX and native LightGBM predictions match on every test customer within 1e-5, and `churnvalue export` refuses to write artifacts otherwise. The month features are exact so that float32 inputs cannot cross a split (§3.4).
-5. **E2E smoke** — the site loads, a slider changes the optimal policy, and a customer drawer opens.
+5. **End to end** — Playwright on desktop and a phone profile: the Overview and Simulator headlines against the Python evaluation, the analytic break-even, the customer drawer and the what-if against onnxruntime-node, the Model and Method pages with the release's model card, axe on all six pages, and no sideways scroll.
+6. **Visual regression** — screenshots of the six pages at the default scenario, compared only in the pinned Linux container; baselines change only through the `visual-baselines` workflow and a reviewed commit.
 
 ## 8. Delivery phases
 

@@ -16,14 +16,17 @@ from churnvalue.contract import (
     FeatureSpec,
     Manifest,
     ModelGolden,
+    PipelineInfo,
     TimelinesFile,
 )
 from churnvalue.evaluate import BASELINE_SCORERS, evaluate_models, supervised_scorer
 from churnvalue.export import (
+    MODEL_CARD_FILE,
     deployed_spec,
     export_artifacts,
     ladder_info,
     onnx_churn_probability,
+    pipeline_info,
     served_gamma_gamma,
 )
 from churnvalue.model_card import render_model_card
@@ -85,7 +88,7 @@ def test_every_artifact_validates_against_the_contract(exported):
         model.model_validate_json(_read(cfg, name))
     manifest = Manifest.model_validate_json(_read(cfg, "manifest.json"))
     assert manifest == result.manifest
-    assert set(manifest.files) == {*models, "model.onnx"}
+    assert set(manifest.files) == {*models, "model.onnx", MODEL_CARD_FILE}
 
 
 def test_manifest_checksums_match_the_files(exported):
@@ -244,3 +247,43 @@ def test_export_refuses_when_onnx_and_native_disagree(
             EXPERIMENTS,
         )
     assert not fresh.artifacts_dir.exists()  # nothing written, not even a partial set
+
+
+def test_the_model_card_ships_with_the_artifacts_it_describes(exported):
+    cfg, _, _, result = exported
+    card = (cfg.artifacts_dir / MODEL_CARD_FILE).read_text("utf-8")
+    assert card == result.model_card
+    assert card.startswith("# Model card")
+    # its provenance line names this run, not another one
+    assert f"code `{result.manifest.git_sha}`" in card
+    assert f"contract {result.manifest.contract_version}" in card
+
+
+def test_manifest_records_how_the_run_was_built(exported):
+    cfg, _, _, result = exported
+    trained = load_training(cfg.models_dir)[result.manifest.deployed_model]
+    assert result.manifest.pipeline == PipelineInfo(
+        seed=cfg.training.seed,
+        n_trials=len(trained["trial_values"]),
+        n_folds=len(trained["folds"]),
+        horizon_days=cfg.snapshots.horizon_days,
+        eligibility_f=cfg.snapshots.eligibility_f,
+    )
+    assert pipeline_info(cfg, trained) == result.manifest.pipeline
+
+
+def test_a_1_1_manifest_without_the_new_fields_still_validates():
+    manifest = {
+        "contract_version": "1.1.0",
+        "created_at": "2026-09-30T00:00:00Z",
+        "git_sha": "0" * 40,
+        "data_sha256": "0" * 64,
+        "config_sha256": "0" * 64,
+        "deployed_model": "lightgbm_seasonal",
+        "test_cutoff": "2011-09-10",
+        "models": [
+            {"name": "lightgbm_seasonal", "label": "L", "family": "gbdt", "deployable": True}
+        ],
+        "files": {},
+    }
+    assert Manifest.model_validate(manifest).pipeline is None

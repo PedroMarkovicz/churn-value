@@ -29,3 +29,21 @@ export const OUTCOME = {
   miss: "#d9423f",
   quiet: "#dcdfea",
 } as const;
+
+/**
+ * Magnitude (spec §3.2): one blue hue from light to dark for heatmaps (opportunity map, PSI),
+ * and a neutral grey for cells with nothing to show.
+ */
+export const MAGNITUDE = {
+  ramp: ["#eef2fc", "#d6e0f8", "#b5c7f2", "#8ea8ea", "#6688e0", "#4169d6", "#2f5bd3", "#23459f"],
+  none: "#e7e8ee",
+} as const;
+
+/** The drift map's five PSI levels: steps of the magnitude ramp chosen for even contrast. */
+export const PSI_LEVEL_COLORS = [
+  MAGNITUDE.ramp[1],
+  MAGNITUDE.ramp[3],
+  MAGNITUDE.ramp[4],
+  MAGNITUDE.ramp[5],
+  MAGNITUDE.ramp[7],
+] as const;

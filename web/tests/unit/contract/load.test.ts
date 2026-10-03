@@ -75,13 +75,13 @@ test.each([
 });
 
 test("a newer minor version with an added field is still read", async () => {
-  const newer = { ...manifestFixture(), contract_version: "1.2.0", added_in_1_2: "anything" };
+  const newer = { ...manifestFixture(), contract_version: "1.3.0", added_in_1_3: "anything" };
   vi.stubGlobal(
     "fetch",
     vi.fn(() => respond(200, newer)),
   );
   await expect(loadArtifact("manifest", "/data/")).resolves.toMatchObject({
-    contract_version: "1.2.0",
+    contract_version: "1.3.0",
   });
 });
 
@@ -92,6 +92,6 @@ test("another major version is reported as such, even when its shape changed", a
     vi.fn(() => respond(200, other)),
   );
   await expect(loadArtifact("manifest", "/data/")).rejects.toThrow(
-    "manifest.json: contract 2.0.0 cannot be read by this app (built for 1.1.0)",
+    "manifest.json: contract 2.0.0 cannot be read by this app (built for 1.2.0)",
   );
 });

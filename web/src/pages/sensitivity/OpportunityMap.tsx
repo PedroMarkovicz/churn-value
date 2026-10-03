@@ -5,22 +5,15 @@
 import { ToggleGroup } from "radix-ui";
 import { useState } from "react";
 
+import { MAGNITUDE } from "@/charts/palette.ts";
 import { ChartFrame, DataTable, Tooltip, useWidth } from "@/charts/primitives.tsx";
 import { count, money, moneyCompact, percent } from "@/domain/format.ts";
 import type { OpportunityMap as MapData } from "@/domain/stress.ts";
 
 export const REPLACEMENT_OPTIONS = [5, 10, 25] as const;
-const RAMP: [number, string][] = [
-  [0, "#eef2fc"],
-  [2_000, "#d6e0f8"],
-  [5_000, "#b5c7f2"],
-  [10_000, "#8ea8ea"],
-  [20_000, "#6688e0"],
-  [40_000, "#4169d6"],
-  [80_000, "#2f5bd3"],
-  [130_000, "#23459f"],
-];
-const NO_PROFIT = "#e7e8ee";
+const THRESHOLDS = [0, 2_000, 5_000, 10_000, 20_000, 40_000, 80_000, 130_000];
+const RAMP: [number, string][] = THRESHOLDS.map((t, i) => [t, MAGNITUDE.ramp[i] ?? MAGNITUDE.none]);
+const NO_PROFIT = MAGNITUDE.none;
 const M = { top: 8, right: 8, bottom: 40, left: 52 };
 
 function fill(value: number): string {

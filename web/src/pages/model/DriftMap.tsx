@@ -1,0 +1,157 @@
+/**
+ * Drift (spec §5.5): population stability (PSI) of every feature at every cutoff against the
+ * training months, one sequential hue in five steps at the thresholds 0.1, 0.25, 0.5 and 1.
+ * The most shifted features come first.
+ */
+import { useState } from "react";
+
+import { PSI_LEVEL_COLORS } from "@/charts/palette.ts";
+import { ChartFrame, DataTable, Tooltip, useWidth } from "@/charts/primitives.tsx";
+import type { EvaluationFile } from "@/contract/index.ts";
+import { featureName } from "@/domain/featureNames.ts";
+import { driftMatrix, driftTitle, PSI_THRESHOLDS, psiLevel } from "@/domain/model.ts";
+
+const LEVEL_COLOR: readonly string[] = PSI_LEVEL_COLORS;
+const LEVEL_TEXT = ["stable", "slight", "moderate", "large", "severe"];
+const MONTH = new Intl.DateTimeFormat("en-GB", {
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+const month = (iso: string) => MONTH.format(new Date(`${iso}T00:00:00Z`));
+const TOP = 8;
+const ROW = 18;
+
+export function DriftMap({ drift }: { drift: EvaluationFile["drift"] }) {
+  const [ref, width] = useWidth<HTMLDivElement>(720);
+  const [hover, setHover] = useState<{ f: number; c: number } | null>(null);
+  const matrix = driftMatrix(drift);
+  // On a phone each feature's name sits on its own line above its cells; on wider screens, beside.
+  const stacked = width < 560;
+  const labels = stacked ? 0 : 196;
+  const row = stacked ? 34 : ROW;
+  const top = (f: number) => TOP + f * row + (stacked ? 14 : 0); // y of a feature's cells
+  const cellHeight = stacked ? 16 : ROW - 2;
+  const cell = matrix.cutoffs.length > 0 ? (width - labels) / matrix.cutoffs.length : 0;
+  const height = TOP + matrix.features.length * row + 36;
+  const every = Math.max(1, Math.ceil(56 / Math.max(cell, 1))); // one axis label per ~56 px
+  const cellValue = hover === null ? null : (matrix.psi[hover.f]?.[hover.c] ?? null);
+  const legend = [
+    `below ${PSI_THRESHOLDS[0]}`,
+    `${PSI_THRESHOLDS[0]} to ${PSI_THRESHOLDS[1]}`,
+    `${PSI_THRESHOLDS[1]} to ${PSI_THRESHOLDS[2]}`,
+    `${PSI_THRESHOLDS[2]} to ${PSI_THRESHOLDS[3]}`,
+    `${PSI_THRESHOLDS[3]} or more`,
+  ];
+
+  return (
+    <ChartFrame
+      title={driftTitle(matrix)}
+      subtitle="Population stability index (PSI) of each feature at each monthly cutoff, against the training months. Darker means the feature's distribution moved further."
+      legend={
+        <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+          {legend.map((text, level) => (
+            <span key={text} className="inline-flex items-center gap-1.5">
+              <span
+                aria-hidden
+                className="inline-block size-3 rounded-[2px]"
+                style={{ background: LEVEL_COLOR[level] }}
+              />
+              {text} ({LEVEL_TEXT[level]})
+            </span>
+          ))}
+          <span className="inline-flex items-center gap-1.5">
+            <span
+              aria-hidden
+              className="inline-block size-3 rounded-[2px]"
+              style={{ border: "1px dashed var(--color-muted)" }}
+            />
+            not measured
+          </span>
+        </p>
+      }
+      table={
+        <DataTable
+          columns={["Feature", ...matrix.cutoffs.map(month)]}
+          rows={matrix.features.map((feature, f) => [
+            featureName(feature),
+            ...(matrix.psi[f] ?? []).map((v) => (v === null ? "–" : v.toFixed(2))),
+          ])}
+        />
+      }
+    >
+      <div ref={ref} className="relative">
+        <svg
+          width={width}
+          height={height}
+          role="img"
+          aria-label={`PSI of ${matrix.features.length} features at ${matrix.cutoffs.length} cutoffs.`}
+          className="block max-w-full"
+          onPointerLeave={() => {
+            setHover(null);
+          }}
+        >
+          {matrix.features.map((feature, f) => (
+            <g key={feature}>
+              <text
+                x={stacked ? 0 : labels - 8}
+                y={stacked ? TOP + f * row + 6 : TOP + f * ROW + ROW / 2}
+                dy="0.32em"
+                textAnchor={stacked ? "start" : "end"}
+                fontSize={11}
+                fill="var(--color-ink)"
+              >
+                {featureName(feature)}
+              </text>
+              {matrix.cutoffs.map((cutoff, c) => {
+                const value = matrix.psi[f]?.[c] ?? null;
+                return (
+                  <rect
+                    key={cutoff}
+                    x={labels + c * cell + 1}
+                    y={top(f) + 1}
+                    width={Math.max(0, cell - 2)}
+                    height={cellHeight}
+                    rx={2}
+                    fill={value === null ? "var(--color-panel)" : LEVEL_COLOR[psiLevel(value)]}
+                    stroke={value === null ? "var(--color-muted)" : undefined}
+                    strokeDasharray={value === null ? "2 2" : undefined}
+                    onPointerEnter={() => {
+                      setHover({ f, c });
+                    }}
+                  />
+                );
+              })}
+            </g>
+          ))}
+          {matrix.cutoffs.map((cutoff, c) =>
+            // On a phone only the first and last months, anchored to the edges, so none is cut off.
+            (stacked ? c === 0 || c === matrix.cutoffs.length - 1 : c % every === 0) ? (
+              <text
+                key={cutoff}
+                x={stacked ? (c === 0 ? labels : width) : labels + c * cell + cell / 2}
+                y={TOP + matrix.features.length * row + 16}
+                textAnchor={stacked ? (c === 0 ? "start" : "end") : "middle"}
+                fontSize={11}
+                fill="var(--color-muted)"
+              >
+                {month(cutoff)}
+              </text>
+            ) : null,
+          )}
+        </svg>
+        {hover && (
+          <Tooltip x={labels + hover.c * cell + cell / 2} y={top(hover.f)} width={width}>
+            <b>{featureName(matrix.features[hover.f] ?? "")}</b>
+            <br />
+            {month(matrix.cutoffs[hover.c] ?? "")}
+            <br />
+            {cellValue === null
+              ? "not measured"
+              : `PSI ${cellValue.toFixed(2)}, ${LEVEL_TEXT[psiLevel(cellValue)] ?? ""}`}
+          </Tooltip>
+        )}
+      </div>
+    </ChartFrame>
+  );
+}

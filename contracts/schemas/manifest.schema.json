@@ -34,6 +34,41 @@
       ],
       "title": "ModelInfo",
       "type": "object"
+    },
+    "PipelineInfo": {
+      "additionalProperties": false,
+      "description": "How the served run was built (contract 1.2.0): the Model and Method pages quote it.",
+      "properties": {
+        "eligibility_f": {
+          "title": "Eligibility F",
+          "type": "number"
+        },
+        "horizon_days": {
+          "title": "Horizon Days",
+          "type": "integer"
+        },
+        "n_folds": {
+          "title": "N Folds",
+          "type": "integer"
+        },
+        "n_trials": {
+          "title": "N Trials",
+          "type": "integer"
+        },
+        "seed": {
+          "title": "Seed",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "seed",
+        "n_trials",
+        "n_folds",
+        "horizon_days",
+        "eligibility_f"
+      ],
+      "title": "PipelineInfo",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -76,6 +111,17 @@
       },
       "title": "Models",
       "type": "array"
+    },
+    "pipeline": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PipelineInfo"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "test_cutoff": {
       "format": "date",

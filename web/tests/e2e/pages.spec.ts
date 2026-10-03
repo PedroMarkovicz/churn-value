@@ -38,7 +38,7 @@ test("the sensitivity headline gives the analytic break-even for a shared link",
   );
 });
 
-for (const path of ["/", "/simulator", "/sensitivity", "/customers"]) {
+for (const path of ["/", "/simulator", "/sensitivity", "/customers", "/model", "/method"]) {
   test(`no accessibility violations on ${path}`, async ({ page }) => {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -57,7 +57,7 @@ test("an unknown page offers the way back", async ({ page }) => {
   );
 });
 
-for (const path of ["/", "/simulator", "/sensitivity", "/customers"]) {
+for (const path of ["/", "/simulator", "/sensitivity", "/customers", "/model", "/method"]) {
   test(`${path} never scrolls sideways`, async ({ page }) => {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -80,4 +80,12 @@ test("charts still render when the compute worker cannot load", async ({ page })
   await page.goto("/simulator");
   const frame = page.getByRole("region", { name: /perfect foresight/ });
   await expect(frame.getByText("Updating intervals…")).toBeHidden({ timeout: 15_000 });
+});
+
+test("Model and Method show fixed results instead of the scenario strip", async ({ page }) => {
+  for (const path of ["/model", "/method"]) {
+    await page.goto(path);
+    await expect(page.getByText(/^Fixed results at the default scenario:/)).toBeVisible();
+    await expect(page.getByRole("region", { name: "Scenario" })).toHaveCount(0);
+  }
 });
