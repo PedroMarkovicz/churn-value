@@ -23,6 +23,9 @@
     "test:visual": "playwright test --project=visual-desktop --project=visual-mobile",
     "test:visual:update": "playwright test --project=visual-desktop --project=visual-mobile --update-snapshots",
     "check:bundle": "node scripts/check-bundle.ts",
+    "serve:worker": "wrangler dev --port 8787",
+    "deploy": "wrangler deploy",
+    "smoke": "node --env-file-if-exists=.env scripts/smoke.ts",
     "lighthouse": "npx --yes @lhci/cli@0.15.1 autorun"
   },
   "dependencies": {
@@ -67,6 +70,7 @@
     "typescript": "6.0.3",
     "typescript-eslint": "8.70.1",
     "vite": "8.3.1",
-    "vitest": "5.0.2"
+    "vitest": "5.0.2",
+    "wrangler": "4.147.0"
   }
 }

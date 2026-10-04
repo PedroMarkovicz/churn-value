@@ -24,7 +24,7 @@ const FURTHER = [
   { href: "#model-card", text: "Model card" },
   { href: `${REPOSITORY_URL}/blob/main/docs/design.md`, text: "Design and decisions" },
   { href: `${REPOSITORY_URL}/tree/main/docs/adr`, text: "Architecture decision records" },
-  { href: `${REPOSITORY_URL}/tree/main/ml/notebooks`, text: "The analysis notebooks" },
+  { href: "/notebooks/", text: "The analysis notebooks" },
   { href: REPOSITORY_URL, text: "Source on GitHub" },
 ];
 

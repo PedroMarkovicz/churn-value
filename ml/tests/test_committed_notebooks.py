@@ -6,7 +6,7 @@ from pathlib import Path
 import nbformat
 import pytest
 
-from churnvalue.notebooks import discover, executed_in_order
+from churnvalue.notebooks import CATALOGUE, discover, executed_in_order
 
 NOTEBOOKS = Path(__file__).parents[1] / "notebooks"
 COMMITTED = discover(NOTEBOOKS)
@@ -14,6 +14,10 @@ COMMITTED = discover(NOTEBOOKS)
 
 def test_the_six_stage_notebooks_exist():
     assert [p.name[:2] for p in COMMITTED][:6] == ["01", "02", "03", "04", "05", "06"]
+
+
+def test_the_catalogue_lists_the_committed_notebooks():
+    assert [entry.stem for entry in CATALOGUE] == [path.stem for path in COMMITTED]
 
 
 @pytest.mark.parametrize("path", COMMITTED, ids=lambda p: p.name)

@@ -43,6 +43,10 @@ test("the Method page renders its figures and the release's model card", async (
   const card = page.locator("#model-card");
   await expect(card.getByRole("heading", { name: "Model details" })).toBeVisible();
   await expect(card).toContainText(manifest.git_sha); // the card describes this very release
+  await expect(page.getByRole("link", { name: "The analysis notebooks" })).toHaveAttribute(
+    "href",
+    "/notebooks/",
+  );
 });
 
 test("the run strip's link lands on the model card", async ({ page }) => {

@@ -115,3 +115,35 @@ def test_export_refuses_snapshots_built_before_contract_1_1(
     result = CliRunner().invoke(app, ["export", "--config", str(config_path)])
     assert result.exit_code == 1
     assert "churnvalue build-snapshots" in result.output
+
+
+def test_notebooks_site_converts_the_committed_notebooks_without_running_them(
+    tmp_path: Path, monkeypatch
+):
+    monkeypatch.chdir(Path(__file__).parents[1])
+    out = tmp_path / "site"
+
+    result = CliRunner().invoke(app, ["notebooks-site", "--out", str(out)])
+
+    assert result.exit_code == 0, result.output
+    pages = sorted(path.name for path in out.glob("*.html"))
+    assert len(pages) == 12
+    assert pages[-1] == "index.html"
+    index = (out / "index.html").read_text(encoding="utf-8")
+    for page in pages[:-1]:
+        assert f'href="{page}"' in index
+        text = (out / page).read_text(encoding="utf-8")
+        assert '<nav class="cv-bar"' in text
+        assert "churn-value notebooks</title>" in text
+
+
+def test_notebooks_site_reports_a_stale_notebook_and_exits_1(tmp_path: Path, monkeypatch):
+    def refuse(*_args: object, **_kwargs: object) -> list[Path]:
+        raise ValueError("not executed top to bottom, or edited after the run: 03_eda.ipynb")
+
+    monkeypatch.setattr("churnvalue.cli.build_site", refuse)
+
+    result = CliRunner().invoke(app, ["notebooks-site", "--out", str(tmp_path / "site")])
+
+    assert result.exit_code == 1
+    assert "03_eda.ipynb" in result.output

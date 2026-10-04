@@ -24,7 +24,14 @@ from churnvalue.evaluate import (
 )
 from churnvalue.golden import golden_documents
 from churnvalue.models import SUPERVISED
-from churnvalue.notebooks import HTML_DIR, NOTEBOOKS_DIR, discover, execute_notebook, export_html
+from churnvalue.notebooks import (
+    HTML_DIR,
+    NOTEBOOKS_DIR,
+    build_site,
+    discover,
+    execute_notebook,
+    export_html,
+)
 from churnvalue.provenance import run_tags
 from churnvalue.snapshots import build_snapshots
 from churnvalue.splits import rolling_origin_folds
@@ -42,6 +49,7 @@ ConfigOption = typer.Option(DEFAULT_CONFIG_PATH, "--config", help="Path to the Y
 OnlyOption = typer.Option(None, "--only", help="Run only these NN prefixes (repeatable).")
 HtmlOption = typer.Option(True, "--html/--no-html", help="Export styled HTML.")
 TrialsOption = typer.Option(None, "--trials", help="Override training.n_trials.")
+OutOption = typer.Option(..., "--out", help="Directory to write the HTML pages into.")
 EVALUATION_FILE = "evaluation.json"
 
 
@@ -243,3 +251,13 @@ def notebooks(only: list[str] | None = OnlyOption, html: bool = HtmlOption) -> N
         execute_notebook(path, working_dir=root)
         if html:
             typer.echo(f"  html -> {export_html(path, root / HTML_DIR)}")
+
+
+@app.command("notebooks-site")
+def notebooks_site(out: Path = OutOption) -> None:
+    """Convert the executed notebooks to HTML pages and an index, without running them."""
+    try:
+        written = build_site(project_root() / NOTEBOOKS_DIR, out)
+    except ValueError as error:
+        fail(str(error))
+    typer.echo(f"notebooks site -> {out} ({len(written)} files)")

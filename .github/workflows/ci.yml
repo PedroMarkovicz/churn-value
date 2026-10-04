@@ -106,3 +106,111 @@ jobs:
             web/playwright-report
             web/test-results
           retention-days: 7
+
+  site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: web/.nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+        working-directory: web
+      - name: Cache the pinned artifacts
+        uses: actions/cache@v4
+        with:
+          path: web/public/data
+          key: artifacts-${{ hashFiles('web/artifacts.lock.json') }}
+      - name: Fetch the pinned artifacts (checksums verified)
+        run: npm run artifacts
+        working-directory: web
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - run: npm run build
+        working-directory: web
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Notebook pages from the committed notebooks (not executed)
+        run: uv sync --locked && uv run churnvalue notebooks-site --out ../web/dist/notebooks
+        working-directory: ml
+      - name: Serve the bundle as Cloudflare will, and check it
+        working-directory: web
+        env:
+          WRANGLER_SEND_METRICS: "false"
+        run: |
+          npx wrangler dev --port 8787 > wrangler.log 2>&1 &
+          npm run smoke -- http://localhost:8787 --wait 60 --index dist/index.html
+      - name: Keep the server log of a failed run
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wrangler-log
+          path: web/wrangler.log
+          retention-days: 7
+      - name: Keep the bundle for the deploy job
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: web/dist
+          if-no-files-found: error
+          retention-days: 1 # every pull request push uploads it; deploy reads it at once
+
+  deploy:
+    needs: [ml, web, visual, site]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      # An older run that finishes last, or is re-run later, must not put an older commit live.
+      - name: Deploy only the tip of main
+        id: tip
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          tip=$(curl -fsS -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.sha" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/commits/main")
+          if [ "$tip" = "$GITHUB_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "main is now at $tip; this run publishes nothing"
+            echo "current=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.tip.outputs.current == 'true'
+        with:
+          node-version-file: web/.nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+        if: steps.tip.outputs.current == 'true'
+      - name: The bundle the site job built and checked
+        if: steps.tip.outputs.current == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: web/dist
+      - name: Deploy to Cloudflare Workers
+        if: steps.tip.outputs.current == 'true'
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: "false"
+      # --index: wait until the live site serves this very build, not the one before it.
+      - name: Check the live site
+        if: steps.tip.outputs.current == 'true'
+        run: npm run smoke -- --wait 120 --index dist/index.html
