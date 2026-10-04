@@ -1,8 +1,9 @@
 import { Link, Outlet, useLoaderData, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { AppData } from "@/app/data.ts";
 import { ARTIFACTS_TAG } from "@/app/release.ts";
+import { pageTitle } from "@/app/title.ts";
 import { ScenarioStrip } from "@/components/scenario/ScenarioStrip.tsx";
 import { ScenarioProvider, useScenario } from "@/scenario/ScenarioProvider.tsx";
 import { PARAMETER_ORDER, PARAMETERS } from "@/scenario/schema.ts";
@@ -38,7 +39,7 @@ function InvalidNotice() {
       className="mt-4 flex items-start justify-between gap-4 rounded-lg bg-accent-tint px-4 py-3 text-sm"
     >
       <p>
-        Some values in this link were out of range and were reset to their defaults:{" "}
+        Some values in this link could not be used and were reset to their defaults:{" "}
         {labels.join(", ")}.
       </p>
       <button
@@ -88,6 +89,10 @@ export function Layout() {
   const fixed = useRouterState({
     select: (s) => s.matches.some((m) => FIXED_SCENARIO_ROUTES.has(m.routeId)),
   });
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => {
+    document.title = pageTitle(pathname, PAGES);
+  }, [pathname]);
   return (
     <ScenarioProvider>
       <a

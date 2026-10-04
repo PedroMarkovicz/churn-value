@@ -26,6 +26,7 @@ npm run artifacts -- --local
 | `npm test`                                                  | unit and component tests, golden-vector parity, and a replay of the Python policy table on the installed artifacts |
 | `npm run build && npm run check:bundle`                     | the production build and the 200 KB gzip budget for the first load                                                 |
 | `npm run smoke -- <url>`                                    | a served copy of the site: the app, a direct link, the pinned release, the notebooks, the cache                    |
+| `npm run og`                                                | with `npm run preview` running: remakes `public/og.png`, the social preview image (look at it before committing)   |
 | `npm run e2e`                                               | Playwright on desktop and mobile, with axe on every page                                                           |
 | `npm run lighthouse`                                        | Lighthouse budgets: performance ≥ 0.9, accessibility 1.0                                                           |
 
@@ -90,7 +91,8 @@ The site is a Cloudflare Worker with static assets and no script (`wrangler.json
 
 - **CI is the deploy path.** The `site` job builds the site, adds the notebook pages (`uv run churnvalue notebooks-site`, from `ml/`), serves the result with `wrangler dev` and runs the smoke test. On `main`, after every job passes, `deploy` publishes that same bundle, but only while its commit is the tip of `main`, and runs the smoke test until the live address serves that build. `npm run deploy` publishes whatever is in `dist` with none of those checks; it is for an emergency.
 - **The bundle** is kept as a workflow artifact for one day. To deploy an older run again, re-run all its jobs, not only `deploy`.
-- **Secrets:** `CLOUDFLARE_API_TOKEN` (the "Edit Cloudflare Workers" template, one account) and `CLOUDFLARE_ACCOUNT_ID`, as repository secrets. Only the `deploy` job receives them.
+- **Previews:** every pull request from the repository gets its own address, `https://pr-<number>-churn-value.<subdomain>.workers.dev`, written in a comment on the pull request and checked by the same smoke test. It is public to whoever has the link, and the live site does not change.
+- **Secrets:** `CLOUDFLARE_API_TOKEN` (the "Edit Cloudflare Workers" template, one account) and `CLOUDFLARE_ACCOUNT_ID`, as repository secrets. Only the `deploy` and `preview` jobs receive them, and in each only the step that runs Wrangler.
 - **Cache:** every file is revalidated on each visit (Cloudflare's default), so nothing is downloaded twice and a new deploy shows at once. There is no long-lived rule for `/assets/*` on purpose: Cloudflare answers a missing path there with the app's page, and a browser would keep that page under a chunk's address (ADR 0006). The smoke test checks it.
 - **Notebooks:** served under `/notebooks/`. The pages load MathJax and require.js from cdnjs.
 

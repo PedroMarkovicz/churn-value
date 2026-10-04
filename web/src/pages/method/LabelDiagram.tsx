@@ -36,7 +36,7 @@ export function LabelDiagram({
   return (
     <figure className="rounded-[10px] bg-panel p-5 shadow-[0_0_0_1px_var(--color-rule)]">
       <figcaption className="mb-3">
-        <span className="block font-serif text-2xl leading-tight">How a customer gets a label</span>
+        <h2 className="font-serif text-2xl leading-tight">How a customer gets a label</h2>
         <span className="mt-1 block text-sm text-muted">
           Only customers who were due to buy again are labelled: their expected next purchase must
           fall near the label window. Then silence in the window is a signal, not a long cycle.
@@ -100,9 +100,9 @@ export function LabelDiagram({
             strokeDasharray="2 2"
           />
           <text
-            x={x(expected)}
+            x={x(expected) + (expected >= 0 ? 10 : -10)}
             y={AXIS - 12}
-            textAnchor="middle"
+            textAnchor={expected >= 0 ? "start" : "end"}
             fontSize={11}
             fill="var(--color-ink)"
           >

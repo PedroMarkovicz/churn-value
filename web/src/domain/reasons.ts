@@ -62,3 +62,17 @@ export function reasonText(contribution: Contribution, horizonDays: number): str
   if (template) return template(contribution.value, horizonDays);
   return `${contribution.feature.replaceAll("_", " ")}: ${contribution.value}`;
 }
+
+/** A reason's direction; "no effect" when its size rounds to 0.00, which has no sign. */
+export function effectText(shap: number): "raises the risk" | "lowers the risk" | "no effect" {
+  const rounded = Math.round(shap * 100) / 100;
+  if (rounded === 0) return "no effect";
+  return rounded > 0 ? "raises the risk" : "lowers the risk";
+}
+
+/** +0.16, −0.21 and 0.00: a SHAP value with its sign, never "−0.00". */
+export function signedShap(shap: number): string {
+  const rounded = Math.round(shap * 100) / 100;
+  if (rounded === 0) return "0.00";
+  return `${rounded > 0 ? "+" : "−"}${Math.abs(rounded).toFixed(2)}`;
+}

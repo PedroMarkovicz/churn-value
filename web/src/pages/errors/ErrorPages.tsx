@@ -1,7 +1,9 @@
 /** Failure and emptiness as direction (spec §7): say what went wrong and what to do. */
 import { type ErrorComponentProps, Link, useRouter } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 import { ARTIFACTS_TAG } from "@/app/release.ts";
+import { SITE_NAME } from "@/app/title.ts";
 import { PAGES } from "@/components/layout/Layout.tsx";
 import { ArtifactError } from "@/contract/load.ts";
 
@@ -24,9 +26,10 @@ export function DataErrorPage({ error }: ErrorComponentProps) {
     >
       {known ? (
         <p className="text-base leading-relaxed">
-          <code className="rounded bg-panel px-1.5 py-0.5">{error.artifact}</code>: {error.reason}.
-          The site reads the artifacts published by the pipeline; if they were just updated, a retry
-          usually fixes it.
+          <code className="rounded bg-panel px-1.5 py-0.5">{error.artifact}</code>: {error.reason}.{" "}
+          {error.retryable
+            ? "The site reads the artifacts published by the pipeline; if they were just updated, a retry usually fixes it."
+            : "The site and the artifacts release do not match; a retry will not fix it."}
         </p>
       ) : null}
       {known ? (
@@ -52,6 +55,9 @@ export function DataErrorPage({ error }: ErrorComponentProps) {
 }
 
 export function NotFoundPage() {
+  useEffect(() => {
+    document.title = `Page not found · ${SITE_NAME}`;
+  }, []);
   return (
     <Shell title="There is no page at this address.">
       <p className="text-base">These are the pages of the site:</p>

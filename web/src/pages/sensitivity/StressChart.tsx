@@ -146,7 +146,9 @@ export function StressChart({
             fontSize={11}
             fill="var(--color-muted)"
           >
-            share of contacted churners who actually accept
+            {width < 340
+              ? "true acceptance rate"
+              : "share of contacted churners who actually accept"}
           </text>
           {shown.length > 0 && (
             <LinePath
@@ -183,7 +185,10 @@ export function StressChart({
                 fontSize={11.5}
                 fill="var(--color-ink)"
               >
-                assumed {percent(assumed)}: {money(fixed(assumed))}
+                {/* on a narrow chart only the amount fits beside the point */}
+                {width < 340
+                  ? money(fixed(assumed))
+                  : `assumed ${percent(assumed)}: ${money(fixed(assumed))}`}
               </text>
             </g>
           )}

@@ -180,9 +180,16 @@ export function metricTitle(rows: readonly MetricRow[], key: MetricKey): string 
   const better = (a: MetricRow, b: MetricRow) =>
     metric.higherIsBetter ? a.value > b.value : a.value < b.value;
   const best = rows.reduce((top, row) => (better(row, top) ? row : top));
+  if (rows.length === 1)
+    return `${best.model.label} is the only model measured on ${metric.phrase}`;
   const alike = rows.filter((row) => row.low <= best.high && row.high >= best.low);
   if (alike.length >= 2) {
-    return `The top ${count(alike.length)} are alike on ${metric.phrase}: their intervals overlap`;
+    const ranked = [...rows].sort((a, b) => (better(a, b) ? -1 : better(b, a) ? 1 : 0));
+    const top = ranked.slice(0, alike.length);
+    // "the top N" only when the N alike models are the N best ones
+    return alike.every((row) => top.includes(row))
+      ? `The top ${count(alike.length)} are alike on ${metric.phrase}: their intervals overlap`
+      : `${count(alike.length)} models are alike on ${metric.phrase}: their intervals overlap the best one's`;
   }
   return `${best.model.label} is best on ${metric.phrase}`;
 }
@@ -252,13 +259,14 @@ export function driftMatrix(drift: EvaluationFile["drift"]): DriftMatrix {
 
 export function driftTitle(matrix: DriftMatrix): string {
   if (matrix.features.length === 0) return "This release has no drift measurements";
-  const shifted = matrix.psi.filter((row) =>
-    row.some((v) => v !== null && v > (PSI_THRESHOLDS[1] as number)),
-  );
-  const hold = matrix.features.length - shifted.length;
+  // the same thresholds as the colours: psiLevel 2 is "moderate", from 0.25 inclusive
+  const shifted = matrix.psi.filter((row) => row.some((v) => v !== null && psiLevel(v) >= 2));
+  const hold = `${count(matrix.features.length - shifted.length)} of ${count(matrix.features.length)} features hold`;
+  const largest = Math.max(0, ...matrix.psi.flat().filter((v): v is number => v !== null));
+  if (largest === 0) return `${hold}; none has moved since training`;
   const name = featureName(matrix.features[0] ?? "");
   const top = name.charAt(0).toLowerCase() + name.slice(1); // "days since …", but "the UK" stays
-  return `${count(hold)} of ${count(matrix.features.length)} features hold; the largest shift is in ${top}`;
+  return `${hold}; the largest shift is in ${top}`;
 }
 
 // --- the run ----------------------------------------------------------------------------------

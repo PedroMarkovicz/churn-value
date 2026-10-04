@@ -9,7 +9,10 @@ export function useCustomerParam(indexById: ReadonlyMap<number, number>) {
   const search: Record<string, unknown> = useSearch({ strict: false });
   const navigate = useNavigate();
   const raw = search.customer;
-  const text = typeof raw === "string" || typeof raw === "number" ? String(raw) : null;
+  const text =
+    (typeof raw === "string" || typeof raw === "number") && String(raw).trim() !== ""
+      ? String(raw)
+      : null;
   const id = text !== null && /^\d+$/.test(text) ? Number(text) : null;
   const index = id === null ? undefined : indexById.get(id);
 

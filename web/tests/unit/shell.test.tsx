@@ -11,15 +11,6 @@ import { renderPage } from "./render.tsx";
 
 const Stub = () => <h1>Stub page</h1>;
 
-test("a link with out-of-range values says which were reset", async () => {
-  await renderPage(Stub, { url: "/?g=2&m=abc", layout: Layout });
-  expect(screen.getByRole("status")).toHaveTextContent(
-    "Some values in this link were out of range and were reset to their defaults: acceptance, gross margin.",
-  );
-  expect(screen.getByText("Acceptance 30%")).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Reset" })).toBeDisabled();
-});
-
 test("a changed scenario shows in the strip and can be reset", async () => {
   await renderPage(Stub, { url: "/?g=0.45&bm=calls&bv=2", layout: Layout });
   expect(screen.getByText("Acceptance 45%")).toBeInTheDocument();

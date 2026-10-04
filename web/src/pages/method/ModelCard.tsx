@@ -1,4 +1,5 @@
-/** The model card (spec §5.6), from the pinned release; the rest of the page never waits on it. */
+/** The model card (spec §5.6), from the pinned release; a failure stays inside this section. */
+import { CatchBoundary } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 
 export type CardResult = { ok: true; text: string } | { ok: false; reason: string };
@@ -7,7 +8,28 @@ const Rendered = lazy(() =>
   import("./ModelCardMarkdown.tsx").then((m) => ({ default: m.ModelCardMarkdown })),
 );
 
-export function ModelCard({ card }: { card: CardResult }) {
+function reloadPage() {
+  window.location.reload();
+}
+
+function Retry({ onRetry }: { onRetry: (() => void) | undefined }) {
+  if (!onRetry) return null;
+  return (
+    <button type="button" className="mt-2 text-sm font-semibold text-accent" onClick={onRetry}>
+      Try again
+    </button>
+  );
+}
+
+export function ModelCard({
+  card,
+  onRetry,
+  onReload = reloadPage,
+}: {
+  card: CardResult;
+  onRetry?: (() => void) | undefined;
+  onReload?: () => void; // for tests; a page reload by default
+}) {
   return (
     <section
       id="model-card"
@@ -22,11 +44,32 @@ export function ModelCard({ card }: { card: CardResult }) {
         release's checksum.
       </p>
       {card.ok ? (
-        <Suspense fallback={<p className="mt-3 text-sm text-muted">Loading the model card…</p>}>
-          <Rendered text={card.text} />
-        </Suspense>
+        // The renderer is a lazy chunk: if it does not load, only this section says so. React
+        // keeps a failed lazy import, so rendering again cannot help; reloading the page can.
+        <CatchBoundary
+          getResetKey={() => card.text}
+          errorComponent={() => (
+            <div className="mt-3">
+              <p>The model card could not be shown: its renderer did not load.</p>
+              <button
+                type="button"
+                className="mt-2 text-sm font-semibold text-accent"
+                onClick={onReload}
+              >
+                Reload the page
+              </button>
+            </div>
+          )}
+        >
+          <Suspense fallback={<p className="mt-3 text-sm text-muted">Loading the model card…</p>}>
+            <Rendered text={card.text} />
+          </Suspense>
+        </CatchBoundary>
       ) : (
-        <p className="mt-3">The model card could not be read: {card.reason}.</p>
+        <div className="mt-3">
+          <p>The model card could not be read: {card.reason}.</p>
+          <Retry onRetry={onRetry} />
+        </div>
       )}
     </section>
   );

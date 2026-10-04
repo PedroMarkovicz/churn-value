@@ -23,3 +23,8 @@
 - CI builds the site once (the `site` job) and checks it under `wrangler dev` with a smoke test. On `main`, `deploy` publishes that same bundle after every other job passes, and only if its commit is still the tip of `main`. It then runs the smoke test against the live address until the site serves that very build.
 - The Cloudflare token is a repository secret that only the `deploy` job receives; `ml/tests/test_workflows.py` holds that.
 - There is no Content-Security-Policy: the notebook pages have inline scripts and load MathJax from a CDN.
+
+**Amendments after Plan 4b (previews).**
+- A pull request from the repository gets a preview: `wrangler versions upload --preview-alias pr-<number>` publishes the checked bundle beside the live site, at `https://pr-<number>-churn-value.<subdomain>.workers.dev`, without changing what is live. The smoke test runs against it, and one comment on the pull request holds the address.
+- Only the `deploy` and `preview` jobs receive the Cloudflare secrets, and in each only the step that runs Wrangler; a fork's pull request gets neither job.
+- A preview's address is public to whoever has it.

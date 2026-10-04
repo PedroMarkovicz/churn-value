@@ -183,3 +183,13 @@ test("the ranking chart says which models are in its table only", async () => {
   const chart = screen.getByRole("region", { name: /alike on ROC-AUC|best on ROC-AUC/ });
   expect(chart).toHaveTextContent("In the table only: Extra 6.");
 });
+
+test("the reliability chart names both axes, and the promise notes sit over the zero line", async () => {
+  await renderPage(page);
+  const reliability = screen.getByRole("region", { name: /: predicted/ });
+  expect(within(reliability).getByText("predicted")).toBeInTheDocument();
+  expect(within(reliability).getByText("observed")).toBeInTheDocument();
+  const note = screen.getAllByText(/more than it made$/)[0];
+  expect(note).toHaveAttribute("paint-order", "stroke");
+  expect(note).toHaveAttribute("stroke", "var(--color-panel)");
+});

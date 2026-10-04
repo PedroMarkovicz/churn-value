@@ -12,6 +12,7 @@ import { moneyPrecise, percent } from "@/domain/format.ts";
 import {
   baseValues,
   draftText,
+  parseDraft,
   editableFields,
   type Field,
   formatValue,
@@ -37,11 +38,6 @@ function draftsOf(values: Readonly<Record<string, number>>, fields: readonly Fie
       return [f.name, value === undefined ? "" : draftText(f, value)];
     }),
   );
-}
-
-function parse(text: string): number {
-  const trimmed = text.trim();
-  return trimmed === "" ? Number.NaN : Number(trimmed);
 }
 
 interface FieldProps {
@@ -155,7 +151,7 @@ export function WhatIf({ customer, row, spec, scenario, scorer = DEFAULT_SCORER 
       ...Object.fromEntries(
         Object.entries(drafts)
           .filter(([name, text]) => text !== initial[name])
-          .map(([name, text]) => [name, parse(text)]),
+          .map(([name, text]) => [name, parseDraft(text)]),
       ),
     }),
     [base, drafts, initial],

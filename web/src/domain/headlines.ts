@@ -40,6 +40,8 @@ export function sensitivityHeadline(breakEven: BreakEven, budgetIsTheLimit = fal
       return budgetIsTheLimit
         ? BUDGET_EMPTY
         : "No customer is worth a call under these assumptions.";
+    case "no-churners":
+      return "Nobody on this list would have left, so it cannot pay at any acceptance rate.";
     case "never":
       return "This list loses money at any acceptance rate.";
     case "always":
@@ -47,6 +49,14 @@ export function sensitivityHeadline(breakEven: BreakEven, budgetIsTheLimit = fal
     case "rate":
       return `This list keeps paying as long as at least ${percent(breakEven.gamma, 1)} of churners accept the offer.`;
   }
+}
+
+/** The policy comparison's title; `share` is the model's profit as a share of perfect foresight's. */
+export function policyTitle(share: number | null): string {
+  if (share === null) return "What each policy would have earned";
+  if (share < 0)
+    return "The model loses money under these assumptions; perfect foresight would not";
+  return `The model keeps ${percent(share)} of what perfect foresight would earn`;
 }
 
 export function customersHeadline(k: number, expected: number, halfCount: number): string {

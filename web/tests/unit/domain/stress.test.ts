@@ -38,10 +38,12 @@ test("the fixed list crosses zero exactly at the analytic break-even acceptance"
 });
 
 test("break-even has explicit answers for empty, hopeless and free lists", () => {
-  expect(breakEvenAcceptance({ gain: 10, loss: 5 }, 0)).toEqual({ kind: "empty" });
-  expect(breakEvenAcceptance({ gain: 0, loss: 5 }, 3)).toEqual({ kind: "never" });
-  expect(breakEvenAcceptance({ gain: 4, loss: 5 }, 3)).toEqual({ kind: "never" }); // needs > 100 %
-  expect(breakEvenAcceptance({ gain: 4, loss: 0 }, 3)).toEqual({ kind: "always" });
+  expect(breakEvenAcceptance({ gain: 10, loss: 5, churners: 2 }, 0)).toEqual({ kind: "empty" });
+  expect(breakEvenAcceptance({ gain: 0, loss: 5, churners: 0 }, 3)).toEqual({
+    kind: "no-churners",
+  });
+  expect(breakEvenAcceptance({ gain: 4, loss: 5, churners: 2 }, 3)).toEqual({ kind: "never" });
+  expect(breakEvenAcceptance({ gain: 4, loss: 0, churners: 2 }, 3)).toEqual({ kind: "always" });
 });
 
 test("steps includes both ends without floating-point dust", () => {

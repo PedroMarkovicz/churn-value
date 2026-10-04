@@ -23,13 +23,14 @@ const DECISION: Record<Decision, { text: string; className: string }> = {
 interface Column {
   key: string;
   label: string;
+  name?: string; // the sort button's name when the label is a symbol
   sort: SortKey | null;
   numeric: boolean;
 }
 
 function columns(revealed: boolean): Column[] {
   const list: Column[] = [
-    { key: "rank", label: "#", sort: "rank", numeric: true },
+    { key: "rank", label: "#", name: "Rank", sort: "rank", numeric: true },
     { key: "customer", label: "Customer", sort: null, numeric: false },
     { key: "decision", label: "Decision", sort: null, numeric: false },
     { key: "p", label: "Chance of leaving", sort: "p", numeric: true },
@@ -138,6 +139,7 @@ export function CustomerTable({
                       onClick={() => {
                         onSort(sort);
                       }}
+                      aria-label={column.name}
                       className={`font-medium ${active ? "text-ink" : ""}`}
                     >
                       {column.label}

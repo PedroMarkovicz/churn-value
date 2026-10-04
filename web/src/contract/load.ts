@@ -52,12 +52,15 @@ const VALIDATORS: { [K in ArtifactName]: Guard<ArtifactTypes[K]> } = {
 export class ArtifactError extends Error {
   readonly artifact: string;
   readonly reason: string;
+  /** True when asking again can succeed: the request failed, or the file is still arriving. */
+  readonly retryable: boolean;
 
-  constructor(artifact: string, reason: string) {
+  constructor(artifact: string, reason: string, retryable = false) {
     super(`${artifact}: ${reason}`);
     this.name = "ArtifactError";
     this.artifact = artifact;
     this.reason = reason;
+    this.retryable = retryable;
   }
 }
 
@@ -77,13 +80,13 @@ async function fetchJson(url: string, file: string): Promise<unknown> {
   try {
     response = await fetch(url);
   } catch {
-    throw new ArtifactError(file, "the network request failed");
+    throw new ArtifactError(file, "the network request failed", true);
   }
-  if (!response.ok) throw new ArtifactError(file, `HTTP ${response.status}`);
+  if (!response.ok) throw new ArtifactError(file, `HTTP ${response.status}`, true);
   try {
     return (await response.json()) as unknown;
   } catch {
-    throw new ArtifactError(file, "is not valid JSON");
+    throw new ArtifactError(file, "is not valid JSON", true);
   }
 }
 
@@ -151,9 +154,9 @@ export function loadModelCard(base = DATA_BASE): Promise<string> {
     try {
       response = await fetch(`${base}${MODEL_CARD}`);
     } catch {
-      throw new ArtifactError(MODEL_CARD, "the network request failed");
+      throw new ArtifactError(MODEL_CARD, "the network request failed", true);
     }
-    if (!response.ok) throw new ArtifactError(MODEL_CARD, `HTTP ${response.status}`);
+    if (!response.ok) throw new ArtifactError(MODEL_CARD, `HTTP ${response.status}`, true);
     const bytes = await response.arrayBuffer();
     if ((await sha256Hex(bytes)) !== expected) {
       throw new ArtifactError(MODEL_CARD, "does not match its SHA-256 in the manifest");

@@ -11,6 +11,7 @@ import type { CustomerTable } from "./table.ts";
 export interface AcceptanceLine {
   gain: number; // sum over called churners of (B - CRC)
   loss: number; // incentives to called stayers + contact costs
+  churners: number; // called customers who churned
 }
 
 export function acceptanceLine(
@@ -19,24 +20,29 @@ export function acceptanceLine(
   scenario: Scenario,
 ): AcceptanceLine {
   let gain = 0;
+  let churners = 0;
   let loss = scenario.contact_cost * campaign.k;
   for (let i = 0; i < table.n; i++) {
     if (campaign.selected[i] !== 1) continue;
     const crc = campaign.econ.crc[i] as number;
-    if (table.churn[i] === 1) gain += (campaign.econ.benefit[i] as number) - crc;
-    else loss += crc;
+    if (table.churn[i] === 1) {
+      gain += (campaign.econ.benefit[i] as number) - crc;
+      churners += 1;
+    } else loss += crc;
   }
-  return { gain, loss };
+  return { gain, loss, churners };
 }
 
 export type BreakEven =
   | { kind: "rate"; gamma: number } // the list pays when acceptance exceeds gamma
   | { kind: "empty" } // nobody is called
-  | { kind: "never" } // no churner on the list, or it loses at any rate
+  | { kind: "no-churners" } // nobody on the list would have left: there is nothing to keep
+  | { kind: "never" } // it loses at any rate
   | { kind: "always" }; // it pays even at zero acceptance
 
 export function breakEvenAcceptance(line: AcceptanceLine, k: number): BreakEven {
   if (k === 0) return { kind: "empty" };
+  if (line.churners === 0) return { kind: "no-churners" };
   if (line.loss <= 0) return { kind: "always" };
   if (line.gain <= 0) return { kind: "never" };
   const gamma = line.loss / line.gain;
