@@ -30,18 +30,35 @@ import { useCustomerParam } from "./useCustomerParam.ts";
 const LEDE =
   "Ranked by what a call is expected to earn under the current scenario. Open a customer to see the reasons, their history and what would change the decision.";
 
-function EmptyView({ options, onShowAll }: { options: ListOptions; onShowAll: () => void }) {
+function EmptyView({
+  options,
+  matchesElsewhere,
+  onShowAll,
+  onClearSearch,
+}: {
+  options: ListOptions;
+  matchesElsewhere: boolean; // the search matches a customer outside this view
+  onShowAll: () => void;
+  onClearSearch: () => void;
+}) {
   const query = options.query.trim();
-  const text = query
-    ? `No customer in this view matches “${query}”.`
-    : options.decision === "call" && options.country === "all"
-      ? "No customer is worth a call under these assumptions."
-      : "No customer in this view.";
+  const nobody = query !== "" && !matchesElsewhere;
+  const text = nobody
+    ? `No customer has an id that starts with “${query}”.`
+    : query
+      ? `No customer in this view matches “${query}”.`
+      : options.decision === "call" && options.country === "all"
+        ? "No customer is worth a call under these assumptions."
+        : "No customer in this view.";
   return (
     <div className="rounded-[10px] bg-panel p-6 shadow-[0_0_0_1px_var(--color-rule)]">
       <p>{text}</p>
-      <button type="button" onClick={onShowAll} className="mt-2 text-sm font-semibold text-accent">
-        Show all customers
+      <button
+        type="button"
+        onClick={nobody ? onClearSearch : onShowAll}
+        className="mt-2 text-sm font-semibold text-accent"
+      >
+        {nobody ? "Clear the search" : "Show all customers"}
       </button>
     </div>
   );
@@ -111,8 +128,14 @@ export function CustomersPage({ timelines }: { timelines: TimelinesFile }) {
         ) : (
           <EmptyView
             options={options}
+            matchesElsewhere={
+              listView(rows, { ...options, decision: "all", country: "all" }).length > 0
+            }
             onShowAll={() => {
               setOptions((current) => ({ ...current, decision: "all", country: "all" }));
+            }}
+            onClearSearch={() => {
+              setOptions((current) => ({ ...current, query: "" }));
             }}
           />
         )}

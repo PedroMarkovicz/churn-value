@@ -8,8 +8,12 @@ export function downloadText(
   const link = document.createElement("a");
   link.href = url;
   link.download = fileName;
+  // In the page while clicked: Safari and older Firefox ignore a click on a detached link.
+  document.body.append(link);
   link.click();
+  link.remove();
+  // Not at once: revoking the URL before the browser has read it cancels the download.
   window.setTimeout(() => {
     URL.revokeObjectURL(url);
-  }, 0);
+  }, 1000);
 }
