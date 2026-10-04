@@ -51,3 +51,26 @@ def test_the_deploy_job_does_not_persist_the_checkout_token():
     ]
     assert checkouts
     assert all(step.get("with", {}).get("persist-credentials") is False for step in checkouts)
+
+
+def test_deploy_publishes_only_the_tip_of_main():
+    """An older run that finishes last, or is re-run, must not put an older commit live."""
+    steps = CI["jobs"]["deploy"]["steps"]
+    tip = [step.get("id") for step in steps].index("tip")
+    assert "commits/main" in steps[tip]["run"]
+    after = steps[tip + 1 :]
+    assert after
+    assert all(step.get("if") == "steps.tip.outputs.current == 'true'" for step in after)
+
+
+def test_the_site_bundle_is_kept_for_one_day():
+    """Every pull request push uploads the bundle; a week of them would fill the quota."""
+    upload = next(
+        step for step in CI["jobs"]["site"]["steps"] if step.get("with", {}).get("name") == "site"
+    )
+    assert upload["with"]["retention-days"] == 1
+
+
+def test_the_site_and_deploy_jobs_have_a_time_limit():
+    for name in ("site", "deploy"):
+        assert CI["jobs"][name]["timeout-minutes"] <= 20

@@ -19,7 +19,7 @@
 
 **Amendments after Plan 4a (deploy).**
 - The Worker has static assets and no script (`web/wrangler.jsonc`). `not_found_handling: "single-page-application"` serves the app for direct links; a path the app does not know shows the app's own 404 page.
-- `web/public/_headers` marks `/assets/*` immutable for a year, because every file there has a content hash in its name (`npm run check:assets` fails otherwise). Everything else is revalidated on each visit, so a new release or a new deploy shows at once.
-- CI builds the site once (the `site` job) and checks it under `wrangler dev` with a smoke test. On `main`, `deploy` publishes that same bundle after every other job passes, then runs the smoke test against the live address.
+- Every file is revalidated on each visit (Cloudflare's default, `max-age=0, must-revalidate` with an ETag), so a new release or a new deploy shows at once and a large file such as the ONNX runtime is downloaded once. There is no long-lived cache rule for `/assets/*`: the single-page fallback answers a missing path there with the app's page, and `_headers` rules match the request path, so a browser that asked for a chunk a moment too early, or after a rollback, would keep that page under the chunk's address for a year. The smoke test fails if a missing asset is answered with a response a browser would keep. `web/public/_headers` only sets two security headers.
+- CI builds the site once (the `site` job) and checks it under `wrangler dev` with a smoke test. On `main`, `deploy` publishes that same bundle after every other job passes, and only if its commit is still the tip of `main`. It then runs the smoke test against the live address until the site serves that very build.
 - The Cloudflare token is a repository secret that only the `deploy` job receives; `ml/tests/test_workflows.py` holds that.
 - There is no Content-Security-Policy: the notebook pages have inline scripts and load MathJax from a CDN.

@@ -174,3 +174,17 @@ def test_build_site_refuses_when_the_catalogue_and_the_notebooks_differ(tmp_path
 
     with pytest.raises(ValueError, match="differ"):
         build_site(source, tmp_path / "site", ENTRIES)
+
+
+def test_build_site_leaves_files_it_did_not_write(tmp_path: Path):
+    source = tmp_path / "notebooks"
+    source.mkdir()
+    executed(source / "01_first.ipynb", "x = 1")
+    executed(source / "02_second.ipynb", "x = 2")
+    out = tmp_path / "docs"
+    out.mkdir()
+    (out / "about.html").write_text("mine", encoding="utf-8")  # a wrong --out must not lose it
+
+    build_site(source, out, ENTRIES)
+
+    assert (out / "about.html").read_text(encoding="utf-8") == "mine"

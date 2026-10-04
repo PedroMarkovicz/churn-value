@@ -236,8 +236,8 @@ def build_site(
 
     Raises ``ValueError`` before writing anything if the catalogue and the numbered notebooks on
     disk differ, or if a notebook is not the output of one clean run of its current sources.
-    Pages left in ``out_dir`` by an earlier build are removed, so a renamed notebook is never
-    published twice.
+    Notebook pages (``NN_*.html``) left in ``out_dir`` by an earlier build are removed, so a
+    renamed notebook is never published twice; no other file there is touched.
     """
     paths = discover(notebooks_dir)
     found = [path.stem for path in paths]
@@ -250,7 +250,7 @@ def build_site(
     if stale:
         raise ValueError(f"not executed top to bottom, or edited after the run: {', '.join(stale)}")
     out_dir.mkdir(parents=True, exist_ok=True)
-    for old in out_dir.glob("*.html"):
+    for old in out_dir.glob("[0-9][0-9]_*.html"):
         old.unlink()
     written: list[Path] = []
     for path, entry in zip(paths, catalogue, strict=True):

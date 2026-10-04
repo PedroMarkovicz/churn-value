@@ -25,7 +25,6 @@ npm run artifacts -- --local
 | `npm run lint`, `npm run typecheck`, `npm run format:check` | ESLint (strict, type-checked, a11y), tsc, Prettier                                                                 |
 | `npm test`                                                  | unit and component tests, golden-vector parity, and a replay of the Python policy table on the installed artifacts |
 | `npm run build && npm run check:bundle`                     | the production build and the 200 KB gzip budget for the first load                                                 |
-| `npm run check:assets`                                      | after a build: every file in `dist/assets` has a content hash (they are cached for a year)                         |
 | `npm run smoke -- <url>`                                    | a served copy of the site: the app, a direct link, the pinned release, the notebooks, the cache                    |
 | `npm run e2e`                                               | Playwright on desktop and mobile, with axe on every page                                                           |
 | `npm run lighthouse`                                        | Lighthouse budgets: performance ≥ 0.9, accessibility 1.0                                                           |
@@ -89,9 +88,10 @@ GitHub only runs a manual workflow once it is on the default branch. On a branch
 
 The site is a Cloudflare Worker with static assets and no script (`wrangler.jsonc`). Its address is in `.env` (`VITE_SITE_URL`; not a secret).
 
-- **CI:** the `site` job builds the site, adds the notebook pages (`uv run churnvalue notebooks-site`, from `ml/`), serves the result with `wrangler dev` and runs the smoke test. On `main`, after every job passes, `deploy` publishes that same bundle and runs the smoke test against the live address.
+- **CI is the deploy path.** The `site` job builds the site, adds the notebook pages (`uv run churnvalue notebooks-site`, from `ml/`), serves the result with `wrangler dev` and runs the smoke test. On `main`, after every job passes, `deploy` publishes that same bundle, but only while its commit is the tip of `main`, and runs the smoke test until the live address serves that build. `npm run deploy` publishes whatever is in `dist` with none of those checks; it is for an emergency.
+- **The bundle** is kept as a workflow artifact for one day. To deploy an older run again, re-run all its jobs, not only `deploy`.
 - **Secrets:** `CLOUDFLARE_API_TOKEN` (the "Edit Cloudflare Workers" template, one account) and `CLOUDFLARE_ACCOUNT_ID`, as repository secrets. Only the `deploy` job receives them.
-- **Cache:** `public/_headers` keeps `/assets/*` for a year; `npm run check:assets` fails if a file there has no content hash. Everything else is revalidated on each visit.
+- **Cache:** every file is revalidated on each visit (Cloudflare's default), so nothing is downloaded twice and a new deploy shows at once. There is no long-lived rule for `/assets/*` on purpose: Cloudflare answers a missing path there with the app's page, and a browser would keep that page under a chunk's address (ADR 0006). The smoke test checks it.
 - **Notebooks:** served under `/notebooks/`. The pages load MathJax and require.js from cdnjs.
 
 Try the Worker locally:
@@ -107,8 +107,8 @@ npm run smoke -- http://localhost:8787    # in another terminal
 
 Roll back:
 
-- `npx wrangler rollback` returns to the previous version at once. It needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in the environment, or `npx wrangler login`.
-- Or revert the commit on `main`; CI deploys the previous state.
+1. `npx wrangler rollback` returns to the previous version at once. It needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in the environment, or `npx wrangler login`.
+2. Then revert the commit on `main`. Until it is reverted, the next push deploys it again. A revert alone also works; it only takes as long as CI.
 
 ## Layout
 

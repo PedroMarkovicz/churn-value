@@ -16,6 +16,7 @@ const NOTEBOOKS = Array.from(
 const INDEX = NOTEBOOKS.map((name) => `<a href="${name}">${name}</a>`).join("");
 const SECURE = { "x-content-type-options": "nosniff" };
 const IMMUTABLE = { "cache-control": "public, max-age=31536000, immutable" };
+const SCRIPT = { "content-type": "text/javascript; charset=utf-8" };
 
 type Page = { body: string; status?: number; headers?: Record<string, string> };
 
@@ -24,7 +25,7 @@ function site(overrides: Record<string, Page | null> = {}): Fetch {
   const pages: Record<string, Page | null> = {
     "/": { body: HOME, headers: SECURE },
     "/model": { body: HOME, headers: SECURE },
-    "/assets/index-C-iBrRCz.js": { body: "export {}", headers: IMMUTABLE },
+    "/assets/index-C-iBrRCz.js": { body: "export {}", headers: SCRIPT },
     "/data/manifest.json": { body: MANIFEST },
     "/notebooks/": { body: INDEX },
     "/notebooks/01_stage_a.html": { body: '<body><nav class="cv-bar"></nav></body>' },
@@ -68,14 +69,54 @@ test("a direct link that does not open the app fails", async () => {
   ]);
 });
 
-test("an asset without the immutable cache rule fails", async () => {
+test("an entry script that is answered with the app's page fails", async () => {
   const failures = await checkSite(
     BASE,
     SHA,
-    site({ "/assets/index-C-iBrRCz.js": { body: "export {}" } }),
+    site({
+      "/assets/index-C-iBrRCz.js": {
+        body: HOME,
+        headers: { "content-type": "text/html; charset=utf-8" },
+      },
+    }),
   );
   expect(failures).toEqual([
-    "/assets/index-C-iBrRCz.js: Cache-Control is missing, not public, max-age=31536000, immutable",
+    "/assets/index-C-iBrRCz.js: served as text/html; charset=utf-8, not JavaScript",
+  ]);
+});
+
+test("a missing file under /assets/ that a browser would keep fails", async () => {
+  const failures = await checkSite(
+    BASE,
+    SHA,
+    site({ "/assets/smoke-test-missing.js": { body: HOME, headers: IMMUTABLE } }),
+  );
+  expect(failures).toEqual([
+    "/assets/smoke-test-missing.js: a missing file is answered with Cache-Control " +
+      "public, max-age=31536000, immutable; a browser would keep the wrong content",
+  ]);
+});
+
+test("a site still serving another build fails, and the published build passes", async () => {
+  expect(await checkSite(BASE, SHA, site(), { indexHtml: HOME })).toEqual([]);
+  const newer = HOME.replace("C-iBrRCz", "NEWBUILD");
+  expect(await checkSite(BASE, SHA, site(), { indexHtml: newer })).toEqual([
+    "/: not the build that was just published (its index.html differs)",
+  ]);
+});
+
+test("a server that accepts and never answers is given up on", async () => {
+  const silent: Fetch = (_url, init) =>
+    new Promise((_resolve, reject) => {
+      init?.signal?.addEventListener("abort", () => {
+        reject(new Error("timed out"));
+      });
+    });
+  const failures = await checkSite(BASE, SHA, silent, { timeoutMs: 20 });
+  expect(failures).toEqual([
+    "/: timed out",
+    "/data/manifest.json: timed out",
+    "/notebooks/: timed out",
   ]);
 });
 
