@@ -28,7 +28,13 @@ const FURTHER = [
   { href: REPOSITORY_URL, text: "Source on GitHub" },
 ];
 
-export function MethodPage({ card }: { card: CardResult }) {
+export function MethodPage({
+  card,
+  onRetry,
+}: {
+  card: CardResult;
+  onRetry?: (() => void) | undefined;
+}) {
   const { evaluation, manifest, featureSpec } = useAppData();
   const horizon = featureSpec.horizon_days;
   const cutoffs = [
@@ -62,7 +68,7 @@ export function MethodPage({ card }: { card: CardResult }) {
             ))}
           </ul>
         </section>
-        <ModelCard card={card} />
+        <ModelCard card={card} onRetry={onRetry} />
         <nav aria-labelledby="further-title">
           <h2 id="further-title" className="font-serif text-2xl">
             Read further

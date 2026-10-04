@@ -186,7 +186,16 @@ export function PromiseReality({
                   strokeWidth={2}
                 />
                 <circle cx={x(r.realized)} cy={cy} r={6} fill={color} />
-                <text x={left} y={cy + 20} fontSize={11} fill="var(--color-muted)">
+                <text
+                  x={left}
+                  y={cy + 20}
+                  fontSize={11}
+                  fill="var(--color-muted)"
+                  stroke="var(--color-panel)"
+                  strokeWidth={4}
+                  strokeLinejoin="round"
+                  paintOrder="stroke"
+                >
                   {reading(r)}
                 </text>
               </g>

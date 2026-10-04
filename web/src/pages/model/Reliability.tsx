@@ -152,6 +152,16 @@ export function Reliability({ evaluation, models, deployed, testCutoff }: Props)
           >
             predicted
           </text>
+          <text
+            x={12}
+            y={(M.top + size - M.bottom) / 2}
+            transform={`rotate(-90 12 ${(M.top + size - M.bottom) / 2})`}
+            textAnchor="middle"
+            fontSize={11}
+            fill="var(--color-muted)"
+          >
+            observed
+          </text>
           {points.map((p, i) => (
             <circle
               key={p.low}
