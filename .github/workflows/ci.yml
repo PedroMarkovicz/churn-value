@@ -214,3 +214,74 @@ jobs:
       - name: Check the live site
         if: steps.tip.outputs.current == 'true'
         run: npm run smoke -- --wait 120 --index dist/index.html
+
+  preview:
+    needs: [site]
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write # the comment with the preview's address
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: web/.nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: The bundle the site job built and checked
+        uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: web/dist
+      - name: Upload a preview version (the live site does not change)
+        run: npx wrangler versions upload --preview-alias "pr-${{ github.event.pull_request.number }}" | tee upload.log
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: "false"
+          NO_COLOR: "1"
+      - name: The preview's address
+        id: address
+        run: |
+          url=$(grep -o 'Version Preview Alias URL: https://[^ ]*' upload.log | sed 's/.*URL: //' || true)
+          if [ -z "$url" ]; then
+            # no alias: the version's own address, which the same command prints
+            url=$(grep -o 'Version Preview URL: https://[^ ]*' upload.log | sed 's/.*URL: //' || true)
+          fi
+          if [ -z "$url" ]; then
+            echo "wrangler printed no preview address"
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: Check the preview
+        run: npm run smoke -- "${{ steps.address.outputs.url }}" --wait 120 --index dist/index.html
+      - name: Say the address on the pull request
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.address.outputs.url }}
+        with:
+          script: |
+            const marker = "<!-- preview -->";
+            const sha = context.payload.pull_request.head.sha.slice(0, 7);
+            const body = `${marker}\nPreview of ${sha}: ${process.env.PREVIEW_URL}`;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+            });
+            const mine = comments.find((comment) => comment.body?.startsWith(marker));
+            if (mine) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
