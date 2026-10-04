@@ -5,7 +5,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 
-import { mismatches, readLock, unpackVerified, untarGz } from "../../../scripts/artifacts-lib.ts";
+import {
+  localFiles,
+  mismatches,
+  readLock,
+  unpackVerified,
+  untarGz,
+} from "../../../scripts/artifacts-lib.ts";
 
 /** A minimal ustar archive, as `tar -czf x.tar.gz -C artifacts .` lays it out. */
 function tarGz(entries: [string, string, "0" | "5"][]): Buffer {
@@ -78,4 +84,14 @@ test("unpackVerified checks the archive's SHA-256 before reading any entry", () 
   const sha = createHash("sha256").update(archive).digest("hex");
   expect([...unpackVerified(archive, sha).keys()]).toEqual(["manifest.json"]);
   expect(() => unpackVerified(archive, "0".repeat(64))).toThrow(/SHA-256/);
+});
+
+test("a local export is installed with its manifest, which lists every file but itself", () => {
+  const dir = mkdtempSync(join(tmpdir(), "churn-value-local-"));
+  const manifest = JSON.stringify({ files: { "customers.json": "abc123" } });
+  writeFileSync(join(dir, "manifest.json"), manifest);
+  expect(localFiles(dir)).toEqual({
+    "customers.json": "abc123",
+    "manifest.json": createHash("sha256").update(manifest).digest("hex"),
+  });
 });

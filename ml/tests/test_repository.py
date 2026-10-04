@@ -71,3 +71,11 @@ def test_the_readme_names_the_live_site():
     address = re.search(r"^VITE_SITE_URL=(\S+)$", env, re.MULTILINE)
     assert address, "web/.env has no VITE_SITE_URL"
     assert address.group(1) in _readme()
+
+
+def test_every_amount_in_the_readme_is_in_the_model_card():
+    """The prose around the table quotes amounts too; they must not drift from the card."""
+    card = (ROOT / "docs" / "model-card.md").read_text(encoding="utf-8")
+    amounts = set(re.findall(r"−?£\d{1,3}(?:,\d{3})+", _readme()))
+    assert len(amounts) > 10
+    assert not sorted(amount for amount in amounts if amount not in card)

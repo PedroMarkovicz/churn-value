@@ -86,3 +86,16 @@ test("a 1.1 release without pipeline settings still draws the label window", asy
   });
   expect(screen.getByText(/The eligibility factor is not in this release/)).toBeInTheDocument();
 });
+
+test("the limits say the holdout runs into the Christmas peak and was not a blind test", async () => {
+  await renderPage(() => <MethodPage card={{ ok: true, text: CARD }} />);
+  expect(
+    screen.getByText(
+      "A second season: the holdout is one autumn, and its 90 days run into the Christmas peak.",
+    ),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByText(/^A blind test: an early prototype was scored on this holdout/),
+  ).toBeInTheDocument();
+  expect(screen.queryByText(/before a Christmas peak/)).not.toBeInTheDocument();
+});

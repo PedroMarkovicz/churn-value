@@ -10,6 +10,9 @@ Requires [uv](https://docs.astral.sh/uv/) ≥ 0.12. From this directory:
     uv sync
     uv run churnvalue pipeline            # every stage below, in order; stops at the first failure
 
+`export` rewrites `../docs/model-card.md` from the run, so `git status` shows it changed after
+your own run.
+
 The stages, which can also be run one by one:
 
     uv run churnvalue download            # ~45 MB, SHA-256 verified

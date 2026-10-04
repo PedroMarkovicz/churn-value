@@ -16,8 +16,9 @@ export const REPOSITORY_URL = "https://github.com/PedroMarkovicz/churn-value";
 const LIMITS = [
   "Whether an offer works: there is no campaign history, so acceptance is an assumption.",
   "Anything about one-time buyers: a cadence needs two purchase days.",
-  "A second season: the holdout is one autumn, before a Christmas peak.",
+  "A second season: the holdout is one autumn, and its 90 days run into the Christmas peak.",
   "New customers: the site scores the holdout; it does not take uploads.",
+  "A blind test: an early prototype was scored on this holdout before the default incentive and the month features were fixed.",
 ];
 
 const FURTHER = [

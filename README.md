@@ -22,7 +22,9 @@ On the September 2011 holdout, at the default assumptions:
 | **LightGBM + season** (deployed) | 993 | £25,621 | **£23,139 [£15,660, £31,729]** |
 | Perfect foresight | 592 | – | £88,558 [£78,016, £98,844] |
 
-An offer is priced with the model's probabilities, so a model that expects more churn than happens promises profit it never makes. Plain LightGBM expected £62,859 and made £14,972. Adding the cutoff month as a feature keeps the probabilities right after the season turns: the deployed model predicted 31.6% churn and 30.8% happened.
+No campaign was run. "Realized" is a backtest: what each list would have earned given who really stopped buying in the next 90 days, with the offer's acceptance rate (30%), the margin (35%), the incentive (10% of a customer's yearly margin) and the £1 contact cost still assumed. Intervals are 95% bootstrap intervals over customers.
+
+An offer is priced with the model's probabilities, so a model that expects more churn than happens promises profit it never makes. Plain LightGBM expected £62,859 and would have made £14,972. Adding the cutoff month as a feature keeps the probabilities right after the season turns: the deployed model predicted 31.6% churn and 30.8% happened.
 
 Refitted with six seeds, the deployed configuration realizes £19.4k to £23.1k. The table shows the pipeline's seed, which is at the top of that range.
 
@@ -56,15 +58,17 @@ Cloudflare Workers (static assets)
 ```
 
 - **The label is built, not given.** Nobody tells a wholesaler they are leaving. A customer who was due to reorder and buys nothing in the next 90 days counts as churned; customers who were not due are not labelled.
-- **The decision is economic.** A call's expected profit is `p·γ·(B − CRC) − (1 − p)·CRC − c`, with the benefit `B = min(V, CAC)`: what keeping the customer is worth, capped by what replacing them would cost. A customer is called when that is positive.
-- **A ladder of models**, from a cadence rule and BG/NBD to logistic regression and LightGBM, tuned with Optuna under rolling-origin cross-validation, calibrated on June 2011 and judged once on September 2011.
+- **The decision is economic.** A call's expected profit is `p·γ·(B − CRC) − (1 − p)·CRC − c`: `p` is the churn probability, `γ` the share of churners who accept the offer, `CRC` the incentive and `c` the cost of the contact. The benefit is `B = min(V, CAC)`: what keeping the customer is worth, capped by what replacing them would cost. A customer is called when that is positive.
+- **A ladder of models:** a cadence rule, BG/NBD (a buy-till-you-die model), logistic regression and LightGBM. The supervised ones are tuned with Optuna under rolling-origin cross-validation; every model is calibrated on June 2011 and tested on September 2011, a cutoff none was fitted, tuned or calibrated on.
 - **Nothing on the site is invented.** Every number comes from the pinned release or from TypeScript that is tested against golden vectors written by the Python code. The what-if runs the served model with onnxruntime-web after checking its SHA-256.
+
+**Stack:** Python 3.12, pandas, scikit-learn, LightGBM, Optuna, SHAP, MLflow, Pydantic, Pandera and ONNX; TypeScript, React, Vite, Tailwind CSS, TanStack Router, visx and onnxruntime-web; Vitest and Playwright; GitHub Actions and Cloudflare Workers.
 
 The decisions and their alternatives are in [docs/design.md](docs/design.md) and the [architecture decision records](docs/adr). The model's intended use, data and results are in the [model card](docs/model-card.md).
 
 ## Reproduce it
 
-The pipeline, from the public dataset to the site's artifacts, needs [uv](https://docs.astral.sh/uv/):
+The pipeline, from the public dataset to the site's artifacts, needs [uv](https://docs.astral.sh/uv/) 0.12 or newer:
 
 ```bash
 cd ml
@@ -91,26 +95,29 @@ npm run dev           # http://localhost:5173
 | [web/](web) | the site: contract loader, economics, charts, pages, tests |
 | [contracts/](contracts) | the JSON Schemas of the artifacts and the golden vectors both sides test against |
 | [docs/](docs) | the design document, the decision records and the model card |
-| [.github/workflows/](.github/workflows) | CI and deploy, the manual training run, the visual baselines |
+| [.github/workflows/](.github/workflows) | CI and deploy, the manual training run, the manual notebooks run, the visual baselines |
 
 ## How it is checked
 
 - **Python:** unit tests, property-based leakage tests (no feature may see the label window), and tests of the committed notebooks.
 - **Contract:** the TypeScript types and validators are generated from the schemas, and CI fails if they drift.
-- **Parity:** the browser's economics and its ONNX inference reproduce the Python pipeline on golden vectors.
+- **Parity:** the site's economics and its ONNX inference reproduce the Python pipeline on golden vectors.
 - **Site:** component tests; Playwright on desktop and a phone profile with accessibility checks on every page; visual regression in a pinned container; Lighthouse budgets.
-- **Deploy:** the bundle is built once, served locally as the Worker will serve it and smoke-tested; `main` deploys that same bundle and checks the live address. Every pull request gets its own preview.
+- **Deploy:** the bundle is built once, served locally as the Worker will serve it and smoke-tested; `main` deploys that same bundle and checks the live address. Every pull request from a branch of this repository gets its own preview address.
 - **History:** a secrets scan runs over the whole history on every pull request.
 
 ## What it cannot tell you
 
 - Whether an offer works: there is no campaign history, so the acceptance rate is an assumption.
 - Anything about one-time buyers: a cadence needs two purchase days.
-- A second season: the holdout is one autumn, before a Christmas peak.
+- A second season: the holdout is one autumn, and its 90 days run into the Christmas peak.
 - New customers: the site scores the holdout; it does not take uploads.
+- A blind test: an early prototype was scored on this holdout before the default incentive and the month features were fixed ([ADR 0003](docs/adr/0003-economics-emp-with-cac.md), [ADR 0005](docs/adr/0005-model-ladder-calibrated-gbdt.md)).
 
 ## Data and licence
 
-Data: Chen, D. (2012). *Online Retail II* [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5CG6D, licensed CC BY 4.0. The dataset is downloaded by the pipeline and is not in this repository.
+Data: Chen, D. (2012). *Online Retail II* [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5CG6D, licensed CC BY 4.0.
+
+The raw dataset is downloaded by the pipeline and is not in this repository. Data derived from it is: the artifacts release (features, scores and purchase days of the 1,920 holdout customers, under the dataset's own customer numbers) and the notebooks' outputs. They remain under CC BY 4.0 with the citation above.
 
 Code: [MIT](LICENSE).
