@@ -4,7 +4,16 @@ import nbformat
 import pytest
 from nbclient.exceptions import CellExecutionError
 
-from churnvalue.notebooks import discover, execute_notebook, executed_in_order, export_html
+from churnvalue.notebooks import (
+    NotebookEntry,
+    build_site,
+    discover,
+    execute_notebook,
+    executed_in_order,
+    export_html,
+    index_page,
+    site_page,
+)
 
 
 def write_notebook(path: Path, *sources: str) -> Path:
@@ -79,3 +88,89 @@ def test_execution_records_no_timing_metadata(tmp_path: Path):
     execute_notebook(nb_path, working_dir=tmp_path)
     nb = nbformat.read(nb_path, as_version=4)
     assert all("execution" not in cell.metadata for cell in nb.cells)
+
+
+ENTRIES = (
+    NotebookEntry("01_first", "First & <foremost>", "Does it work?"),
+    NotebookEntry("02_second", "Second", "And then?"),
+)
+
+
+def executed(path: Path, *sources: str) -> Path:
+    write_notebook(path, *sources)
+    execute_notebook(path, working_dir=path.parent)
+    return path
+
+
+def test_site_page_sets_a_readable_title_and_adds_the_top_bar(tmp_path: Path):
+    nb = nbformat.v4.new_notebook()
+    nb.cells = [nbformat.v4.new_markdown_cell("notebook-body-marker")]
+    nbformat.write(nb, tmp_path / "01_first.ipynb")
+    exported = export_html(tmp_path / "01_first.ipynb", tmp_path / "html")
+
+    page = site_page(exported.read_text(encoding="utf-8"), ENTRIES[0])
+
+    assert "<title>01 · First &amp; &lt;foremost&gt; — churn-value notebooks</title>" in page
+    assert "<title>01_first</title>" not in page
+    bar = page.index('<nav class="cv-bar"')
+    assert page.index("<body") < bar < page.index("notebook-body-marker")
+    assert 'href="index.html"' in page
+    assert 'href="/"' in page
+    assert page.index(".cv-bar{") < page.index("</head>")
+
+
+def test_site_page_refuses_html_it_cannot_place_the_title_or_bar_in():
+    with pytest.raises(ValueError, match="01_first"):
+        site_page("<html><body></body></html>", ENTRIES[0])
+
+
+def test_index_page_lists_the_notebooks_in_order_with_their_questions():
+    page = index_page(ENTRIES)
+    assert "<title>Notebooks — churn-value</title>" in page
+    assert page.index('href="01_first.html"') < page.index('href="02_second.html"')
+    assert "First &amp; &lt;foremost&gt;" in page
+    assert "<foremost>" not in page
+    assert "Does it work?" in page
+    assert "And then?" in page
+    assert 'href="/"' in page
+
+
+def test_build_site_writes_a_page_per_notebook_and_the_index(tmp_path: Path):
+    source = tmp_path / "notebooks"
+    source.mkdir()
+    executed(source / "01_first.ipynb", "x = 1")
+    executed(source / "02_second.ipynb", "print('two')")
+    out = tmp_path / "site"
+    out.mkdir()
+    (out / "09_removed.html").write_text("old", encoding="utf-8")  # left by an earlier build
+
+    written = build_site(source, out, ENTRIES)
+
+    expected = ["01_first.html", "02_second.html", "index.html"]
+    assert [path.name for path in written] == expected
+    assert sorted(path.name for path in out.iterdir()) == expected
+    second = (out / "02_second.html").read_text(encoding="utf-8")
+    assert "<title>02 · Second — churn-value notebooks</title>" in second
+    assert '<nav class="cv-bar"' in second
+
+
+def test_build_site_refuses_a_notebook_that_is_not_a_clean_run(tmp_path: Path):
+    source = tmp_path / "notebooks"
+    source.mkdir()
+    executed(source / "01_first.ipynb", "x = 1")
+    write_notebook(source / "02_second.ipynb", "x = 2")  # never executed
+    out = tmp_path / "site"
+
+    with pytest.raises(ValueError, match="02_second.ipynb"):
+        build_site(source, out, ENTRIES)
+
+    assert not out.exists()  # nothing was written
+
+
+def test_build_site_refuses_when_the_catalogue_and_the_notebooks_differ(tmp_path: Path):
+    source = tmp_path / "notebooks"
+    source.mkdir()
+    executed(source / "01_first.ipynb", "x = 1")
+
+    with pytest.raises(ValueError, match="differ"):
+        build_site(source, tmp_path / "site", ENTRIES)
