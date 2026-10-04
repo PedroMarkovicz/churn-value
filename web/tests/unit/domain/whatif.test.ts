@@ -88,7 +88,7 @@ test.each([
   [{ recency_days: Number.NaN }, "recency_days", "Enter a number."],
   [{ n_purchase_days: 5.5 }, "n_purchase_days", "Enter a whole number."],
   [{ recency_days: 400 }, "recency_days", "Between 0 and 344."],
-  [{ spend_90d: -5 }, "spend_90d", "Between £0 and £105,868."],
+  [{ spend_90d: -5 }, "spend_90d", "Between £0 and £105,867.81."],
   [{ recency_days: 150 }, "tenure_days", "At least the days since last purchase (150)."],
   [{ purchases_90d: 6 }, "purchases_90d", "At most the purchase days in total (5)."],
   [

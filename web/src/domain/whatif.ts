@@ -13,7 +13,7 @@ import {
   expectedProfit,
   valueAtRisk,
 } from "./economics.ts";
-import { count, money } from "./format.ts";
+import { count, money, moneyPrecise } from "./format.ts";
 import { expectedAov } from "./gammaGamma.ts";
 
 /** A customer's base features, by name. */
@@ -107,6 +107,32 @@ export function draftText(field: Pick<Field, "unit" | "integer">, value: number)
   return String(Number(value.toFixed(3)));
 }
 
+/**
+ * A typed amount as a number. "£500", "1,250" and " 12.5 " are read; anything else is NaN, so
+ * the field says "Enter a number." instead of using a number the customer did not type.
+ */
+export function parseDraft(text: string): number {
+  const typed = text.trim().replace(/^£\s*/, "");
+  const plain = /^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(typed) ? typed.replaceAll(",", "") : typed;
+  return /^-?(\d+\.?\d*|\.\d+)$/.test(plain) ? Number(plain) : Number.NaN;
+}
+
+/** A range limit as text the field accepts: rounded inward, at the precision the field shows. */
+export function limitText(
+  field: Pick<Field, "unit" | "integer" | "flag" | "min" | "max">,
+  side: "min" | "max",
+): string {
+  if (field.flag) return side === "min" ? "no" : "yes";
+  const scale = 10 ** (field.integer ? 0 : field.unit === "£" ? 2 : 3);
+  // the small shift keeps 24.35 * 100 = 2435.0000000000005 from rounding up to 24.36
+  const value =
+    side === "min"
+      ? Math.ceil(field.min * scale - 1e-9) / scale
+      : Math.floor(field.max * scale + 1e-9) / scale;
+  if (field.unit === "£") return Number.isInteger(value) ? money(value) : moneyPrecise(value);
+  return field.integer ? count(value) : String(value);
+}
+
 export interface Problem {
   field: string;
   message: string;
@@ -127,10 +153,7 @@ export function problems(values: Values, fields: readonly Field[]): Problem[] {
     if (value === undefined || !Number.isFinite(value)) flag(field.name, "Enter a number.");
     else if (field.integer && !Number.isInteger(value)) flag(field.name, "Enter a whole number.");
     else if (value < field.min || value > field.max) {
-      flag(
-        field.name,
-        `Between ${formatValue(field, field.min)} and ${formatValue(field, field.max)}.`,
-      );
+      flag(field.name, `Between ${limitText(field, "min")} and ${limitText(field, "max")}.`);
     }
   }
   const valid = new Set(fields.map((f) => f.name).filter((name) => !found.has(name)));

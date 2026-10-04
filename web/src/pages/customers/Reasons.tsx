@@ -7,9 +7,7 @@
 import { BoxSwatch, ChartFrame, DataTable, LegendItem } from "@/charts/primitives.tsx";
 import type { Contribution } from "@/contract/index.ts";
 import { reasonsTitle } from "@/domain/customerText.ts";
-import { reasonText } from "@/domain/reasons.ts";
-
-const signed = (value: number) => `${value > 0 ? "+" : "−"}${Math.abs(value).toFixed(2)}`;
+import { effectText, reasonText, signedShap } from "@/domain/reasons.ts";
 
 interface Props {
   contributions: readonly Contribution[];
@@ -35,8 +33,8 @@ export function Reasons({ contributions, horizonDays, month }: Props) {
           columns={["Reason", "Effect", "Size (SHAP, log-odds)"]}
           rows={contributions.map((c) => [
             reasonText(c, horizonDays),
-            c.shap > 0 ? "raises the risk" : "lowers the risk",
-            signed(c.shap),
+            effectText(c.shap),
+            signedShap(c.shap),
           ])}
         />
       }
@@ -59,7 +57,7 @@ export function Reasons({ contributions, horizonDays, month }: Props) {
                   }}
                 />
               </span>
-              <span className="sr-only">{raises ? "raises the risk" : "lowers the risk"}</span>
+              <span className="sr-only">{effectText(c.shap)}</span>
             </li>
           );
         })}

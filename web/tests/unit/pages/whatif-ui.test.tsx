@@ -77,6 +77,14 @@ test("text that is not a number is caught", async () => {
   expect(field).toHaveAccessibleDescription("Enter a number.");
 });
 
+test("an amount typed with a pound sign or a thousands comma is read", async () => {
+  renderWhatIf(vi.fn<Scorer>(() => Promise.resolve(0.5)));
+  const field = screen.getByLabelText("Total spend (£)");
+  await userEvent.clear(field);
+  await userEvent.type(field, "£1,250");
+  expect(field).not.toHaveAccessibleDescription("Enter a number.");
+});
+
 test("the reorder preset fills one consistent edit, and Reset undoes it", async () => {
   const quiet = customerFixture(9, 0.4, 1, 100, 30, {
     features: { ...fixtureFeatures(100, 30), recency_days: 60, tenure_days: 180 },
