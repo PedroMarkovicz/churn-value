@@ -16,6 +16,7 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
 import {
+  localFiles,
   type ArtifactsLock,
   manifestFiles,
   mismatches,
@@ -106,7 +107,7 @@ if (values.local) {
   if (!existsSync(join(LOCAL, "manifest.json"))) {
     throw new Error("ml/artifacts has no manifest.json: run `uv run churnvalue export` in ml/");
   }
-  install(LOCAL, manifestFiles(LOCAL));
+  install(LOCAL, localFiles(LOCAL));
 } else if (values.pin) {
   await pin(values.pin);
 } else {

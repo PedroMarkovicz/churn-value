@@ -66,7 +66,7 @@ def test_preview_runs_only_for_pull_requests_from_this_repository():
 
 def test_deploy_waits_for_every_check_and_runs_only_on_main():
     deploy = CI["jobs"]["deploy"]
-    assert sorted(deploy["needs"]) == ["ml", "site", "visual", "web"]
+    assert sorted(deploy["needs"]) == ["ml", "secrets", "site", "visual", "web"]
     assert deploy["if"] == "github.event_name == 'push' && github.ref == 'refs/heads/main'"
     assert deploy["concurrency"] == {"group": "deploy-production", "cancel-in-progress": False}
 
@@ -115,3 +115,24 @@ def test_preview_runs_one_at_a_time_and_fails_where_wrangler_fails():
         step for step in preview["steps"] if "wrangler versions upload" in str(step.get("run", ""))
     )
     assert upload["shell"] == "bash"  # with pipefail: `wrangler | tee` fails when wrangler fails
+
+
+@pytest.mark.parametrize("name", ["train.yml", "notebooks.yml"])
+def test_the_workflows_that_rebuild_everything_use_the_one_command(name: str):
+    text = (Path(__file__).parents[2] / ".github" / "workflows" / name).read_text(encoding="utf-8")
+    assert "uv run churnvalue pipeline" in text
+    for stage in ("churnvalue download", "churnvalue build-snapshots", "churnvalue export"):
+        assert stage not in text, stage
+
+
+def test_the_whole_history_is_scanned_for_credentials():
+    job = CI["jobs"]["secrets"]
+    checkout = next(
+        step for step in job["steps"] if str(step.get("uses", "")).startswith("actions/checkout")
+    )
+    assert checkout["with"]["fetch-depth"] == 0  # every commit, not only the last one
+    assert checkout["with"]["persist-credentials"] is False
+    scan = next(step for step in job["steps"] if "gitleaks" in str(step.get("run", "")))
+    assert "ghcr.io/gitleaks/gitleaks:v8.30.1" in scan["run"]  # a pinned scanner
+    assert "--redact" in scan["run"]  # a finding must not be printed in a public log
+    assert job["timeout-minutes"] <= 15

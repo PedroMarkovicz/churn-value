@@ -1,8 +1,9 @@
-"""Pipeline stages: download -> build-snapshots -> train -> evaluate -> export; notebooks."""
+"""Pipeline stages, from download to export; `pipeline` runs them all in order."""
 
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from dataclasses import replace
 from pathlib import Path
 from typing import Any, NoReturn
@@ -222,6 +223,22 @@ def export(config: Path = ConfigOption) -> None:
     cfg.model_card_path.parent.mkdir(parents=True, exist_ok=True)
     cfg.model_card_path.write_text(result.model_card, encoding="utf-8", newline="\n")
     typer.echo(f"model card -> {cfg.model_card_path}")
+
+
+@app.command()
+def pipeline(config: Path = ConfigOption, trials: int | None = TrialsOption) -> None:
+    """Run every stage in order, from the download to the web artifacts; stop at a failure."""
+    stages: list[tuple[str, Callable[[], None]]] = [
+        ("download", lambda: download(config)),
+        ("build-snapshots", lambda: build_snapshots_cmd(config)),
+        ("evaluate-baselines", lambda: evaluate_baselines_cmd(config)),
+        ("train", lambda: train(config, trials)),
+        ("evaluate", lambda: evaluate(config)),
+        ("export", lambda: export(config)),
+    ]
+    for number, (name, run) in enumerate(stages, start=1):
+        typer.echo(f"[{number}/{len(stages)}] {name}")
+        run()
 
 
 @app.command()

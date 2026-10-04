@@ -45,6 +45,12 @@ export function manifestFiles(dir: string): Record<string, string> {
   return manifest.files;
 }
 
+/** The files of a local export: those its manifest lists, and the manifest, which lists
+ * every file but itself. Without it the site has nothing to read first. */
+export function localFiles(dir: string): Record<string, string> {
+  return { ...manifestFiles(dir), "manifest.json": sha256File(join(dir, "manifest.json")) };
+}
+
 /** A relative path that stays inside the target directory; anything else is refused. */
 function safePath(path: string): string {
   const parts = path.split(/[\\/]/); // tar writes "/", but Windows also resolves "\"

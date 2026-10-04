@@ -21,7 +21,7 @@ This project reuses the *business concepts* of an earlier internal project (not 
 
 | Kept (reformulated) | Corrected | Dropped |
 |---|---|---|
-| Retention cost proportional to customer value: `CRC = λc · V` | "Saldo CAC = saved revenue − ΣCAC" double-counted value → CAC now enters as an *avoided cost* (§4) | Compounded multi-period projection of a one-off gain |
+| Retention cost proportional to customer value: `CRC = λc · V` | A net-saving figure (saved revenue minus the summed acquisition cost) double-counted value → CAC now enters as an *avoided cost* (§4) | Compounded multi-period projection of a one-off gain |
 | Acquisition cost as a multiple of retention cost: `CAC = λa · CRC` (λa 5–25, HBR) | 100 % retention success assumed → acceptance rate γ | Fixed 0.5 threshold on class-weighted, uncalibrated scores |
 | Charging contact cost to false positives | Revenue treated as value → gross margin | RFM K-means "CLV" category |
 | User-configurable business parameters | Random split on a single snapshot → rolling-origin temporal validation | Accuracy as a headline metric |
@@ -174,7 +174,7 @@ For each policy the app reports:
 
 Each rung must justify its complexity in money:
 
-1. **Cadence rule** — score = `overdue_ratio`. This is the unused `Threshold_Churn_Dias` idea from the original project.
+1. **Cadence rule** — score = `overdue_ratio`. This is the original project's unused idea of a churn threshold in days.
 2. **BG/NBD P(alive)** — fitted by maximum likelihood with scipy, from the closed-form likelihoods of Fader, Hardie & Lee (2005), with a small L2 penalty on the log-parameters. The Gamma-Gamma model, which gives the AOV used in V, is fitted the same way.
    - PyMC-Marketing is not used because its PyTensor backend needs a C toolchain on Windows.
    - `lifetimes` is archived and is not used either.
@@ -182,7 +182,7 @@ Each rung must justify its complexity in money:
 3. **Logistic regression** — `log1p` of the heavy-tailed features, standardised, L2 penalty tuned.
 4. **LightGBM** on the customer features, and **LightGBM + season**, which adds the two cutoff-month features. Both are tuned with Optuna (40 seeded TPE trials) on the mean log loss of the rolling-origin folds.
 
-The deployed model is fixed in advance as **LightGBM + season**: it is the top rung, and the one the browser what-if can run as ONNX. The test results decide nothing retroactively.
+The deployed model is fixed in advance as **LightGBM + season**: it is the top rung, and the one the browser what-if can run as ONNX. The test results decide nothing retroactively. One caveat: an untuned prototype had been scored on the test cutoff before the default incentive and the month features were fixed (ADR 0003, ADR 0005), so the holdout is not a blind test.
 
 Every model is **calibrated** (isotonic or Platt, chosen on the calibration cutoff).
 
@@ -312,15 +312,15 @@ Out of scope, by decision: CSV upload of new customers (it would require a secon
 ### 6.5 ML engineering
 
 - `uv` + `pyproject.toml`, ruff, pyright, pytest, pre-commit.
-- Typer CLI with stages: `download → build-snapshots → train → evaluate → export`, plus `evaluate-baselines`, `contracts` and `notebooks`.
+- Typer CLI with stages: `download → build-snapshots → evaluate-baselines → train → evaluate → export`; `pipeline` runs them all in order and stops at the first failure. Also `contracts`, `notebooks` and `notebooks-site`.
 - YAML config validated by Pydantic; Pandera schemas; fixed seeds.
 - **MLflow (local, SQLite store `mlflow.db`)** tracks one run per model: the tuned parameters, the CV folds, the Optuna history and the test metrics, tagged with the git commit, the config hash and the data checksum. `export` writes `experiments.json`, so the site shows the tracking history.
 - The model card is generated from the evaluation outputs.
 
 ### 6.6 CI/CD
 
-- **On PR:** ruff, pyright, pytest; in `web/`: contract drift check (regenerated TS types and validators must match), palette check, eslint, prettier, tsc, vitest, a bundle budget, Playwright with axe on desktop and mobile, visual regression of the six pages in the pinned Playwright container (baselines made by the manual `visual-baselines` workflow in that same container), and Lighthouse CI budgets, all against the pinned artifacts release. A `site` job builds the site with the notebook pages, serves that bundle locally as the Worker will (`wrangler dev`) and runs a smoke test against it. A `preview` job then uploads that bundle as a Worker version with the alias `pr-<number>`, runs the same smoke test against its address, and writes the address in a comment on the pull request. It runs only for pull requests from the repository itself.
-- **On `main`:** after `ml`, `web`, `visual` and `site` pass, the `deploy` job publishes the bundle the `site` job built and checked to **Cloudflare Workers (static assets)** with `wrangler deploy`, then runs the smoke test against the live address.
+- **On PR:** ruff, pyright, pytest; in `web/`: contract drift check (regenerated TS types and validators must match), palette check, eslint, prettier, tsc, vitest, a bundle budget, Playwright with axe on desktop and mobile, visual regression of the six pages in the pinned Playwright container (baselines made by the manual `visual-baselines` workflow in that same container), and Lighthouse CI budgets, all against the pinned artifacts release. A `site` job builds the site with the notebook pages, serves that bundle locally as the Worker will (`wrangler dev`) and runs a smoke test against it. A `preview` job then uploads that bundle as a Worker version with the alias `pr-<number>`, runs the same smoke test against its address, and writes the address in a comment on the pull request. It runs only for pull requests from the repository itself. A `secrets` job scans every commit with gitleaks.
+- **On `main`:** after `ml`, `web`, `visual`, `secrets` and `site` pass, the `deploy` job publishes the bundle the `site` job built and checked to **Cloudflare Workers (static assets)** with `wrangler deploy`, then runs the smoke test against the live address.
 - **`train` workflow (manual):** runs the pipeline and publishes the artifacts as a **GitHub Release** (a tarball of `artifacts/` plus `manifest.json`, with the model card as release notes). The site build pins a release tag. Training never runs on every push.
 
 ## 6.7 Analysis notebooks (ADR 0012)

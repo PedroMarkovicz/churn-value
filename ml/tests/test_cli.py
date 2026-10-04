@@ -147,3 +147,54 @@ def test_notebooks_site_reports_a_stale_notebook_and_exits_1(tmp_path: Path, mon
 
     assert result.exit_code == 1
     assert "03_eda.ipynb" in result.output
+
+
+STAGES = [
+    "download",
+    "build_snapshots_cmd",
+    "evaluate_baselines_cmd",
+    "train",
+    "evaluate",
+    "export",
+]
+
+
+def _record_stages(monkeypatch, calls: list, failing: str | None = None):
+    import typer
+
+    def stage(name: str):
+        def run(config, trials=None):
+            calls.append((name, config, trials))
+            if name == failing:
+                typer.echo(f"{name} could not run", err=True)
+                raise typer.Exit(code=1)
+
+        return run
+
+    for name in STAGES:
+        monkeypatch.setattr(f"churnvalue.cli.{name}", stage(name))
+
+
+def test_pipeline_runs_every_stage_in_order_and_passes_the_options(monkeypatch):
+    calls: list = []
+    _record_stages(monkeypatch, calls)
+
+    result = CliRunner().invoke(app, ["pipeline", "--config", "x.yaml", "--trials", "3"])
+
+    assert result.exit_code == 0, result.output
+    assert [name for name, _, _ in calls] == STAGES
+    assert all(config == Path("x.yaml") for _, config, _ in calls)
+    assert [trials for name, _, trials in calls if name == "train"] == [3]
+    assert "[1/6] download" in result.output
+    assert "[6/6] export" in result.output
+
+
+def test_pipeline_stops_at_the_first_stage_that_fails(monkeypatch):
+    calls: list = []
+    _record_stages(monkeypatch, calls, failing="build_snapshots_cmd")
+
+    result = CliRunner().invoke(app, ["pipeline"])
+
+    assert result.exit_code == 1
+    assert [name for name, _, _ in calls] == ["download", "build_snapshots_cmd"]
+    assert "build_snapshots_cmd could not run" in result.output

@@ -8,10 +8,17 @@ Model card: [`../docs/model-card.md`](../docs/model-card.md).
 Requires [uv](https://docs.astral.sh/uv/) ≥ 0.12. From this directory:
 
     uv sync
-    uv run churnvalue download            # ~45 MB, SHA-256 verified, ~1 min
+    uv run churnvalue pipeline            # every stage below, in order; stops at the first failure
+
+`export` rewrites `../docs/model-card.md` from the run, so `git status` shows it changed after
+your own run.
+
+The stages, which can also be run one by one:
+
+    uv run churnvalue download            # ~45 MB, SHA-256 verified
     uv run churnvalue build-snapshots     # 16 monthly snapshots
     uv run churnvalue evaluate-baselines  # reports/baseline_evaluation.json (notebook 06)
-    uv run churnvalue train               # Optuna + rolling-origin CV, ~4 min; models/ and MLflow
+    uv run churnvalue train               # Optuna + rolling-origin CV; models/ and MLflow
     uv run churnvalue evaluate            # reports/evaluation.json, test metrics logged to MLflow
     uv run churnvalue export              # artifacts/ for the web app and docs/model-card.md
 
@@ -28,6 +35,7 @@ pipeline commands above:
 
     uv run churnvalue notebooks            # execute 01–11 in place and export styled HTML
     uv run churnvalue notebooks --only 08  # one stage
+    uv run churnvalue notebooks-site --out DIR   # the executed notebooks as HTML pages, not run again
 
 | # | Notebook | Question |
 |---|---|---|

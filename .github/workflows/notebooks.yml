@@ -15,12 +15,7 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --locked
-      - run: uv run churnvalue download
-      - run: uv run churnvalue build-snapshots
-      - run: uv run churnvalue evaluate-baselines
-      - run: uv run churnvalue train
-      - run: uv run churnvalue evaluate
-      - run: uv run churnvalue export
+      - run: uv run churnvalue pipeline
       - run: uv run churnvalue notebooks
       - run: uv run pytest -m slow
       - uses: actions/upload-artifact@v4
