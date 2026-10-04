@@ -26,13 +26,9 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --locked
-      - run: uv run churnvalue download
-      - run: uv run churnvalue build-snapshots
-      - run: uv run churnvalue train --trials "$TRIALS"
+      - run: uv run churnvalue pipeline --trials "$TRIALS"
         env:
           TRIALS: ${{ inputs.trials }}
-      - run: uv run churnvalue evaluate
-      - run: uv run churnvalue export
       - run: uv run pytest -m slow
       - name: Publish the artifacts as a GitHub release
         env:

@@ -312,7 +312,7 @@ Out of scope, by decision: CSV upload of new customers (it would require a secon
 ### 6.5 ML engineering
 
 - `uv` + `pyproject.toml`, ruff, pyright, pytest, pre-commit.
-- Typer CLI with stages: `download → build-snapshots → train → evaluate → export`, plus `evaluate-baselines`, `contracts` and `notebooks`.
+- Typer CLI with stages: `download → build-snapshots → evaluate-baselines → train → evaluate → export`; `pipeline` runs them all in order and stops at the first failure. Also `contracts`, `notebooks` and `notebooks-site`.
 - YAML config validated by Pydantic; Pandera schemas; fixed seeds.
 - **MLflow (local, SQLite store `mlflow.db`)** tracks one run per model: the tuned parameters, the CV folds, the Optuna history and the test metrics, tagged with the git commit, the config hash and the data checksum. `export` writes `experiments.json`, so the site shows the tracking history.
 - The model card is generated from the evaluation outputs.

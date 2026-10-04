@@ -115,3 +115,11 @@ def test_preview_runs_one_at_a_time_and_fails_where_wrangler_fails():
         step for step in preview["steps"] if "wrangler versions upload" in str(step.get("run", ""))
     )
     assert upload["shell"] == "bash"  # with pipefail: `wrangler | tee` fails when wrangler fails
+
+
+@pytest.mark.parametrize("name", ["train.yml", "notebooks.yml"])
+def test_the_workflows_that_rebuild_everything_use_the_one_command(name: str):
+    text = (Path(__file__).parents[2] / ".github" / "workflows" / name).read_text(encoding="utf-8")
+    assert "uv run churnvalue pipeline" in text
+    for stage in ("churnvalue download", "churnvalue build-snapshots", "churnvalue export"):
+        assert stage not in text, stage
