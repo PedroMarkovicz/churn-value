@@ -1,8 +1,9 @@
 import { Link, Outlet, useLoaderData, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { AppData } from "@/app/data.ts";
 import { ARTIFACTS_TAG } from "@/app/release.ts";
+import { pageTitle } from "@/app/title.ts";
 import { ScenarioStrip } from "@/components/scenario/ScenarioStrip.tsx";
 import { ScenarioProvider, useScenario } from "@/scenario/ScenarioProvider.tsx";
 import { PARAMETER_ORDER, PARAMETERS } from "@/scenario/schema.ts";
@@ -88,6 +89,10 @@ export function Layout() {
   const fixed = useRouterState({
     select: (s) => s.matches.some((m) => FIXED_SCENARIO_ROUTES.has(m.routeId)),
   });
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => {
+    document.title = pageTitle(pathname, PAGES);
+  }, [pathname]);
   return (
     <ScenarioProvider>
       <a

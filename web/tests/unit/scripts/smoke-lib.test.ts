@@ -29,6 +29,8 @@ function site(overrides: Record<string, Page | null> = {}): Fetch {
     "/data/manifest.json": { body: MANIFEST },
     "/notebooks/": { body: INDEX },
     "/notebooks/01_stage_a.html": { body: '<body><nav class="cv-bar"></nav></body>' },
+    "/favicon.svg": { body: "<svg/>", headers: { "content-type": "image/svg+xml" } },
+    "/og.png": { body: "png", headers: { "content-type": "image/png" } },
     ...overrides,
   };
   const fallback: Page = { body: HOME, headers: SECURE };
@@ -145,4 +147,12 @@ test("an unreachable site is reported, not thrown", async () => {
     "/data/manifest.json: fetch failed",
     "/notebooks/: fetch failed",
   ]);
+});
+
+test("a social image that is missing, and so answered with the app's page, fails", async () => {
+  const get: Fetch = (url) =>
+    new URL(url).pathname === "/og.png"
+      ? Promise.resolve(new Response(HOME, { headers: { "content-type": "text/html" } }))
+      : site()(url);
+  expect(await checkSite(BASE, SHA, get)).toEqual(["/og.png: served as text/html, not image/png"]);
 });

@@ -84,6 +84,15 @@ export async function checkSite(
         `${MISSING_ASSET}: a missing file is answered with Cache-Control ${cache}; ` +
           "a browser would keep the wrong content",
       );
+    // A missing file is answered with the app's page: a crawler would get HTML for the image.
+    for (const [path, type] of [
+      ["/favicon.svg", "image/svg+xml"],
+      ["/og.png", "image/png"],
+    ] as const) {
+      const file = await page(path);
+      const found = file?.response.headers.get("content-type") ?? "nothing";
+      if (file && !found.includes(type)) failures.push(`${path}: served as ${found}, not ${type}`);
+    }
   }
 
   const manifest = await page("/data/manifest.json");

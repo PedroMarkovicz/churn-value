@@ -1,7 +1,9 @@
 /** Failure and emptiness as direction (spec §7): say what went wrong and what to do. */
 import { type ErrorComponentProps, Link, useRouter } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 import { ARTIFACTS_TAG } from "@/app/release.ts";
+import { SITE_NAME } from "@/app/title.ts";
 import { PAGES } from "@/components/layout/Layout.tsx";
 import { ArtifactError } from "@/contract/load.ts";
 
@@ -53,6 +55,9 @@ export function DataErrorPage({ error }: ErrorComponentProps) {
 }
 
 export function NotFoundPage() {
+  useEffect(() => {
+    document.title = `Page not found · ${SITE_NAME}`;
+  }, []);
   return (
     <Shell title="There is no page at this address.">
       <p className="text-base">These are the pages of the site:</p>
