@@ -5,7 +5,8 @@ export function pageTitle(
   pathname: string,
   pages: readonly { to: string; label: string }[],
 ): string {
-  const path = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  // as the router does: a trailing slash and the letters' case do not change the page
+  const path = (pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname).toLowerCase();
   const page = pages.find((candidate) => candidate.to === path);
   return `${page ? page.label : "Page not found"} · ${SITE_NAME}`;
 }

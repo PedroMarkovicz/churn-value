@@ -220,6 +220,10 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # A newer push replaces an older run, so the alias never ends on the older commit.
+    concurrency:
+      group: preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     permissions:
       contents: read
       pull-requests: write # the comment with the preview's address
@@ -242,6 +246,7 @@ jobs:
           name: site
           path: web/dist
       - name: Upload a preview version (the live site does not change)
+        shell: bash # with pipefail: this step fails when wrangler fails, not the next one
         run: npx wrangler versions upload --preview-alias "pr-${{ github.event.pull_request.number }}" | tee upload.log
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

@@ -125,10 +125,14 @@ export function limitText(
   if (field.flag) return side === "min" ? "no" : "yes";
   const scale = 10 ** (field.integer ? 0 : field.unit === "£" ? 2 : 3);
   // the small shift keeps 24.35 * 100 = 2435.0000000000005 from rounding up to 24.36
-  const value =
+  let value =
     side === "min"
       ? Math.ceil(field.min * scale - 1e-9) / scale
       : Math.floor(field.max * scale + 1e-9) / scale;
+  // A limit like 455498.08999999997 rounds to 455498.09, which the range check refuses:
+  // step one unit of the shown precision back inside.
+  if (side === "min" && value < field.min) value = (Math.round(value * scale) + 1) / scale;
+  if (side === "max" && value > field.max) value = (Math.round(value * scale) - 1) / scale;
   if (field.unit === "£") return Number.isInteger(value) ? money(value) : moneyPrecise(value);
   return field.integer ? count(value) : String(value);
 }

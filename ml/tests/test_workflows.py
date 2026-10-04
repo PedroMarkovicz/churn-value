@@ -102,3 +102,16 @@ def test_the_site_bundle_is_kept_for_one_day():
 def test_the_site_and_deploy_jobs_have_a_time_limit():
     for name in ("site", "deploy"):
         assert CI["jobs"][name]["timeout-minutes"] <= 20
+
+
+def test_preview_runs_one_at_a_time_and_fails_where_wrangler_fails():
+    """Two pushes close together must not leave the alias on the older commit."""
+    preview = CI["jobs"]["preview"]
+    assert preview["concurrency"] == {
+        "group": "preview-${{ github.event.pull_request.number }}",
+        "cancel-in-progress": True,
+    }
+    upload = next(
+        step for step in preview["steps"] if "wrangler versions upload" in str(step.get("run", ""))
+    )
+    assert upload["shell"] == "bash"  # with pipefail: `wrangler | tee` fails when wrangler fails

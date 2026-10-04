@@ -59,3 +59,19 @@ test("a reason whose size rounds to zero has no direction and no minus sign", ()
   expect(signedShap(-0.21)).toBe("−0.21");
   expect(signedShap(-0.001)).toBe("0.00");
 });
+
+test.each([
+  [455498.08999999997, "£455,498.08"], // total_spend.max in the pinned release
+  [111745.84999999999, "£111,745.84"], // spend_prev_90d.max
+  [105867.81, "£105,867.81"],
+])("the upper limit shown for %s is a value the field accepts", (max, shown) => {
+  const pounds = field({ unit: "£", min: 0, max });
+  expect(limitText(pounds, "max")).toBe(shown);
+  expect(problems({ x: parseDraft(shown) }, [pounds])).toEqual([]);
+});
+
+test("the lower limit shown is a value the field accepts", () => {
+  const pounds = field({ unit: "£", min: 0.30000000000000004, max: 10 });
+  expect(limitText(pounds, "min")).toBe("£0.31");
+  expect(problems({ x: parseDraft(limitText(pounds, "min")) }, [pounds])).toEqual([]);
+});

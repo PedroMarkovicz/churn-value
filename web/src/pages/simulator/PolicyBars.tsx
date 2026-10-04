@@ -32,8 +32,14 @@ export function PolicyBars({
   });
   const lo = Math.min(0, ...values);
   const hi = Math.max(0, ...values);
-  const x = scaleLinear({ domain: [lo, hi], range: [LABEL, width - 96], nice: true });
-  const height = rows.length * ROW + 24;
+  // On a phone the name goes above its bar: beside it, the 170 px of names would leave the
+  // bars no room, and below 266 px the scale's range would even run backwards.
+  const stacked = width < 480;
+  const left = stacked ? 8 : LABEL;
+  const rowHeight = stacked ? ROW + 16 : ROW;
+  const top = stacked ? 16 : 0; // where a row's bar starts, under its name
+  const x = scaleLinear({ domain: [lo, hi], range: [left, width - 96], nice: true });
+  const height = rows.length * rowHeight + 24;
 
   const title = policyTitle(comparison.shareOfOracle);
 
@@ -64,12 +70,12 @@ export function PolicyBars({
       <div ref={ref} className="relative">
         <svg width={width} height={height} role="img" aria-label={title} className="block">
           <line x1={x(0)} x2={x(0)} y1={0} y2={height - 22} stroke="var(--color-ink)" />
-          {(width < 480 ? x.domain() : x.ticks(4)).map((t) => (
+          {(stacked ? x.domain() : x.ticks(4)).map((t, i) => (
             <text
               key={t}
               x={x(t)}
               y={height - 6}
-              textAnchor="middle"
+              textAnchor={stacked ? (i === 0 ? "start" : "end") : "middle"}
               fontSize={10.5}
               fill="var(--color-muted)"
             >
@@ -77,7 +83,7 @@ export function PolicyBars({
             </text>
           ))}
           {rows.map((row, i) => {
-            const y0 = i * ROW + 6;
+            const y0 = i * rowHeight + 6;
             const ci = intervals?.[row.id];
             const bar = { x: Math.min(x(0), x(row.realized)), w: Math.abs(x(row.realized) - x(0)) };
             const oracle = row.kind === "oracle";
@@ -97,12 +103,12 @@ export function PolicyBars({
                   x={0}
                   y={y0 - 5}
                   width={width}
-                  height={ROW - 2}
+                  height={rowHeight - 2}
                   fill={row.deployed || hover === i ? "var(--color-surface)" : "transparent"}
                 />
                 <rect
                   x={bar.x}
-                  y={y0}
+                  y={y0 + top}
                   width={bar.w}
                   height={18}
                   rx={3}
@@ -119,15 +125,15 @@ export function PolicyBars({
                 />
                 {ci && !oracle && (
                   <g stroke="var(--color-ink)" strokeWidth={1.5}>
-                    <line x1={x(ci.low)} x2={x(ci.high)} y1={y0 + 9} y2={y0 + 9} />
-                    <line x1={x(ci.low)} x2={x(ci.low)} y1={y0 + 4} y2={y0 + 14} />
-                    <line x1={x(ci.high)} x2={x(ci.high)} y1={y0 + 4} y2={y0 + 14} />
+                    <line x1={x(ci.low)} x2={x(ci.high)} y1={y0 + top + 9} y2={y0 + top + 9} />
+                    <line x1={x(ci.low)} x2={x(ci.low)} y1={y0 + top + 4} y2={y0 + top + 14} />
+                    <line x1={x(ci.high)} x2={x(ci.high)} y1={y0 + top + 4} y2={y0 + top + 14} />
                   </g>
                 )}
                 <text
-                  x={LABEL - 10}
-                  y={y0 + 13}
-                  textAnchor="end"
+                  x={stacked ? left : LABEL - 10}
+                  y={stacked ? y0 + 9 : y0 + 13}
+                  textAnchor={stacked ? "start" : "end"}
                   fontSize={12.5}
                   fontWeight={row.deployed ? 700 : 400}
                   fill="var(--color-ink)"
@@ -136,7 +142,7 @@ export function PolicyBars({
                 </text>
                 <text
                   x={labelX}
-                  y={y0 + 13}
+                  y={y0 + top + 13}
                   fontSize={12}
                   fontWeight={row.deployed ? 700 : 400}
                   fill="var(--color-ink)"
@@ -148,7 +154,7 @@ export function PolicyBars({
           })}
         </svg>
         {hover !== null && rows[hover] && (
-          <Tooltip x={x(Math.max(0, rows[hover].realized))} y={hover * ROW} width={width}>
+          <Tooltip x={x(Math.max(0, rows[hover].realized))} y={hover * rowHeight} width={width}>
             <b>{rows[hover].label}</b>
             <br />
             {count(rows[hover].k)} customers called

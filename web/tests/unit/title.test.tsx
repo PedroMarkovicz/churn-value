@@ -9,6 +9,7 @@ test.each([
   ["/", "Overview · churn-value"],
   ["/simulator", "Simulator · churn-value"],
   ["/model/", "Model · churn-value"], // a trailing slash is the same page
+  ["/Model", "Model · churn-value"], // the router matches addresses without regard to case
   ["/nope", "Page not found · churn-value"],
   ["", "Page not found · churn-value"],
 ])("the address %s is titled %s", (pathname, title) => {

@@ -8,6 +8,10 @@ const Rendered = lazy(() =>
   import("./ModelCardMarkdown.tsx").then((m) => ({ default: m.ModelCardMarkdown })),
 );
 
+function reloadPage() {
+  window.location.reload();
+}
+
 function Retry({ onRetry }: { onRetry: (() => void) | undefined }) {
   if (!onRetry) return null;
   return (
@@ -20,9 +24,11 @@ function Retry({ onRetry }: { onRetry: (() => void) | undefined }) {
 export function ModelCard({
   card,
   onRetry,
+  onReload = reloadPage,
 }: {
   card: CardResult;
   onRetry?: (() => void) | undefined;
+  onReload?: () => void; // for tests; a page reload by default
 }) {
   return (
     <section
@@ -38,13 +44,20 @@ export function ModelCard({
         release's checksum.
       </p>
       {card.ok ? (
-        // The renderer is a lazy chunk: if it does not load, only this section says so.
+        // The renderer is a lazy chunk: if it does not load, only this section says so. React
+        // keeps a failed lazy import, so rendering again cannot help; reloading the page can.
         <CatchBoundary
           getResetKey={() => card.text}
-          errorComponent={({ reset }) => (
+          errorComponent={() => (
             <div className="mt-3">
               <p>The model card could not be shown: its renderer did not load.</p>
-              <Retry onRetry={reset} />
+              <button
+                type="button"
+                className="mt-2 text-sm font-semibold text-accent"
+                onClick={onReload}
+              >
+                Reload the page
+              </button>
             </div>
           )}
         >
