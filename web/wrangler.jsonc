@@ -1,0 +1,10 @@
+// The site as a Cloudflare Worker with static assets and no script (ADR 0006).
+{
+  "name": "churn-value",
+  "compatibility_date": "2026-10-03",
+  "assets": {
+    "directory": "./dist",
+    // A navigation that matches no file gets index.html, so direct links like /model open the app.
+    "not_found_handling": "single-page-application",
+  },
+}

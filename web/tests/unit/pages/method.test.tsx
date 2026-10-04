@@ -40,6 +40,14 @@ test("the method page opens with its answer and every section", async () => {
   );
 });
 
+test("the notebooks link goes to the pages published with the site", async () => {
+  await renderPage(() => <MethodPage card={{ ok: true, text: CARD }} />);
+  expect(screen.getByRole("link", { name: "The analysis notebooks" })).toHaveAttribute(
+    "href",
+    "/notebooks/",
+  );
+});
+
 test("the model card renders from the release, with anchored headings and tables", async () => {
   await renderPage(() => <MethodPage card={{ ok: true, text: CARD }} />);
   const heading = await screen.findByRole(
