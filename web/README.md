@@ -93,6 +93,7 @@ The site is a Cloudflare Worker with static assets and no script (`wrangler.json
 - **The bundle** is kept as a workflow artifact for one day. To deploy an older run again, re-run all its jobs, not only `deploy`.
 - **Previews:** every pull request from the repository gets its own address, `https://pr-<number>-churn-value.<subdomain>.workers.dev`, written in a comment on the pull request and checked by the same smoke test. It is public to whoever has the link, and the live site does not change.
 - **Secrets:** `CLOUDFLARE_API_TOKEN` (the "Edit Cloudflare Workers" template, one account) and `CLOUDFLARE_ACCOUNT_ID`, as repository secrets. Only the `deploy` and `preview` jobs receive them, and in each only the step that runs Wrangler.
+- **Secrets scan:** the `secrets` job runs gitleaks over every commit on each pull request and on `main`; `deploy` waits for it. A finding is printed redacted. A real credential must be revoked first; removing it from the history comes second.
 - **Cache:** every file is revalidated on each visit (Cloudflare's default), so nothing is downloaded twice and a new deploy shows at once. There is no long-lived rule for `/assets/*` on purpose: Cloudflare answers a missing path there with the app's page, and a browser would keep that page under a chunk's address (ADR 0006). The smoke test checks it.
 - **Notebooks:** served under `/notebooks/`. The pages load MathJax and require.js from cdnjs.
 
