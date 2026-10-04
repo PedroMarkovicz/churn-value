@@ -7,7 +7,8 @@ import { useState } from "react";
 
 import { ChartFrame, DataTable, Tooltip, useWidth } from "@/charts/primitives.tsx";
 import type { Interval } from "@/domain/bootstrap.ts";
-import { count, money, moneyCompact, percent } from "@/domain/format.ts";
+import { policyTitle } from "@/domain/headlines.ts";
+import { count, money, moneyCompact } from "@/domain/format.ts";
 import type { PolicyComparison } from "@/domain/policies.ts";
 
 const ROW = 34;
@@ -34,11 +35,7 @@ export function PolicyBars({
   const x = scaleLinear({ domain: [lo, hi], range: [LABEL, width - 96], nice: true });
   const height = rows.length * ROW + 24;
 
-  const share = comparison.shareOfOracle;
-  const title =
-    share !== null
-      ? `The model keeps ${percent(Math.max(0, share))} of what perfect foresight would earn`
-      : "What each policy would have earned";
+  const title = policyTitle(comparison.shareOfOracle);
 
   return (
     <ChartFrame

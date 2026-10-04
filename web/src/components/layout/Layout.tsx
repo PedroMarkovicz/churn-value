@@ -38,7 +38,7 @@ function InvalidNotice() {
       className="mt-4 flex items-start justify-between gap-4 rounded-lg bg-accent-tint px-4 py-3 text-sm"
     >
       <p>
-        Some values in this link were out of range and were reset to their defaults:{" "}
+        Some values in this link could not be used and were reset to their defaults:{" "}
         {labels.join(", ")}.
       </p>
       <button

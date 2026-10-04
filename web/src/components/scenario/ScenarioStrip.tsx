@@ -51,7 +51,7 @@ function EditorSheet() {
 }
 
 export function ScenarioStrip() {
-  const { scenario, setScenario } = useScenario();
+  const { scenario, setScenario, invalid } = useScenario();
   const budget = budgetText(scenario);
   const phone = usePhone();
   return (
@@ -96,7 +96,7 @@ export function ScenarioStrip() {
         <button
           type="button"
           className="text-muted disabled:opacity-50"
-          disabled={isDefaultScenario(scenario)}
+          disabled={isDefaultScenario(scenario) && invalid.length === 0}
           onClick={() => {
             setScenario(DEFAULT_SCENARIO);
           }}

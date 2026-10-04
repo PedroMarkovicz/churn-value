@@ -24,9 +24,10 @@ export function DataErrorPage({ error }: ErrorComponentProps) {
     >
       {known ? (
         <p className="text-base leading-relaxed">
-          <code className="rounded bg-panel px-1.5 py-0.5">{error.artifact}</code>: {error.reason}.
-          The site reads the artifacts published by the pipeline; if they were just updated, a retry
-          usually fixes it.
+          <code className="rounded bg-panel px-1.5 py-0.5">{error.artifact}</code>: {error.reason}.{" "}
+          {error.retryable
+            ? "The site reads the artifacts published by the pipeline; if they were just updated, a retry usually fixes it."
+            : "The site and the artifacts release do not match; a retry will not fix it."}
         </p>
       ) : null}
       {known ? (
