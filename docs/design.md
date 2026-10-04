@@ -319,8 +319,8 @@ Out of scope, by decision: CSV upload of new customers (it would require a secon
 
 ### 6.6 CI/CD
 
-- **On PR:** ruff, pyright, pytest; in `web/`: contract drift check (regenerated TS types and validators must match), palette check, eslint, prettier, tsc, vitest, a bundle budget, Playwright with axe on desktop and mobile, visual regression of the six pages in the pinned Playwright container (baselines made by the manual `visual-baselines` workflow in that same container), and Lighthouse CI budgets, all against the pinned artifacts release; Cloudflare preview deploy (Plan 4).
-- **On `main`:** deploy to **Cloudflare Workers (static assets)** via GitHub Actions.
+- **On PR:** ruff, pyright, pytest; in `web/`: contract drift check (regenerated TS types and validators must match), palette check, eslint, prettier, tsc, vitest, a bundle budget, Playwright with axe on desktop and mobile, visual regression of the six pages in the pinned Playwright container (baselines made by the manual `visual-baselines` workflow in that same container), and Lighthouse CI budgets, all against the pinned artifacts release. A `site` job builds the site with the notebook pages, serves that bundle locally as the Worker will (`wrangler dev`) and runs a smoke test against it. A preview address per pull request follows in Plan 4b.
+- **On `main`:** after `ml`, `web`, `visual` and `site` pass, the `deploy` job publishes the bundle the `site` job built and checked to **Cloudflare Workers (static assets)** with `wrangler deploy`, then runs the smoke test against the live address.
 - **`train` workflow (manual):** runs the pipeline and publishes the artifacts as a **GitHub Release** (a tarball of `artifacts/` plus `manifest.json`, with the model card as release notes). The site build pins a release tag. Training never runs on every push.
 
 ## 6.7 Analysis notebooks (ADR 0012)
@@ -415,7 +415,7 @@ Out of scope, by decision: CSV upload of new customers (it would require a secon
 **Execution and publication.**
 - `churnvalue notebooks [--only NN]` executes each notebook in place, top to bottom, in the project environment, and fails on the first error. It then exports HTML with the full design to `reports/notebooks/`.
 - Executed `.ipynb` files are committed with their outputs. GitHub renders their content but strips the inline styles.
-- The styled HTML is published with the web app under `/notebooks/` (Plan 4), and the Methodology page links to it.
+- The styled HTML is published with the web app under `/notebooks/`. `churnvalue notebooks-site` converts the committed notebooks when the site is built, without executing them; it adds a page title, a top bar and an index, and refuses a notebook that is not a clean run of its current sources. The Method page links to it.
 - CI lints notebooks with ruff (native `.ipynb` support) and checks that each committed notebook was executed in order from its current sources (a digest of every cell's source is stored at execution). A manual workflow re-executes them against the real data.
 
 ## 7. Testing strategy

@@ -16,3 +16,10 @@
 **Consequences.**
 - The economics exist in both Python and TS, so parity is enforced (ADR 0009).
 - The app cannot score arbitrary new customers.
+
+**Amendments after Plan 4a (deploy).**
+- The Worker has static assets and no script (`web/wrangler.jsonc`). `not_found_handling: "single-page-application"` serves the app for direct links; a path the app does not know shows the app's own 404 page.
+- `web/public/_headers` marks `/assets/*` immutable for a year, because every file there has a content hash in its name (`npm run check:assets` fails otherwise). Everything else is revalidated on each visit, so a new release or a new deploy shows at once.
+- CI builds the site once (the `site` job) and checks it under `wrangler dev` with a smoke test. On `main`, `deploy` publishes that same bundle after every other job passes, then runs the smoke test against the live address.
+- The Cloudflare token is a repository secret that only the `deploy` job receives; `ml/tests/test_workflows.py` holds that.
+- There is no Content-Security-Policy: the notebook pages have inline scripts and load MathJax from a CDN.

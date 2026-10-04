@@ -35,3 +35,8 @@ All of that research happened in scratch scripts, and the spec only states the r
 - A `churnvalue.viz.style` module and a `churnvalue notebooks` command.
 - Notebook dependencies go in a separate dependency group.
 - Notebooks depend on the real data, so they run in a manual CI workflow. The regular CI lints them and checks that they were executed in order.
+
+**Amendments after Plan 4a (deploy).**
+- The HTML is not committed and is not part of the artifacts release. `churnvalue notebooks-site --out DIR` converts the committed, executed notebooks when the site is built. It adds a page title, a top bar and an index, and refuses a notebook that is not a clean run of its current sources.
+- The titles and questions on the index are one catalogue in `churnvalue.notebooks`; a test fails if it and the committed notebooks differ.
+- The pages load MathJax and require.js from cdnjs, which is nbconvert's default.
