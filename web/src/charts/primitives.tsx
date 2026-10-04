@@ -2,17 +2,24 @@
  * Shared chart pieces (spec §4): a frame with a takeaway title and a table view, a responsive
  * width, a tooltip that stays inside the chart, and label spreading so direct labels never collide.
  */
-import { type ReactNode, useEffect, useId, useRef, useState } from "react";
+import { type ReactNode, type RefCallback, useCallback, useId, useState } from "react";
 
-/** Width of the element, following resizes; `fallback` before the first measure and in tests. */
-export function useWidth<T extends HTMLElement>(fallback = 640) {
-  const ref = useRef<T>(null);
+/** The smallest width a chart is drawn at: a 320 px phone leaves a panel about 248 px inside. */
+export const MIN_CHART_WIDTH = 240;
+
+/**
+ * Width of the element, following resizes; `fallback` before the first measure and in tests.
+ * The ref is a callback: the table view replaces a chart's element while the chart's component
+ * stays mounted, and the new element is the one that must be observed.
+ */
+export function useWidth<T extends HTMLElement>(fallback = 640): readonly [RefCallback<T>, number] {
   const [width, setWidth] = useState(fallback);
-  useEffect(() => {
-    const element = ref.current;
-    if (!element || typeof ResizeObserver === "undefined") return;
+  const ref = useCallback((element: T | null) => {
+    if (!element || typeof ResizeObserver === "undefined") return undefined;
     const observer = new ResizeObserver(([entry]) => {
-      if (entry) setWidth(Math.max(280, Math.floor(entry.contentRect.width)));
+      const measured = Math.floor(entry?.contentRect.width ?? 0);
+      // 0 is an element that left the page or is hidden: keep the last real width
+      if (measured > 0) setWidth(Math.max(MIN_CHART_WIDTH, measured));
     });
     observer.observe(element);
     return () => {

@@ -89,3 +89,37 @@ test("Model and Method show fixed results instead of the scenario strip", async 
     await expect(page.getByRole("region", { name: "Scenario" })).toHaveCount(0);
   }
 });
+
+test("a chart is as wide after the table view as before it", async ({ page }) => {
+  await page.goto("/simulator");
+  const frame = page
+    .locator("section")
+    .filter({ has: page.getByRole("button", { name: /^Show as/ }) })
+    .first();
+  const width = async () => (await frame.locator("svg").first().boundingBox())?.width;
+  const before = await width();
+  expect(before).toBeGreaterThan(280);
+  await frame.getByRole("button", { name: "Show as table" }).click();
+  await frame.getByRole("button", { name: "Show as chart" }).click();
+  await expect.poll(width).toBe(before);
+});
+
+test("at 320 px no chart is wider than its panel, and no page scrolls sideways", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  for (const path of ["/", "/simulator", "/sensitivity", "/customers", "/model", "/method"]) {
+    await page.goto(path);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await page.waitForLoadState("networkidle");
+    const state = await page.evaluate(() => ({
+      clipped: [...document.querySelectorAll("svg[width]")].filter(
+        (svg) =>
+          svg.parentElement !== null &&
+          Number(svg.getAttribute("width")) > svg.parentElement.clientWidth + 1,
+      ).length,
+      overflow: document.documentElement.scrollWidth - window.innerWidth,
+    }));
+    expect(state, path).toEqual({ clipped: 0, overflow: 0 });
+  }
+});
