@@ -10,7 +10,7 @@ npm run artifacts            # the release pinned in artifacts.lock.json (checks
 npm run dev                  # http://localhost:5173
 ```
 
-A private repository needs `GITHUB_TOKEN` in the environment for `npm run artifacts`. To use a local `uv run churnvalue export` instead of the release:
+`npm run artifacts` needs no token; with `GITHUB_TOKEN` in the environment it uses it, which only raises GitHub's rate limit. To use a local `uv run churnvalue export` instead of the release:
 
 ```bash
 npm run artifacts -- --local
@@ -35,7 +35,7 @@ npm run artifacts -- --local
 After the `train` workflow publishes a release (`artifacts-<date>-<sha>`):
 
 ```bash
-GITHUB_TOKEN=... npm run artifacts -- --pin artifacts-20260928-abc1234
+npm run artifacts -- --pin artifacts-20260928-abc1234
 ```
 
 This downloads the release, verifies it, installs it in `public/data` and rewrites `artifacts.lock.json`. Commit the lock file.
@@ -94,6 +94,7 @@ The site is a Cloudflare Worker with static assets and no script (`wrangler.json
 - **Previews:** every pull request from the repository gets its own address, `https://pr-<number>-churn-value.<subdomain>.workers.dev`, written in a comment on the pull request and checked by the same smoke test. It is public to whoever has the link, and the live site does not change.
 - **Secrets:** `CLOUDFLARE_API_TOKEN` (the "Edit Cloudflare Workers" template, one account) and `CLOUDFLARE_ACCOUNT_ID`, as repository secrets. Only the `deploy` and `preview` jobs receive them, and in each only the step that runs Wrangler.
 - **Secrets scan:** the `secrets` job runs gitleaks over every commit on each pull request and on `main`; `deploy` waits for it. A finding is printed redacted. A real credential must be revoked first; removing it from the history comes second.
+- **Headers:** `public/_headers` forbids framing by another site (`X-Frame-Options: DENY`), asks browsers for HTTPS (`Strict-Transport-Security`) and turns off content sniffing; the smoke test checks all three.
 - **Cache:** every file is revalidated on each visit (Cloudflare's default), so nothing is downloaded twice and a new deploy shows at once. There is no long-lived rule for `/assets/*` on purpose: Cloudflare answers a missing path there with the app's page, and a browser would keep that page under a chunk's address (ADR 0006). The smoke test checks it.
 - **Notebooks:** served under `/notebooks/`. The pages load MathJax and require.js from cdnjs.
 
