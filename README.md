@@ -453,3 +453,13 @@ Data: Chen, D. (2012). *Online Retail II* [Dataset]. UCI Machine Learning Reposi
 The raw dataset is downloaded by the pipeline and is not in this repository. Data derived from it is: the artifacts release (features, scores and purchase days of the 1,920 holdout customers, under the dataset's own customer numbers) and the notebooks' outputs. They remain under CC BY 4.0 with the citation above.
 
 Code: [MIT](LICENSE).
+
+---
+
+<div align="center">
+
+**Built with ☕ and a healthy distrust of accuracy scores**
+
+[⬆ Back to top](#churn-value)
+
+</div>
