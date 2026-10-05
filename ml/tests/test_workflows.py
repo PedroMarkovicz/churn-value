@@ -1,5 +1,6 @@
 """Security properties of the GitHub Actions workflows."""
 
+import re
 from pathlib import Path
 
 import pytest
@@ -136,3 +137,38 @@ def test_the_whole_history_is_scanned_for_credentials():
     assert "ghcr.io/gitleaks/gitleaks:v8.30.1" in scan["run"]  # a pinned scanner
     assert "--redact" in scan["run"]  # a finding must not be printed in a public log
     assert job["timeout-minutes"] <= 15
+
+
+def test_deploy_records_a_production_deployment_with_the_sites_address():
+    deploy = CI["jobs"]["deploy"]
+    assert deploy["environment"] == {
+        "name": "production",
+        "url": "${{ steps.address.outputs.url }}",
+    }
+    address = next(step for step in deploy["steps"] if step.get("id") == "address")
+    assert "VITE_SITE_URL" in address["run"]  # the one place the address is written
+
+
+def test_third_party_actions_are_pinned_to_a_commit():
+    """A tag can be moved by its owner; a commit hash cannot. GitHub's own actions keep tags."""
+    loose = []
+    for path in WORKFLOWS:
+        workflow = yaml.safe_load(path.read_text(encoding="utf-8"))
+        for job in workflow["jobs"].values():
+            for step in job["steps"]:
+                uses = str(step.get("uses", ""))
+                if not uses or uses.startswith("actions/"):
+                    continue
+                if not re.fullmatch(r"[^@]+@[0-9a-f]{40}", uses):
+                    loose.append(f"{path.name}: {uses}")
+    assert not loose, loose
+
+
+def test_every_workflow_states_its_permissions():
+    """A workflow that says nothing inherits the repository's default, which can change."""
+    silent = [
+        path.name
+        for path in WORKFLOWS
+        if "permissions" not in yaml.safe_load(path.read_text(encoding="utf-8"))
+    ]
+    assert not silent, silent

@@ -28,3 +28,9 @@
 - A pull request from the repository gets a preview: `wrangler versions upload --preview-alias pr-<number>` publishes the checked bundle beside the live site, at `https://pr-<number>-churn-value.<subdomain>.workers.dev`, without changing what is live. The smoke test runs against it, and one comment on the pull request holds the address.
 - Only the `deploy` and `preview` jobs receive the Cloudflare secrets, and in each only the step that runs Wrangler; a fork's pull request gets neither job.
 - A preview's address is public to whoever has it.
+
+**Amendments after Plan 4c (launch).**
+- The `deploy` job runs in a GitHub `production` environment, for the deployment record and a rule that only `main` deploys. The Cloudflare token stays a repository secret, because the `preview` job needs it too and an environment's secrets are not available to it.
+- A `secrets` job scans every commit with gitleaks on each pull request and on `main`; `deploy` waits for it.
+- The one action that is not GitHub's own is pinned to a commit hash, and every workflow states its permissions; `ml/tests/test_workflows.py` holds both.
+- Every page is served with `X-Frame-Options: DENY` and `Strict-Transport-Security`; the smoke test checks them.

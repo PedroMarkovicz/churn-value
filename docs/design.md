@@ -320,7 +320,7 @@ Out of scope, by decision: CSV upload of new customers (it would require a secon
 ### 6.6 CI/CD
 
 - **On PR:** ruff, pyright, pytest; in `web/`: contract drift check (regenerated TS types and validators must match), palette check, eslint, prettier, tsc, vitest, a bundle budget, Playwright with axe on desktop and mobile, visual regression of the six pages in the pinned Playwright container (baselines made by the manual `visual-baselines` workflow in that same container), and Lighthouse CI budgets, all against the pinned artifacts release. A `site` job builds the site with the notebook pages, serves that bundle locally as the Worker will (`wrangler dev`) and runs a smoke test against it. A `preview` job then uploads that bundle as a Worker version with the alias `pr-<number>`, runs the same smoke test against its address, and writes the address in a comment on the pull request. It runs only for pull requests from the repository itself. A `secrets` job scans every commit with gitleaks.
-- **On `main`:** after `ml`, `web`, `visual`, `secrets` and `site` pass, the `deploy` job publishes the bundle the `site` job built and checked to **Cloudflare Workers (static assets)** with `wrangler deploy`, then runs the smoke test against the live address.
+- **On `main`:** after `ml`, `web`, `visual`, `secrets` and `site` pass, the `deploy` job publishes the bundle the `site` job built and checked to **Cloudflare Workers (static assets)** with `wrangler deploy`, then runs the smoke test against the live address. The job runs in the `production` environment, so the repository's page shows what is deployed and where.
 - **`train` workflow (manual):** runs the pipeline and publishes the artifacts as a **GitHub Release** (a tarball of `artifacts/` plus `manifest.json`, with the model card as release notes). The site build pins a release tag. Training never runs on every push.
 
 ## 6.7 Analysis notebooks (ADR 0012)
@@ -439,7 +439,7 @@ Out of scope, by decision: CSV upload of new customers (it would require a secon
 | 5 | Web: Overview + Simulator + Sensitivity | Sliders drive policy; golden vectors pass |
 | 6 | Web: Action List + timeline + what-if | ONNX parity; e2e passes |
 | 7 | Web: Model + Methodology/Model card | All pages complete |
-| 8 | Deploy, README, polish | Public URL; one-command reproduction documented |
+| 8 | Deploy, README, polish | Public URL; one-command reproduction documented. Done: the site is live, the repository is public, and `churnvalue pipeline` reproduces the artifacts |
 
 The phases are delivered through the following implementation plans:
 

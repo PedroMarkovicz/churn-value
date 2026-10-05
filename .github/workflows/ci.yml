@@ -16,7 +16,7 @@ jobs:
         working-directory: ml
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
           enable-cache: true
       - run: uv sync --locked
@@ -145,7 +145,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
       - run: npm run build
         working-directory: web
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
           enable-cache: true
       - name: Notebook pages from the committed notebooks (not executed)
@@ -178,6 +178,11 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # The deployment shows on the repository's page. The Cloudflare secrets stay repository
+    # secrets: in the environment, the preview job could not read them.
+    environment:
+      name: production
+      url: ${{ steps.address.outputs.url }}
     concurrency:
       group: deploy-production
       cancel-in-progress: false
@@ -203,6 +208,10 @@ jobs:
             echo "main is now at $tip; this run publishes nothing"
             echo "current=false" >> "$GITHUB_OUTPUT"
           fi
+      - name: The site's address
+        id: address
+        if: steps.tip.outputs.current == 'true'
+        run: grep '^VITE_SITE_URL=' .env | sed 's/^VITE_SITE_URL=/url=/' >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
         if: steps.tip.outputs.current == 'true'
         with:

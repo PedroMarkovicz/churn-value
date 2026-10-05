@@ -14,7 +14,11 @@ const NOTEBOOKS = Array.from(
   (_, i) => `${String(i + 1).padStart(2, "0")}_stage_${"abcdefghijk".charAt(i)}.html`,
 );
 const INDEX = NOTEBOOKS.map((name) => `<a href="${name}">${name}</a>`).join("");
-const SECURE = { "x-content-type-options": "nosniff" };
+const SECURE = {
+  "x-content-type-options": "nosniff",
+  "x-frame-options": "DENY",
+  "strict-transport-security": "max-age=31536000",
+};
 const IMMUTABLE = { "cache-control": "public, max-age=31536000, immutable" };
 const SCRIPT = { "content-type": "text/javascript; charset=utf-8" };
 
@@ -127,6 +131,8 @@ test("a page that is not the app, or lacks the security header, fails", async ()
   expect(await checkSite(BASE, SHA, site({ "/": other, "/model": other }))).toEqual([
     "/: not the app's page",
     "/: no X-Content-Type-Options: nosniff",
+    "/: no X-Frame-Options: DENY",
+    "/: no Strict-Transport-Security with a long max-age",
     "/: no script under /assets/",
   ]);
 });
@@ -155,4 +161,12 @@ test("a social image that is missing, and so answered with the app's page, fails
       ? Promise.resolve(new Response(HOME, { headers: { "content-type": "text/html" } }))
       : site()(url);
   expect(await checkSite(BASE, SHA, get)).toEqual(["/og.png: served as text/html, not image/png"]);
+});
+
+test("a page that another site could frame, or that does not ask for HTTPS, fails", async () => {
+  const page = { body: HOME, headers: { "x-content-type-options": "nosniff" } };
+  expect(await checkSite(BASE, SHA, site({ "/": page, "/model": page }))).toEqual([
+    "/: no X-Frame-Options: DENY",
+    "/: no Strict-Transport-Security with a long max-age",
+  ]);
 });

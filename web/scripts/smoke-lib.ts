@@ -8,6 +8,12 @@ export const NOTEBOOK_COUNT = 11;
 /** A path no build has: Cloudflare answers it with the app's page (the SPA fallback). */
 const MISSING_ASSET = "/assets/smoke-test-missing.js";
 
+/** Headers every page must carry: no content sniffing, no framing by another site. */
+const REQUIRED_HEADERS = [
+  ["X-Content-Type-Options", "nosniff"],
+  ["X-Frame-Options", "DENY"],
+] as const;
+
 export type Fetch = (url: string, init?: { signal?: AbortSignal }) => Promise<Response>;
 
 export type Options = {
@@ -63,8 +69,10 @@ export async function checkSite(
     if (!home.text.includes('<div id="root">')) failures.push("/: not the app's page");
     else if (indexHtml !== undefined && home.text !== indexHtml)
       failures.push("/: not the build that was just published (its index.html differs)");
-    if (home.response.headers.get("x-content-type-options") !== "nosniff")
-      failures.push("/: no X-Content-Type-Options: nosniff");
+    for (const [name, value] of REQUIRED_HEADERS)
+      if (home.response.headers.get(name) !== value) failures.push(`/: no ${name}: ${value}`);
+    if (!/max-age=\d{6,}/.test(home.response.headers.get("strict-transport-security") ?? ""))
+      failures.push("/: no Strict-Transport-Security with a long max-age");
     const deep = await page("/model");
     if (deep && deep.text !== home.text) failures.push("/model: a direct link is not the app");
     const script = /<script[^>]+src="(\/assets\/[^"]+\.js)"/.exec(home.text)?.[1];
