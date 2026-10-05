@@ -79,3 +79,32 @@ def test_every_amount_in_the_readme_is_in_the_model_card():
     amounts = set(re.findall(r"−?£\d{1,3}(?:,\d{3})+", _readme()))
     assert len(amounts) > 10
     assert not sorted(amount for amount in amounts if amount not in card)
+
+
+# the model card's model names, as the README's ladder words them
+MODELS = {
+    "cadence_rule": "Cadence rule",
+    "bgnbd": "BG/NBD",
+    "logreg": "Logistic regression",
+    "lightgbm": "LightGBM",
+    "lightgbm_seasonal": "LightGBM + season",
+}
+
+
+def test_the_readme_quotes_the_model_cards_metrics():
+    """The ladder's ROC-AUC, Brier score and mean predicted churn are the model card's."""
+    card = (ROOT / "docs" / "model-card.md").read_text(encoding="utf-8")
+    section = card.split("## Evaluation on the test cutoff")[1].split("## ")[0]
+    card_rows = {
+        cells[0]: cells for cells in map(_cells, section.splitlines()) if cells[0] in MODELS
+    }
+    assert set(card_rows) == set(MODELS)
+    ladder = {
+        cells[1]: cells
+        for cells in map(_cells, _readme().splitlines())
+        if len(cells) == 6 and cells[1] in MODELS.values()
+    }
+    for name, label in MODELS.items():
+        _, _pr_auc, roc_auc, brier, _lift, mean_p, _emp = card_rows[name]
+        expected = [roc_auc.split(" [")[0], brier.split(" [")[0], mean_p]
+        assert ladder[label][3:] == expected, name
