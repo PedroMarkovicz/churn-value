@@ -3,11 +3,14 @@
 <img src="docs/images/banner.png" alt="Churn Value: which customers are worth a retention offer, and what is that worth in money?" width="100%" />
 
 <a id="churn-value"></a>
-# 💷 Churn Value
 
 ### Profit-driven churn retention, on data that has no churn label
 
+<br/>
+
 <a href="https://churn-value.pedromarkovicz.workers.dev"><img src="https://img.shields.io/badge/%E2%96%B6%20%20OPEN%20THE%20LIVE%20SITE-churn--value.pedromarkovicz.workers.dev-2f5bd3?style=for-the-badge&labelColor=1a2040" alt="Open the live site: churn-value.pedromarkovicz.workers.dev" height="44" /></a>
+
+<br/><br/>
 
 [![CI](https://github.com/PedroMarkovicz/churn-value/actions/workflows/ci.yml/badge.svg)](https://github.com/PedroMarkovicz/churn-value/actions/workflows/ci.yml)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
