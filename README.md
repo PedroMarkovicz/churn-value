@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/images/banner.png" alt="Churn Value: which customers are worth a retention offer, and what is that worth in money? Beside the title, a fish leaps out of a tank of fish." width="100%" />
+<img src="docs/images/banner.png" alt="Churn Value: which customers are worth a retention offer, and what is that worth in money?" width="100%" />
 
 <a id="churn-value"></a>
 
