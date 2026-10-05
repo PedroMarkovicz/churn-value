@@ -1,11 +1,14 @@
 <div align="center">
 
+<img src="docs/images/banner.png" alt="Churn Value: which customers are worth a retention offer, and what is that worth in money?" width="100%" />
+
 <a id="churn-value"></a>
-# 💷 churn-value
+# 💷 Churn Value
 
 ### Profit-driven churn retention, on data that has no churn label
 
-[![Live site](https://img.shields.io/badge/live-site-2f5bd3.svg)](https://churn-value.pedromarkovicz.workers.dev)
+<a href="https://churn-value.pedromarkovicz.workers.dev"><img src="https://img.shields.io/badge/%E2%96%B6%20%20OPEN%20THE%20LIVE%20SITE-churn--value.pedromarkovicz.workers.dev-2f5bd3?style=for-the-badge&labelColor=1a2040" alt="Open the live site: churn-value.pedromarkovicz.workers.dev" height="44" /></a>
+
 [![CI](https://github.com/PedroMarkovicz/churn-value/actions/workflows/ci.yml/badge.svg)](https://github.com/PedroMarkovicz/churn-value/actions/workflows/ci.yml)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![LightGBM](https://img.shields.io/badge/model-LightGBM%20%2B%20calibration-yellow.svg)](https://lightgbm.readthedocs.io/)
@@ -13,8 +16,6 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6.svg)](https://www.typescriptlang.org/)
 [![Cloudflare Workers](https://img.shields.io/badge/deploy-Cloudflare%20Workers-f38020.svg)](https://developers.cloudflare.com/workers/static-assets/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE)
-
-**Which customers are worth a retention offer, and what is that worth in money?**
 
 [Highlights](#highlights) •
 [Results](#results) •
@@ -32,14 +33,14 @@
     <img src="web/public/og.png" alt="The Overview page: 1,920 customers drawn as squares beside the campaign's account" width="100%" />
   </a>
   <br/>
-  <em>The Overview page: each square is one holdout customer, coloured by what calling them would have earned.</em>
+  <em>The Overview page of the <a href="https://churn-value.pedromarkovicz.workers.dev">live site</a>: each square is one holdout customer, coloured by what calling them would have earned.</em>
 </p>
 
 ---
 
 ## 📖 Overview
 
-churn-value decides which customers of a UK online wholesaler should get a retention offer, and reports what that decision is worth in pounds. It runs on [UCI Online Retail II](https://doi.org/10.24432/C5CG6D): two years of invoices, with no cancellation date and no churn column.
+Churn Value decides which customers of a UK online wholesaler should get a retention offer, and reports what that decision is worth in pounds. It runs on [UCI Online Retail II](https://doi.org/10.24432/C5CG6D): two years of invoices, with no cancellation date and no churn column.
 
 The project therefore starts one step earlier than most churn tutorials. It defines what "churned" means, builds the label from purchase behaviour, and then trains models. Models are compared on the profit of the campaign each would drive, with an interval around that profit. Ranking metrics are reported alongside.
 
