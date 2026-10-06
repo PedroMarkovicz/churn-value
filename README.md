@@ -8,7 +8,7 @@
 
 <br/>
 
-<a href="https://churn-value.pedromarkovicz.workers.dev"><img src="https://img.shields.io/badge/%E2%96%B6%20%20OPEN%20THE%20LIVE%20SITE-churn--value.pedromarkovicz.workers.dev-2f5bd3?style=for-the-badge&labelColor=1a2040" alt="Open the live site: churn-value.pedromarkovicz.workers.dev" height="44" /></a>
+<a href="https://churn-value.pedromarkovicz.workers.dev"><img src="https://img.shields.io/badge/%E2%96%B6%20%20OPEN%20THE%20LIVE%20SITE-churn--value.pedromarkovicz.workers.dev-2f5bd3?style=for-the-badge&labelColor=1a2040" alt="Open the live site: churn-value.pedromarkovicz.workers.dev" width="700" /></a>
 
 <br/><br/>
 
@@ -43,11 +43,15 @@
 
 ## 📖 Overview
 
+<div align="justify">
+
 Churn Value decides which customers of a UK online wholesaler should get a retention offer, and reports what that decision is worth in pounds. It runs on [UCI Online Retail II](https://doi.org/10.24432/C5CG6D): two years of invoices, with no cancellation date and no churn column.
 
 The project therefore starts one step earlier than most churn tutorials. It defines what "churned" means, builds the label from purchase behaviour, and then trains models. Models are compared on the profit of the campaign each would drive, with an interval around that profit. Ranking metrics are reported alongside.
 
 > The pipeline is batch Python and publishes versioned artifacts. The site is static and needs no server: it reads those artifacts, recomputes the economics in the browser when an assumption changes, and runs the model itself for the what-if.
+
+</div>
 
 ---
 
@@ -116,9 +120,13 @@ The project therefore starts one step earlier than most churn tutorials. It defi
 <a id="results"></a>
 ## 📈 Results
 
+<div align="justify">
+
 Three supervised models rank customers about equally well (ROC-AUC 0.76 to 0.77). Only one of them makes close to the money it promises.
 
 On the September 2011 holdout, at the default assumptions:
+
+</div>
 
 | Policy | Customers called | Expected profit | Realized profit [95% CI] |
 |---|---|---|---|
@@ -130,24 +138,36 @@ On the September 2011 holdout, at the default assumptions:
 | **LightGBM + season** (deployed) | 993 | £25,621 | **£23,139 [£15,660, £31,729]** |
 | Perfect foresight | 592 | – | £88,558 [£78,016, £98,844] |
 
+<div align="justify">
+
 No campaign was run. "Realized" is a backtest: what each list would have earned given who really stopped buying in the next 90 days, with the offer's acceptance rate (30%), the margin (35%), the incentive (10% of a customer's yearly margin) and the £1 contact cost still assumed. Intervals are 95% bootstrap intervals over customers.
 
 An offer is priced with the model's probabilities, so a model that expects more churn than happens promises profit it never makes. Plain LightGBM expected £62,859 and would have made £14,972. Adding the cutoff month as a feature keeps the probabilities right after the season turns: the deployed model predicted 31.6% churn and 30.8% happened.
 
 Refitted with six seeds, the deployed configuration realizes £19.4k to £23.1k. The table shows the pipeline's seed, which is at the top of that range.
 
+</div>
+
 ---
 
 <a id="building-the-label"></a>
 ## 🏷️ Building the label
 
+<div align="justify">
+
 Most public churn datasets come with a `churn` column. Transaction data from a retailer does not. A customer of a non-contractual business gives no notice when they leave; they stop ordering. Deciding who has churned is therefore part of the modelling, and a careless definition distorts every metric computed from it.
+
+</div>
 
 <p align="center">
   <img src="docs/images/label.png" alt="A customer's purchase days on a timeline, the cutoff, the 90-day label window and the eligibility window" width="100%" />
 </p>
 
+<div align="justify">
+
 The definition used here has three parts:
+
+</div>
 
 1. **A cutoff and a horizon.** At a monthly cutoff `t`, features use only what happened up to `t`. The label looks at the next `H = 90` days.
 2. **A cadence per customer.** `cadence = (last − first) / (purchase days − 1)`, and the expected next purchase is `E = last purchase + cadence`.
@@ -175,14 +195,22 @@ flowchart TD
 | Validate the way the model will be used | Train on 10 past cutoffs, calibrate on June 2011, test on September 2011 |
 | Report what the definition leaves out | One-time buyers have no cadence and are excluded; this is stated as a limit |
 
+<div align="justify">
+
 The result is 16 labelled snapshots with 1,298 to 2,163 eligible customers each, and a churn rate that moves between 24% and 52% with the calendar. The models later differ in how well they follow that seasonality.
+
+</div>
 
 ---
 
 <a id="architecture"></a>
 ## 🏗 Architecture
 
+<div align="justify">
+
 The high-level design has three parts: a batch pipeline, a versioned contract between the two languages, and a static site.
+
+</div>
 
 ```mermaid
 flowchart TB
@@ -252,11 +280,19 @@ flowchart LR
     I --> J["export<br/>artifacts, ONNX,<br/>golden vectors, model card"]
 ```
 
+<div align="justify">
+
 `uv run churnvalue pipeline` runs all of it and stops at the first stage that fails.
+
+</div>
 
 ### 2. The decision for one customer
 
+<div align="justify">
+
 A call's expected profit is `E[π] = p·γ·(B − CRC) − (1 − p)·CRC − c`.
+
+</div>
 
 ```mermaid
 flowchart LR
@@ -282,7 +318,11 @@ flowchart LR
 | `B` | benefit of keeping them, `min(V, CAC)` | derived |
 | `c` | cost of one contact | £1 |
 
+<div align="justify">
+
 With a budget, customers are ranked by `E[π]` and taken from the top until the expected spend or the number of calls reaches the limit.
+
+</div>
 
 ### 3. What happens in the browser
 
@@ -309,7 +349,11 @@ sequenceDiagram
     I-->>A: churn probability
 ```
 
+<div align="justify">
+
 The scenario lives in the URL, so any set of assumptions, and any open customer, is a shareable link.
+
+</div>
 
 ### 4. From a pull request to the live site
 
@@ -330,7 +374,11 @@ flowchart LR
 <a id="model-ladder"></a>
 ## 🪜 Model ladder
 
+<div align="justify">
+
 Each rung adds one idea, so the table shows what that idea is worth. All five are calibrated on June 2011 and tested on September 2011, a cutoff none was fitted, tuned or calibrated on. Actual churn there was 0.308.
+
+</div>
 
 | # | Model | How it scores a customer | ROC-AUC | Brier | Mean predicted churn |
 |---|---|---|---|---|---|
@@ -340,9 +388,13 @@ Each rung adds one idea, so the table shows what that idea is worth. All five ar
 | 4 | LightGBM | Gradient-boosted trees, tuned with Optuna under rolling-origin CV | 0.771 | 0.191 | 0.434 |
 | 5 | **LightGBM + season** | The same, plus the cutoff month as two features | 0.766 | 0.176 | 0.316 |
 
+<div align="justify">
+
 Rungs 3 to 5 are within each other's intervals on ROC-AUC. They differ in the last column. Four of the five models expect far more churn than happened, which is why their expected profit in the [results](#results) is far from what they would have made.
 
 The deployed model is exported to ONNX, explained per customer with SHAP, and described in the [model card](docs/model-card.md).
+
+</div>
 
 ---
 
@@ -369,7 +421,11 @@ The deployed model is exported to ONNX, explained per customer with SHAP, and de
 | **Model** | Can the probabilities be trusted? |
 | **Method** | How was this built, and what can it not tell you? |
 
+<div align="justify">
+
 The eleven analysis notebooks are published with the site under [/notebooks/](https://churn-value.pedromarkovicz.workers.dev/notebooks/).
+
+</div>
 
 ---
 
@@ -378,7 +434,11 @@ The eleven analysis notebooks are published with the site under [/notebooks/](ht
 
 ### Reproduce the pipeline
 
+<div align="justify">
+
 From the public dataset to the site's artifacts. Needs [uv](https://docs.astral.sh/uv/) 0.12 or newer.
+
+</div>
 
 ```bash
 cd ml
@@ -388,7 +448,11 @@ uv run churnvalue pipeline
 
 ### Run the site
 
+<div align="justify">
+
 On the pinned release. Needs Node 24.
+
+</div>
 
 ```bash
 cd web
@@ -397,7 +461,11 @@ npm run artifacts     # the pinned release, checksums verified
 npm run dev           # http://localhost:5173
 ```
 
+<div align="justify">
+
 `npm run artifacts -- --local` uses the artifacts your own pipeline run exported. More in [ml/README.md](ml/README.md) and [web/README.md](web/README.md).
+
+</div>
 
 ---
 
@@ -448,11 +516,15 @@ npm run dev           # http://localhost:5173
 
 ## 📄 Data and licence
 
+<div align="justify">
+
 Data: Chen, D. (2012). *Online Retail II* [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5CG6D, licensed CC BY 4.0.
 
 The raw dataset is downloaded by the pipeline and is not in this repository. Data derived from it is: the artifacts release (features, scores and purchase days of the 1,920 holdout customers, under the dataset's own customer numbers) and the notebooks' outputs. They remain under CC BY 4.0 with the citation above.
 
 Code: [MIT](LICENSE).
+
+</div>
 
 ---
 
